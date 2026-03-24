@@ -392,65 +392,67 @@ function loadDemo() {
   toast('Demo geladen');
 }
 
-// ── Sheets ─────────────────────────────────────────────────────
-async function loadSheets() {
+// ── Sheets via JSONP (bypasses CORS) ───────────────────────────
+function loadSheets() {
   const id = document.getElementById('sheetId').value.trim();
   if (!id) { toast('Bitte Sheet-ID eingeben'); return; }
   const tp = document.getElementById('tabP').value || 'Endprodukte';
   const ta = document.getElementById('tabA').value || 'Artikelstamm';
   setStatus('laden…', false);
   setConn(false, 'Verbinde…');
+  saveSettings();
 
-  // Try GViz first, then CSV export as fallback
-  const tryLoad = async (tabName) => {
-    // Method 1: GViz API
-    try {
-      const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tabName)}&headers=1`;
-      const r = await fetch(url);
-      if (!r.ok) throw new Error('gviz failed');
-      const text = await r.text();
-      if (!text.includes('google.visualization')) throw new Error('not gviz');
-      const parsed = parseGViz(text);
-      if (parsed.length >= 0) return parsed; // 0 rows is ok (empty tab)
-    } catch(e) {}
+  let loaded = 0;
+  const results = {};
 
-    // Method 2: CSV export
-    try {
-      const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
-      const r = await fetch(url);
-      if (!r.ok) throw new Error('csv failed');
-      const text = await r.text();
-      return parseCSV(text);
-    } catch(e) {}
-
-    throw new Error(`Tab "${tabName}" nicht erreichbar`);
+  const loadTab = (tabName, key) => {
+    const cbName = 'gvizCb_' + key + '_' + Date.now();
+    window[cbName] = (data) => {
+      try {
+        results[key] = parseGViz2(data);
+      } catch(e) { results[key] = []; }
+      delete window[cbName];
+      const s = document.getElementById('jsonp_' + cbName);
+      if (s) s.remove();
+      loaded++;
+      if (loaded === 2) finishLoad(results, tp, ta);
+    };
+    const s = document.createElement('script');
+    s.id = 'jsonp_' + cbName;
+    s.src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json;handler:${cbName}&sheet=${encodeURIComponent(tabName)}`;
+    s.onerror = () => { results[key] = []; loaded++; if(loaded===2) finishLoad(results,tp,ta); };
+    document.head.appendChild(s);
   };
 
-  try {
-    const [p, a] = await Promise.all([tryLoad(tp), tryLoad(ta)]);
-    products = p;
-    parts    = a;
-    allBGs   = parts.filter(p => p.typ === 'Baugruppe' || p.typ === 'baugruppe');
+  loadTab(tp, 'p');
+  loadTab(ta, 'a');
+}
+
+function finishLoad(results, tp, ta) {
+  products = results.p || [];
+  parts    = results.a || [];
+  allBGs   = parts.filter(p => p.typ === 'Baugruppe');
+  if (products.length > 0 || parts.length > 0) {
     setConn(true, `${products.length} Produkte · ${parts.length} Teile geladen`);
     renderProducts('');
     updateSettingsSub();
-    saveSettings();
     setStatus('bereit', true);
     toast(`${products.length} Produkte · ${parts.length} Teile geladen`);
-    // Debug: show raw if still 0
-    if (products.length === 0) {
-      try {
-        const dbg = await fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tp)}`);
-        const txt = await dbg.text();
-        console.log('RAW CSV:', txt.slice(0, 500));
-        setConn(false, 'Verbunden aber 0 Produkte — öffne Browser-Konsole (F12) für Details');
-      } catch(e2) {}
-    }
-  } catch(e) {
-    setConn(false, e.message || 'Verbindung fehlgeschlagen — Sheet öffentlich freigegeben?');
+  } else {
+    setConn(false, `0 Einträge — Tab-Namen prüfen: "${tp}" und "${ta}"`);
     setStatus('Fehler', false);
-    toast(e.message || 'Laden fehlgeschlagen');
+    toast('0 Einträge geladen — Tab-Namen korrekt?');
   }
+}
+
+function parseGViz2(data) {
+  const rows = data.table.rows || [];
+  return rows.map(r => {
+    const id   = String(r.c?.[0]?.v ?? '').trim();
+    const name = String(r.c?.[1]?.v ?? '').trim();
+    const typ  = String(r.c?.[2]?.v ?? '').trim() || 'Einzelteil';
+    return { id, name, typ };
+  }).filter(x => x.id && x.name && !x.id.toLowerCase().includes('artikel'));
 }
 
 function parseGViz(raw) {
