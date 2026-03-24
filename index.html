@@ -292,10 +292,6 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
       <div style="flex:1">
         <div class="stitle">Baugruppen wählen</div>
         <div class="ssub" id="ss2">Welche Baugruppen enthält dieses Produkt?</div>
-        <div id="s2ProdBanner" style="display:none;margin-top:6px;padding:8px 12px;background:var(--t);border-radius:var(--r);user-select:text;cursor:text">
-          <div id="s2ProdName" style="font-size:13px;font-weight:500;color:var(--w);user-select:text"></div>
-          <div id="s2ProdId" style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:1px;font-family:monospace;user-select:text"></div>
-        </div>
       </div>
       <div class="sdtag" id="sd2"></div>
     </div>
@@ -592,13 +588,9 @@ function selectP(id) {
 // ── Step 2 ─────────────────────────────────────────────────────
 function filterBG(q){buildBGList(q.toLowerCase())}
 function buildBGList(q) {
-  if (selProd) {
-    const b = document.getElementById('s2ProdBanner');
-    if (b) { b.style.display='block'; document.getElementById('s2ProdName').textContent=selProd.name; document.getElementById('s2ProdId').textContent=selProd.id; }
-  }
   const bgs = allBGs.filter(p=>!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q));
-  const bgsShown = q ? bgs : bgs.slice(0, 10);
-  const bgsExtra = !q && bgs.length > 10 ? `<div style="font-size:12px;color:var(--t3);padding:8px 0;text-align:center">${bgs.length - 10} weitere — Suche verwenden</div>` : '';
+  const bgsShown = bgs.slice(0, 10);
+  const bgsExtra = bgs.length > 10 ? `<div style="font-size:12px;color:var(--t3);padding:8px 0;text-align:center">${bgs.length - 10} ${q?'weitere Treffer':'weitere'} — Suche ${q?'verfeinern':'verwenden'}</div>` : '';
   // Always show selected BGs first, then unselected from list
   const selectedExisting = selBGs.filter(s => !s.isNew);
   const unselectedShown = bgsShown.filter(bg => !selBGs.find(s => s.id === bg.id));
@@ -931,17 +923,59 @@ function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t
 function newChip(id,name,typ,removable=false){
   const d=document.createElement('div');
   d.className='prow snw'; d.id='chip-'+id;
-  const removeBtn = removable ? `<button class="btn btn-line btn-sm" style="padding:3px 8px;font-size:11px" onclick="removeNewChip('${id}','${esc(name)}','${typ}',this)">✕</button>` : '';
-  d.innerHTML=`<div class="pchk nw">✓</div><div style="flex:1"><div class="pnm">${name}</div><div class="pid">${id}</div></div><span class="pbdg nw">Neu anlegen</span>${removeBtn}`;
+  // State: assigned=true means linked to product, false=only create in Artikelstamm
+  d.dataset.assigned='true';
+  const html = removable ? `
+    <div class="pchk nw" id="pchk-${id}" onclick="toggleNewChip('${id}')" style="cursor:pointer">✓</div>
+    <div style="flex:1"><div class="pnm">${name}</div><div class="pid">${id}</div></div>
+    <span class="pbdg nw" id="badge-${id}">Zugeordnet + anlegen</span>
+    <button class="btn btn-line btn-sm" style="padding:3px 8px;font-size:11px;color:var(--red);border-color:var(--red)" onclick="deleteNewChip('${id}')">✕</button>
+  ` : `
+    <div class="pchk nw">✓</div>
+    <div style="flex:1"><div class="pnm">${name}</div><div class="pid">${id}</div></div>
+    <span class="pbdg nw">Neu anlegen</span>
+  `;
+  d.innerHTML = html;
   return d;
 }
-function removeNewChip(id,name,typ,btn) {
-  // Move to deselected list (will still be written to Artikelstamm)
-  newButDeselected.push({id,name,typ});
-  selBGs = selBGs.filter(s=>s.id!==id);
+
+function toggleNewChip(id) {
   const chip = document.getElementById('chip-'+id);
-  if(chip) chip.remove();
-  toast(name+' abgewählt — wird trotzdem im Artikelstamm angelegt');
+  const chk  = document.getElementById('pchk-'+id);
+  const badge = document.getElementById('badge-'+id);
+  if (!chip) return;
+  const isAssigned = chip.dataset.assigned === 'true';
+  if (isAssigned) {
+    // Unassign: remove from selBGs but keep in newButDeselected
+    chip.dataset.assigned = 'false';
+    chip.classList.remove('snw'); chip.classList.add('sex');
+    chk.className = 'pchk'; chk.textContent = '';
+    chk.style.borderColor = 'var(--b2)';
+    if (badge) { badge.textContent = 'Nur anlegen'; badge.classList.remove('nw'); }
+    selBGs = selBGs.filter(s => s.id !== id);
+    const existing = newButDeselected.find(x=>x.id===id);
+    if (!existing) newButDeselected.push({id, name: chip.querySelector('.pnm').textContent, typ:'Baugruppe'});
+    toast('Nicht zugeordnet — wird aber im Artikelstamm angelegt');
+  } else {
+    // Re-assign
+    chip.dataset.assigned = 'true';
+    chip.classList.remove('sex'); chip.classList.add('snw');
+    chk.className = 'pchk nw'; chk.textContent = '✓';
+    chk.style.borderColor = '';
+    if (badge) { badge.textContent = 'Zugeordnet + anlegen'; badge.classList.add('nw'); }
+    newButDeselected = newButDeselected.filter(x => x.id !== id);
+    const bg = {id, name: chip.querySelector('.pnm').textContent, typ:'Baugruppe', isNew:true, menge:1, einheit:'Stück', arbeitsschritt:''};
+    if (!selBGs.find(s=>s.id===id)) selBGs.push(bg);
+    toast('Wieder zugeordnet');
+  }
+}
+
+function deleteNewChip(id) {
+  selBGs = selBGs.filter(s => s.id !== id);
+  newButDeselected = newButDeselected.filter(x => x.id !== id);
+  const chip = document.getElementById('chip-'+id);
+  if (chip) chip.remove();
+  toast('Gelöscht — wird weder angelegt noch zugeordnet');
 }
 
 // Init
