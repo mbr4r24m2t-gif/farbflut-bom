@@ -360,6 +360,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
 // ── State ──────────────────────────────────────────────────────
 let products=[], parts=[], allBGs=[];
 let selProd=null, selBGs=[], bgETs={};
+let newButDeselected=[]; // new BGs/ETs created but not assigned to product
 let curStep=1, bgNewC=0, etNewC=0;
 
 // ── Persist settings ───────────────────────────────────────────
@@ -596,21 +597,21 @@ function buildBGList(q) {
     if (b) { b.style.display='block'; document.getElementById('s2ProdName').textContent=selProd.name; document.getElementById('s2ProdId').textContent=selProd.id; }
   }
   const bgs = allBGs.filter(p=>!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q));
-  const bgsShown = q ? bgs : bgs.slice(0, 20);
-  if (!q && bgs.length > 20) {
-    setTimeout(() => {
-      const el = document.getElementById('bgExList');
-      if (el) el.insertAdjacentHTML('beforeend', `<div style="font-size:12px;color:var(--t3);padding:8px 0;text-align:center">${bgs.length - 20} weitere — Suche verwenden</div>`);
-    }, 0);
-  }
-  document.getElementById('bgExList').innerHTML = bgsShown.map(bg=>{
+  const bgsShown = q ? bgs : bgs.slice(0, 10);
+  const bgsExtra = !q && bgs.length > 10 ? `<div style="font-size:12px;color:var(--t3);padding:8px 0;text-align:center">${bgs.length - 10} weitere — Suche verwenden</div>` : '';
+  // Always show selected BGs first, then unselected from list
+  const selectedExisting = selBGs.filter(s => !s.isNew);
+  const unselectedShown = bgsShown.filter(bg => !selBGs.find(s => s.id === bg.id));
+  const allToShow = [...selectedExisting.map(s => ({...allBGs.find(b=>b.id===s.id)||{id:s.id,name:s.name,typ:'Baugruppe'}, _sel:true})), ...unselectedShown];
+
+  document.getElementById('bgExList').innerHTML = (allToShow.length ? allToShow.map(bg=>{
     const s=selBGs.find(x=>x.id===bg.id);
     return `<div class="prow ${s?'sex':''}" id="bgr-${bg.id}">
       <div class="pchk ${s?'ex':''}" onclick="toggleBG('${bg.id}','${esc(bg.name)}')">${s?'✓':''}</div>
       <div style="flex:1"><div class="pnm">${bg.name}</div><div class="pid">${bg.id}</div></div>
       <span class="pbdg">Baugruppe</span>
     </div>`;
-  }).join('') || '<div style="color:var(--t3);font-size:13px;padding:6px 0">Keine Baugruppen</div>';
+  }).join('') : '<div style="color:var(--t3);font-size:13px;padding:6px 0">Keine Baugruppen</div>') + bgsExtra;
 }
 function toggleBG(id,name) {
   const idx=selBGs.findIndex(s=>s.id===id);
@@ -640,7 +641,7 @@ function saveNewBG(n) {
   if(!name){toast('Bezeichnung eingeben');return;}
   const nid='BG-NEU-'+Date.now();
   selBGs.push({id:nid,name,typ:'Baugruppe',isNew:true,menge:parseFloat(document.getElementById('nbgm-'+n).value)||1,einheit:document.getElementById('nbge-'+n).value,arbeitsschritt:document.getElementById('nbgs-'+n).value});
-  document.getElementById('nbgf-'+n).replaceWith(newChip(nid,name,'Baugruppe'));
+  document.getElementById('nbgf-'+n).replaceWith(newChip(nid,name,'Baugruppe',true));
   toast('Baugruppe hinzugefügt');
 }
 
@@ -659,7 +660,7 @@ async function genBG() {
       } else if(!selBGs.find(s=>s.name===bg.name)){
         const nid='BG-NEU-'+Date.now()+'-'+rnd();
         selBGs.push({id:nid,name:bg.name,typ:'Baugruppe',isNew:true,menge:1,einheit:'Stück',arbeitsschritt:bg.arbeitsschritt||''});
-        document.getElementById('bgNewList').appendChild(newChip(nid,bg.name,'Baugruppe'));
+        document.getElementById('bgNewList').appendChild(newChip(nid,bg.name,'Baugruppe',true));
       }
     }
     buildBGList(document.getElementById('bgsearch').value.toLowerCase());
@@ -706,8 +707,8 @@ function buildETBody(bgId) {
     <div id="etnf-${bgId}"></div>`;
 }
 function renderETRows(bgId,ets,sel) {
-  const shown = ets.slice(0, 20);
-  const extra = ets.length > 20 ? `<div style="font-size:12px;color:var(--t3);padding:8px 0;text-align:center">${ets.length - 20} weitere — Suche verwenden</div>` : '';
+  const shown = ets.slice(0, 10);
+  const extra = ets.length > 10 ? `<div style="font-size:12px;color:var(--t3);padding:8px 0;text-align:center">${ets.length - 10} weitere — Suche verwenden</div>` : '';
   return shown.map(et=>{
     const s=sel.find(x=>x.id===et.id);
     return `<div class="prow ${s?'sex':''}">
@@ -827,7 +828,7 @@ async function saveToSheet(){
     });
   });
 
-  const payload={productId:selProd.id,productName:selProd.name,rows};
+  const payload={productId:selProd.id,productName:selProd.name,rows,newArticles:newButDeselected};
 
   try {
     const r=await fetch(webhook,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),mode:'no-cors'});
@@ -927,7 +928,21 @@ function show(id,on){const e=document.getElementById(id);if(e)e.classList.toggle
 function setStatus(msg,on){document.getElementById('stxt').textContent=msg;document.getElementById('sdot').className='sdot'+(on?' on':on===false?' err':'');}
 function setConn(ok,msg){const e=document.getElementById('connStatus');e.innerHTML=`<div class="sdot ${ok?'on':'err'}"></div><span class="${ok?'conn-ok':'conn-err'}">${msg}</span>`;}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.className='show';clearTimeout(t._t);t._t=setTimeout(()=>t.className='',2800);}
-function newChip(id,name,typ){const d=document.createElement('div');d.className='prow snw';d.innerHTML=`<div class="pchk nw">✓</div><div style="flex:1"><div class="pnm">${name}</div><div class="pid">${id}</div></div><span class="pbdg nw">Neu anlegen</span>`;return d;}
+function newChip(id,name,typ,removable=false){
+  const d=document.createElement('div');
+  d.className='prow snw'; d.id='chip-'+id;
+  const removeBtn = removable ? `<button class="btn btn-line btn-sm" style="padding:3px 8px;font-size:11px" onclick="removeNewChip('${id}','${esc(name)}','${typ}',this)">✕</button>` : '';
+  d.innerHTML=`<div class="pchk nw">✓</div><div style="flex:1"><div class="pnm">${name}</div><div class="pid">${id}</div></div><span class="pbdg nw">Neu anlegen</span>${removeBtn}`;
+  return d;
+}
+function removeNewChip(id,name,typ,btn) {
+  // Move to deselected list (will still be written to Artikelstamm)
+  newButDeselected.push({id,name,typ});
+  selBGs = selBGs.filter(s=>s.id!==id);
+  const chip = document.getElementById('chip-'+id);
+  if(chip) chip.remove();
+  toast(name+' abgewählt — wird trotzdem im Artikelstamm angelegt');
+}
 
 // Init
 loadSettings();
