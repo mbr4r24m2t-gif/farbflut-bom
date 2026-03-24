@@ -591,19 +591,48 @@ function buildBGList(q) {
   const bgs = allBGs.filter(p=>!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q));
   const bgsShown = bgs.slice(0, 10);
   const bgsExtra = bgs.length > 10 ? `<div style="font-size:12px;color:var(--t3);padding:8px 0;text-align:center">${bgs.length - 10} ${q?'weitere Treffer':'weitere'} — Suche ${q?'verfeinern':'verwenden'}</div>` : '';
-  // Always show selected BGs first, then unselected from list
-  const selectedExisting = selBGs.filter(s => !s.isNew);
-  const unselectedShown = bgsShown.filter(bg => !selBGs.find(s => s.id === bg.id));
-  const allToShow = [...selectedExisting.map(s => ({...allBGs.find(b=>b.id===s.id)||{id:s.id,name:s.name,typ:'Baugruppe'}, _sel:true})), ...unselectedShown];
 
-  document.getElementById('bgExList').innerHTML = (allToShow.length ? allToShow.map(bg=>{
-    const s=selBGs.find(x=>x.id===bg.id);
-    return `<div class="prow ${s?'sex':''}" id="bgr-${bg.id}">
-      <div class="pchk ${s?'ex':''}" onclick="toggleBG('${bg.id}','${esc(bg.name)}')">${s?'✓':''}</div>
-      <div style="flex:1"><div class="pnm">${bg.name}</div><div class="pid">${bg.id}</div></div>
-      <span class="pbdg">Baugruppe</span>
-    </div>`;
-  }).join('') : '<div style="color:var(--t3);font-size:13px;padding:6px 0">Keine Baugruppen</div>') + bgsExtra;
+  // 1. Selected existing BGs (always show, regardless of search)
+  const selectedExisting = selBGs.filter(s => !s.isNew);
+  // 2. Unselected from current search/list
+  const unselectedShown = bgsShown.filter(bg => !selBGs.find(s => s.id === bg.id));
+  const allToShow = [
+    ...selectedExisting.map(s => ({...(allBGs.find(b=>b.id===s.id)||{id:s.id,name:s.name,typ:'Baugruppe'}), _sel:true})),
+    ...unselectedShown
+  ];
+
+  document.getElementById('bgExList').innerHTML = (allToShow.length
+    ? allToShow.map(bg=>{
+        const s=selBGs.find(x=>x.id===bg.id);
+        return `<div class="prow ${s?'sex':''}" id="bgr-${bg.id}">
+          <div class="pchk ${s?'ex':''}" onclick="toggleBG('${bg.id}','${esc(bg.name)}')">${s?'✓':''}</div>
+          <div style="flex:1"><div class="pnm">${bg.name}</div><div class="pid">${bg.id}</div></div>
+          <span class="pbdg">Baugruppe</span>
+        </div>`;
+      }).join('')
+    : '<div style="color:var(--t3);font-size:13px;padding:6px 0">Keine Baugruppen gefunden</div>'
+  ) + bgsExtra;
+
+  // 3. Rebuild new BG list (selected + deselected new ones)
+  const newList = document.getElementById('bgNewList');
+  newList.innerHTML = '';
+  // Selected new BGs
+  selBGs.filter(s => s.isNew).forEach(bg => {
+    const chip = newChip(bg.id, bg.name, 'Baugruppe', true);
+    newList.appendChild(chip);
+  });
+  // Deselected new BGs (nur anlegen)
+  newButDeselected.filter(x=>x.typ==='Baugruppe').forEach(bg => {
+    const chip = newChip(bg.id, bg.name, 'Baugruppe', true);
+    // Set to "only create" state
+    chip.dataset.assigned = 'false';
+    chip.classList.remove('snw'); chip.classList.add('sex');
+    const chk = chip.querySelector('[id^="pchk-"]');
+    const badge = chip.querySelector('[id^="badge-"]');
+    if (chk) { chk.className='pchk'; chk.textContent=''; }
+    if (badge) { badge.textContent='Nur anlegen'; badge.classList.remove('nw'); }
+    newList.appendChild(chip);
+  });
 }
 function toggleBG(id,name) {
   const idx=selBGs.findIndex(s=>s.id===id);
@@ -674,14 +703,22 @@ function buildETs() {
   selBGs.forEach(bg=>{
     if(!bgETs[bg.id]) bgETs[bg.id]=[];
     const d=document.createElement('div'); d.className='acc';
+    const etCount = bgETs[bg.id].length;
     d.innerHTML=`
       <div class="acc-h open" onclick="togAcc(this)">
         <div><div class="acc-nm">${bg.name}${bg.isNew?'<span class="acc-new">neu</span>':''}</div><div class="acc-id">${bg.id}</div></div>
-        <div class="acc-cnt" id="etc-${bg.id}">0 Teile</div>
+        <div class="acc-cnt" id="etc-${bg.id}">${etCount} Teil${etCount!==1?'e':''}</div>
         <div class="acc-tog">›</div>
       </div>
       <div class="acc-b" style="display:block" id="etb-${bg.id}">${buildETBody(bg.id)}</div>`;
     c.appendChild(d);
+    // Restore new ET chips
+    const nf = d.querySelector('#etnf-'+bg.id) || d.querySelector('[id="etnf-'+bg.id+'"]');
+    if (nf) {
+      bgETs[bg.id].filter(et=>et.isNew).forEach(et => {
+        nf.appendChild(newETChip(et.id, et.name, et.menge, et.einheit, bg.id, true));
+      });
+    }
   });
 }
 function togAcc(h){h.classList.toggle('open');h.nextElementSibling.style.display=h.classList.contains('open')?'block':'none';}
@@ -699,9 +736,13 @@ function buildETBody(bgId) {
     <div id="etnf-${bgId}"></div>`;
 }
 function renderETRows(bgId,ets,sel) {
-  const shown = ets.slice(0, 10);
-  const extra = ets.length > 10 ? `<div style="font-size:12px;color:var(--t3);padding:8px 0;text-align:center">${ets.length - 10} weitere — Suche verwenden</div>` : '';
-  return shown.map(et=>{
+  // Always show selected ETs first (excluding new ones which appear in nf div)
+  const selectedExisting = (sel||[]).filter(s=>!s.isNew);
+  const unselected = ets.filter(et => !sel.find(s=>s.id===et.id)).slice(0, 10);
+  const extra = ets.filter(et=>!sel.find(s=>s.id===et.id)).length > 10
+    ? `<div style="font-size:12px;color:var(--t3);padding:8px 0;text-align:center">${ets.filter(et=>!sel.find(s=>s.id===et.id)).length - 10} weitere — Suche verfeinern</div>` : '';
+  const allToShow = [...selectedExisting.map(s=>({...(parts.find(p=>p.id===s.id)||{id:s.id,name:s.name,typ:'Einzelteil'})})), ...unselected];
+  return (allToShow.length ? allToShow.map(et=>{
     const s=sel.find(x=>x.id===et.id);
     return `<div class="prow ${s?'sex':''}">
       <div class="pchk ${s?'ex':''}" onclick="togET('${bgId}','${et.id}','${esc(et.name)}',this)">${s?'✓':''}</div>
@@ -711,11 +752,18 @@ function renderETRows(bgId,ets,sel) {
         <span class="qunit">Stk.</span>
       </div>
     </div>`;
-  }).join('') + extra||'<div style="color:var(--t3);font-size:13px;padding:6px 0">Keine Einzelteile im Artikelstamm</div>';
+  }).join('') : '<div style="color:var(--t3);font-size:13px;padding:6px 0">Keine Einzelteile im Artikelstamm</div>') + extra;
 }
 function filterET(bgId,q) {
   const ets=parts.filter(p=>p.typ==='Einzelteil'&&(!q||p.name.toLowerCase().includes(q.toLowerCase())||p.id.toLowerCase().includes(q.toLowerCase())));
   document.getElementById('etex-'+bgId).innerHTML=renderETRows(bgId,ets,bgETs[bgId]||[]);
+  // Restore new ET chips after re-render
+  const nf = document.getElementById('etnf-'+bgId);
+  if (nf && nf.children.length === 0) {
+    (bgETs[bgId]||[]).filter(et=>et.isNew).forEach(et => {
+      nf.appendChild(newETChip(et.id, et.name, et.menge, et.einheit, bgId, true));
+    });
+  }
 }
 function togET(bgId,etId,name,el) {
   if(!bgETs[bgId]) bgETs[bgId]=[];
@@ -747,8 +795,10 @@ function saveNewET(bgId,n){
   if(!name){toast('Bezeichnung eingeben');return;}
   if(!bgETs[bgId]) bgETs[bgId]=[];
   const nid='ET-NEU-'+Date.now();
-  bgETs[bgId].push({id:nid,name,typ:'Einzelteil',isNew:true,menge:parseFloat(document.getElementById('netm-'+n).value)||1,einheit:document.getElementById('nete-'+n).value});
-  document.getElementById('netf-'+n).replaceWith(newChip(nid,name,'Einzelteil'));
+  const etMenge = parseFloat(document.getElementById('netm-'+n).value)||1;
+  const etEinheit = document.getElementById('nete-'+n).value;
+  bgETs[bgId].push({id:nid,name,typ:'Einzelteil',isNew:true,menge:etMenge,einheit:etEinheit});
+  document.getElementById('netf-'+n).replaceWith(newETChip(nid,name,etMenge,etEinheit,bgId,true));
   updCount(bgId); toast('Einzelteil hinzugefügt');
 }
 
@@ -768,7 +818,7 @@ async function genET(bgId){
       } else if(!bgETs[bgId].find(s=>s.name===et.name)){
         const nid='ET-NEU-'+Date.now()+'-'+rnd();
         bgETs[bgId].push({id:nid,name:et.name,typ:'Einzelteil',isNew:true,menge:et.menge||1,einheit:et.einheit||'Stück'});
-        document.getElementById('etnf-'+bgId).appendChild(newChip(nid,et.name,'Einzelteil'));
+        document.getElementById('etnf-'+bgId).appendChild(newETChip(nid,et.name,et.menge||1,et.einheit||'Stück',bgId,true));
       }
     }
     filterET(bgId,document.getElementById('ets-'+bgId)?.value||'');
@@ -920,6 +970,66 @@ function show(id,on){const e=document.getElementById(id);if(e)e.classList.toggle
 function setStatus(msg,on){document.getElementById('stxt').textContent=msg;document.getElementById('sdot').className='sdot'+(on?' on':on===false?' err':'');}
 function setConn(ok,msg){const e=document.getElementById('connStatus');e.innerHTML=`<div class="sdot ${ok?'on':'err'}"></div><span class="${ok?'conn-ok':'conn-err'}">${msg}</span>`;}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.className='show';clearTimeout(t._t);t._t=setTimeout(()=>t.className='',2800);}
+function newETChip(id, name, menge, einheit, bgId, removable=false) {
+  const d = document.createElement('div');
+  d.className = 'prow snw'; d.id = 'etchip-'+id;
+  d.dataset.assigned = 'true';
+  const controls = removable ? `
+    <div class="pchk nw" id="etchk-${id}" onclick="toggleNewETChip('${bgId}','${id}')" style="cursor:pointer">✓</div>
+    <div style="flex:1"><div class="pnm">${name}</div><div class="pid">${id}</div></div>
+    <div class="qwrap">
+      <input class="qin" type="number" min="0.01" value="${menge||1}" onchange="updNewETMenge('${bgId}','${id}',this.value)">
+      <span class="qunit">${einheit||'Stk.'}</span>
+    </div>
+    <span class="pbdg nw" id="etbadge-${id}" style="margin-left:6px">Zugeordnet</span>
+    <button style="background:none;border:none;cursor:pointer;color:var(--t3);font-size:14px;padding:0 4px" onclick="deleteNewET('${bgId}','${id}')" title="Löschen">✕</button>
+  ` : `
+    <div class="pchk nw">✓</div>
+    <div style="flex:1"><div class="pnm">${name}</div><div class="pid">${id}</div></div>
+    <span class="pbdg nw">Neu</span>
+  `;
+  d.innerHTML = controls;
+  return d;
+}
+function toggleNewETChip(bgId, id) {
+  if (!bgETs[bgId]) return;
+  const et = bgETs[bgId].find(x=>x.id===id);
+  const chip = document.getElementById('etchip-'+id);
+  const chk  = document.getElementById('etchk-'+id);
+  const badge = document.getElementById('etbadge-'+id);
+  if (!et || !chip) return;
+  if (chip.dataset.assigned === 'true') {
+    chip.dataset.assigned = 'false';
+    bgETs[bgId] = bgETs[bgId].filter(x=>x.id!==id);
+    newButDeselected.push({id, name:et.name, typ:'Einzelteil'});
+    chip.classList.remove('snw'); chip.classList.add('sex');
+    if(chk){chk.className='pchk';chk.textContent='';}
+    if(badge){badge.textContent='Nur anlegen';badge.classList.remove('nw');}
+    toast(et.name+' — wird angelegt, nicht zugeordnet');
+  } else {
+    chip.dataset.assigned = 'true';
+    newButDeselected = newButDeselected.filter(x=>x.id!==id);
+    if(!bgETs[bgId].find(x=>x.id===id)) bgETs[bgId].push({id,name:et.name,typ:'Einzelteil',isNew:true,menge:et.menge||1,einheit:et.einheit||'Stück'});
+    chip.classList.remove('sex'); chip.classList.add('snw');
+    if(chk){chk.className='pchk nw';chk.textContent='✓';}
+    if(badge){badge.textContent='Zugeordnet';badge.classList.add('nw');}
+    toast(et.name+' — wieder zugeordnet');
+  }
+  updCount(bgId);
+}
+function deleteNewET(bgId, id) {
+  if(bgETs[bgId]) bgETs[bgId] = bgETs[bgId].filter(x=>x.id!==id);
+  newButDeselected = newButDeselected.filter(x=>x.id!==id);
+  const chip = document.getElementById('etchip-'+id);
+  if(chip) chip.remove();
+  updCount(bgId);
+  toast('Gelöscht — wird weder angelegt noch zugeordnet');
+}
+function updNewETMenge(bgId, id, val) {
+  const et = bgETs[bgId]?.find(x=>x.id===id);
+  if(et) et.menge = parseFloat(val)||1;
+}
+
 function newChip(id,name,typ,removable=false){
   const d=document.createElement('div');
   d.className='prow snw'; d.id='chip-'+id;
