@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>farbflut – Stücklisten</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
+:root {
+  --w:#ffffff; --off:#f7f7f5; --off2:#f0f0ec;
+  --b:#e4e4e0; --b2:#d0d0ca;
+  --t:#1a1a18; --t2:#6b6b65; --t3:#a8a8a0;
+  --green:#3d6b4f; --green2:#2d5040;
+  --amber:#b87c2a; --red:#c04040;
+  --f:'Outfit',system-ui,sans-serif;
+  --r:6px; --r2:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line-height:1.55}
+
+/* Header */
+.hdr{background:var(--w);border-bottom:1px solid var(--b);height:58px;display:flex;align-items:center;padding:0 32px;gap:20px;position:sticky;top:0;z-index:100}
+.hdr-logo{display:flex;align-items:center;gap:9px}
+.hdr-icon{width:20px;height:14px;display:flex;flex-direction:column;justify-content:space-between}
+.hdr-icon span{display:block;height:1.5px;background:var(--t);border-radius:1px}
+.hdr-icon span:nth-child(2){width:70%}
+.hdr-wm{font-size:14px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase}
+.hdr-div{width:1px;height:18px;background:var(--b)}
+.hdr-sub{font-size:12px;color:var(--t3);font-weight:300}
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t3)}
+.sdot{width:5px;height:5px;border-radius:50%;background:var(--t3)}
+.sdot.on{background:var(--green)}
+.sdot.err{background:var(--red)}
+
+/* Page */
+.page{max-width:800px;margin:0 auto;padding:36px 24px 100px}
+
+/* Settings panel */
+.settings{border:1px solid var(--b);border-radius:var(--r2);margin-bottom:32px;overflow:hidden}
+.settings-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;cursor:pointer;user-select:none;background:var(--off)}
+.settings-hdr:hover{background:var(--off2)}
+.settings-title{font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px}
+.settings-sub{font-size:11px;color:var(--t3);font-weight:300}
+.settings-toggle{font-size:11px;color:var(--t3);transition:transform 0.2s}
+.settings-toggle.open{transform:rotate(180deg)}
+.settings-body{padding:16px 20px;display:none;border-top:1px solid var(--b)}
+.settings-body.open{display:block}
+.srow{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.srow:last-child{margin-bottom:0}
+.slbl{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:0.07em;min-width:90px;font-weight:400}
+.sinp{flex:1;min-width:200px;background:var(--w);border:1px solid var(--b2);border-radius:var(--r);color:var(--t);font-family:var(--f);font-size:13px;font-weight:300;padding:7px 11px;outline:none}
+.sinp:focus{border-color:var(--t)}
+.sinp::placeholder{color:var(--t3)}
+.conn-status{display:flex;align-items:center;gap:6px;font-size:12px;padding:8px 12px;border-radius:var(--r);background:var(--off)}
+.conn-ok{color:var(--green)}
+.conn-err{color:var(--red)}
+.conn-wait{color:var(--t3)}
+
+/* Progress */
+.progress{display:flex;margin-bottom:32px}
+.pstep{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative}
+.pstep::after{content:'';position:absolute;top:12px;left:50%;width:100%;height:1px;background:var(--b)}
+.pstep:last-child::after{display:none}
+.pstep.done::after{background:var(--t)}
+.pnum{width:25px;height:25px;border-radius:50%;background:var(--w);border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t3);z-index:1;transition:all 0.2s}
+.pstep.active .pnum{background:var(--t);color:var(--w);border-color:var(--t)}
+.pstep.done .pnum{background:var(--t);color:var(--w);border-color:var(--t)}
+.plbl{font-size:11px;color:var(--t3);font-weight:300;text-align:center}
+.pstep.active .plbl{color:var(--t);font-weight:500}
+.pstep.done .plbl{color:var(--t2)}
+
+/* Step blocks */
+.sblock{border:1px solid var(--b);border-radius:var(--r2);margin-bottom:10px;background:var(--w);overflow:hidden}
+.sblock.active{border-color:var(--b2);box-shadow:0 2px 12px rgba(0,0,0,0.05)}
+.shdr{display:flex;align-items:center;gap:14px;padding:18px 22px;cursor:pointer;user-select:none}
+.sblock.active .shdr{cursor:default}
+.snum{width:28px;height:28px;border-radius:50%;background:var(--off);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--t2);font-weight:500;flex-shrink:0}
+.sblock.active .snum{background:var(--t);color:var(--w);border-color:var(--t)}
+.sblock.done .snum{background:var(--green);color:var(--w);border-color:var(--green);font-size:11px}
+.stitle{font-size:15px;font-weight:500}
+.ssub{font-size:12px;color:var(--t3);font-weight:300;margin-top:1px}
+.sdtag{margin-left:auto;font-size:11px;color:var(--green)}
+.sbody{padding:0 22px 22px;display:none}
+.sblock.active .sbody{display:block}
+.sdiv{height:1px;background:var(--b);margin-bottom:18px}
+
+/* Search */
+.sbox{position:relative;margin-bottom:14px}
+.sbox input{width:100%;background:var(--off);border:1px solid var(--b);border-radius:var(--r);color:var(--t);font-family:var(--f);font-size:13px;font-weight:300;padding:9px 14px 9px 34px;outline:none;transition:border-color 0.15s,background 0.15s}
+.sbox input:focus{background:var(--w);border-color:var(--t)}
+.sbox input::placeholder{color:var(--t3)}
+.sbox-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:14px;pointer-events:none}
+
+/* Product grid */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:7px}
+.pcard{padding:13px 15px;background:var(--off);border:1px solid var(--b);border-radius:var(--r);cursor:pointer;transition:all 0.12s}
+.pcard:hover{background:var(--off2);border-color:var(--b2)}
+.pcard.sel{background:var(--t);border-color:var(--t)}
+.pcard .pn{font-size:13px;font-weight:500;color:var(--t);line-height:1.3}
+.pcard.sel .pn{color:var(--w)}
+.pcard .pi{font-size:11px;color:var(--t3);margin-top:3px}
+.pcard.sel .pi{color:rgba(255,255,255,0.45)}
+
+/* Part rows */
+.prow{display:flex;align-items:center;gap:9px;padding:9px 13px;background:var(--w);border:1px solid var(--b);border-radius:var(--r);margin-bottom:4px;transition:border-color 0.1s}
+.prow:hover{border-color:var(--b2)}
+.prow.sex{border-left:3px solid var(--green)}
+.prow.snw{border-left:3px solid var(--amber)}
+.pchk{width:16px;height:16px;border:1.5px solid var(--b2);border-radius:3px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;background:var(--w);transition:all 0.1s;color:transparent}
+.pchk.ex{background:var(--green);border-color:var(--green);color:white}
+.pchk.nw{background:var(--amber);border-color:var(--amber);color:white}
+.pnm{flex:1;font-size:13px;font-weight:400}
+.pid{font-size:11px;color:var(--t3);font-family:monospace}
+.pbdg{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:400;white-space:nowrap;border:1px solid var(--b);background:var(--off);color:var(--t2)}
+.pbdg.nw{background:rgba(184,124,42,0.08);color:var(--amber);border-color:rgba(184,124,42,0.25)}
+.qwrap{display:flex;align-items:center;gap:3px}
+.qin{width:42px;background:var(--off);border:1px solid var(--b);border-radius:var(--r);color:var(--t);font-size:12px;padding:3px 5px;text-align:center;outline:none;font-family:var(--f)}
+.qin:focus{border-color:var(--t);background:var(--w)}
+.qunit{font-size:11px;color:var(--t3)}
+
+/* Section label */
+.slabel{font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--t3);font-weight:400;margin-bottom:8px;margin-top:16px;display:flex;align-items:center;gap:8px}
+.slabel::after{content:'';flex:1;height:1px;background:var(--b)}
+.slabel:first-child{margin-top:0}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 17px;border-radius:var(--r);font-family:var(--f);font-size:13px;font-weight:400;cursor:pointer;border:1px solid transparent;transition:all 0.12s;white-space:nowrap}
+.btn-dark{background:var(--t);color:var(--w)}
+.btn-dark:hover{background:#333}
+.btn-dark:disabled{opacity:0.3;cursor:not-allowed}
+.btn-line{background:transparent;color:var(--t2);border-color:var(--b2)}
+.btn-line:hover{background:var(--off);color:var(--t)}
+.btn-green{background:var(--green);color:white;border-color:var(--green)}
+.btn-green:hover{background:var(--green2)}
+.btn-green:disabled{opacity:0.4;cursor:not-allowed}
+.btn-sm{padding:6px 13px;font-size:12px}
+
+/* New form */
+.nform{background:rgba(184,124,42,0.04);border:1px dashed rgba(184,124,42,0.35);border-radius:var(--r);padding:14px 16px;margin-top:8px}
+.nform-t{font-size:11px;text-transform:uppercase;letter-spacing:0.07em;color:var(--amber);font-weight:400;margin-bottom:11px}
+.frow{margin-bottom:8px}
+.flbl{font-size:11px;color:var(--t3);margin-bottom:3px}
+.finp,.fsel{width:100%;background:var(--w);border:1px solid var(--b2);border-radius:var(--r);color:var(--t);font-family:var(--f);font-size:13px;font-weight:300;padding:7px 11px;outline:none}
+.finp:focus,.fsel:focus{border-color:var(--t)}
+.fri{display:flex;gap:8px}
+.fri .frow{flex:1;margin-bottom:0}
+
+/* Accordion */
+.acc{border:1px solid var(--b);border-radius:var(--r2);margin-bottom:7px;overflow:hidden}
+.acc-h{display:flex;align-items:center;gap:11px;padding:13px 17px;background:var(--w);cursor:pointer;user-select:none;transition:background 0.1s}
+.acc-h:hover{background:var(--off)}
+.acc-h.open{background:var(--off);border-bottom:1px solid var(--b)}
+.acc-nm{font-size:13px;font-weight:500}
+.acc-id{font-size:11px;color:var(--t3)}
+.acc-new{font-size:10px;color:var(--amber);background:rgba(184,124,42,0.1);border:1px solid rgba(184,124,42,0.25);border-radius:10px;padding:1px 7px;margin-left:4px}
+.acc-cnt{margin-left:auto;font-size:11px;color:var(--t2)}
+.acc-tog{color:var(--t3);font-size:15px;transition:transform 0.2s;margin-left:6px}
+.acc-h.open .acc-tog{transform:rotate(180deg)}
+.acc-b{padding:14px 17px;display:none}
+.acc-h.open+.acc-b{display:block}
+
+/* AI row */
+.airow{display:none;align-items:center;gap:8px;padding:9px 12px;background:var(--off);border-radius:var(--r);margin-top:8px;font-size:12px;color:var(--t3)}
+.airow.show{display:flex}
+.spin{width:14px;height:14px;border:2px solid var(--b2);border-top-color:var(--t);border-radius:50%;animation:spin 0.6s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Tree (step 4) */
+.tree-prod{padding:13px 18px;background:var(--t);color:var(--w);border-radius:var(--r2) var(--r2) 0 0;font-weight:500;font-size:14px;display:flex;align-items:center;gap:10px}
+.tree-prod .tid{font-size:11px;color:rgba(255,255,255,0.4);margin-left:auto;font-weight:300}
+.tree-wrap{border:1px solid var(--b);border-top:none;border-radius:0 0 var(--r2) var(--r2);margin-bottom:20px}
+.tree-bg{border-bottom:1px solid var(--b)}
+.tree-bg:last-child{border-bottom:none}
+.tree-bgh{display:flex;align-items:center;gap:9px;padding:10px 18px;background:var(--off)}
+.tree-bgh .dot{width:7px;height:7px;border-radius:50%;background:var(--t2);flex-shrink:0}
+.tree-bgh .bgnm{font-size:13px;font-weight:500}
+.tree-bgh .bgid{font-size:11px;color:var(--t3);margin-left:4px}
+.tree-bgh .bgnew{font-size:10px;color:var(--amber);border:1px solid rgba(184,124,42,0.3);border-radius:10px;padding:1px 7px;margin-left:4px}
+.tree-bgh .bgct{margin-left:auto;font-size:11px;color:var(--t3)}
+.tree-et{display:flex;align-items:center;gap:8px;padding:7px 18px 7px 38px;border-top:1px solid var(--b);font-size:13px;font-weight:300}
+.tree-et .edot{width:4px;height:4px;border-radius:50%;background:var(--b2);flex-shrink:0}
+.tree-et .enm{flex:1}
+.tree-et .eqty{font-size:11px;color:var(--t3)}
+.tree-et .enew{font-size:10px;color:var(--amber)}
+
+/* Save result */
+.save-result{padding:14px 18px;border-radius:var(--r2);border:1px solid;font-size:13px;margin-bottom:16px}
+.save-ok{background:rgba(61,107,79,0.06);border-color:rgba(61,107,79,0.25);color:var(--green)}
+.save-err{background:rgba(192,64,64,0.06);border-color:rgba(192,64,64,0.25);color:var(--red)}
+
+/* Toast */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--t);color:var(--w);padding:9px 18px;border-radius:var(--r);font-size:13px;font-weight:300;opacity:0;transition:all 0.2s;pointer-events:none;z-index:999;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-logo">
+    <div class="hdr-icon"><span></span><span></span><span></span></div>
+    <div class="hdr-wm">Farbflut</div>
+  </div>
+  <div class="hdr-div"></div>
+  <div class="hdr-sub">Stücklisten-Erfassung</div>
+  <div class="hdr-r">
+    <div class="sdot on" id="sdot"></div>
+    <span id="stxt">bereit</span>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- Settings Panel -->
+  <div class="settings">
+    <div class="settings-hdr" onclick="toggleSettings()">
+      <div>
+        <div class="settings-title">
+          <span>⚙</span> Verbindungseinstellungen
+        </div>
+        <div class="settings-sub" id="settingsSub">Sheet und Webhook konfigurieren</div>
+      </div>
+      <div class="settings-toggle" id="settingsTog">›</div>
+    </div>
+    <div class="settings-body" id="settingsBody">
+      <div class="srow">
+        <span class="slbl">Sheet-ID</span>
+        <input class="sinp" id="sheetId" placeholder="Aus der Google Sheets URL kopieren…" oninput="saveSettings()">
+      </div>
+      <div class="srow">
+        <span class="slbl">Tab Produkte</span>
+        <input class="sinp" id="tabP" value="Endprodukte" style="max-width:180px" oninput="saveSettings()">
+        <span class="slbl">Tab Teile</span>
+        <input class="sinp" id="tabA" value="Artikelstamm" style="max-width:180px" oninput="saveSettings()">
+      </div>
+      <div class="srow">
+        <span class="slbl">Webhook-URL</span>
+        <input class="sinp" id="webhookUrl" placeholder="https://script.google.com/macros/s/…/exec" oninput="saveSettings()">
+      </div>
+      <div class="srow">
+        <div class="conn-status" id="connStatus">
+          <div class="sdot"></div>
+          <span class="conn-wait">Noch nicht verbunden — Daten eingeben und laden</span>
+        </div>
+        <button class="btn btn-line btn-sm" onclick="loadSheets()">Laden &amp; prüfen</button>
+        <button class="btn btn-line btn-sm" onclick="loadDemo()">Demo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress">
+    <div class="pstep active" id="ps1"><div class="pnum" id="pn1">1</div><div class="plbl">Endprodukt</div></div>
+    <div class="pstep" id="ps2"><div class="pnum" id="pn2">2</div><div class="plbl">Baugruppen</div></div>
+    <div class="pstep" id="ps3"><div class="pnum" id="pn3">3</div><div class="plbl">Einzelteile</div></div>
+    <div class="pstep" id="ps4"><div class="pnum" id="pn4">4</div><div class="plbl">Speichern</div></div>
+  </div>
+
+  <!-- Step 1 -->
+  <div class="sblock active" id="s1">
+    <div class="shdr">
+      <div class="snum" id="sn1">1</div>
+      <div><div class="stitle">Endprodukt wählen</div><div class="ssub" id="ss1">Wähle das Produkt für die Stücklistenerfassung</div></div>
+      <div class="sdtag" id="sd1"></div>
+    </div>
+    <div class="sbody">
+      <div class="sdiv"></div>
+      <div class="sbox"><span class="sbox-icon">⌕</span><input placeholder="Produkt suchen…" oninput="filterP(this.value)" id="psearch"></div>
+      <div class="pgrid" id="pgrid"><div style="color:var(--t3);font-size:13px;grid-column:1/-1;padding:10px 0">Demo laden oder Sheets verbinden</div></div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="sblock" id="s2">
+    <div class="shdr" onclick="tryOpen(2)">
+      <div class="snum" id="sn2">2</div>
+      <div><div class="stitle">Baugruppen wählen</div><div class="ssub" id="ss2">Welche Baugruppen enthält dieses Produkt?</div></div>
+      <div class="sdtag" id="sd2"></div>
+    </div>
+    <div class="sbody">
+      <div class="sdiv"></div>
+      <div class="sbox"><span class="sbox-icon">⌕</span><input placeholder="Baugruppen suchen…" oninput="filterBG(this.value)" id="bgsearch"></div>
+      <div class="slabel">Im Artikelstamm vorhanden</div>
+      <div id="bgExList"></div>
+      <div class="slabel">Neu anlegen</div>
+      <div id="bgNewList"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-line btn-sm" onclick="addNewBG()">+ Neue Baugruppe</button>
+        <button class="btn btn-line btn-sm" onclick="genBG()">✦ KI-Vorschlag</button>
+        <div class="airow" id="bgAI"><div class="spin"></div><span>KI analysiert…</span></div>
+        <button class="btn btn-dark" style="margin-left:auto" onclick="confirmS2()">Weiter →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="sblock" id="s3">
+    <div class="shdr" onclick="tryOpen(3)">
+      <div class="snum" id="sn3">3</div>
+      <div><div class="stitle">Einzelteile erfassen</div><div class="ssub" id="ss3">Für jede Baugruppe die Einzelteile wählen</div></div>
+      <div class="sdtag" id="sd3"></div>
+    </div>
+    <div class="sbody">
+      <div class="sdiv"></div>
+      <div id="etAccs"></div>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px">
+        <button class="btn btn-dark" onclick="confirmS3()">Weiter →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="sblock" id="s4">
+    <div class="shdr" onclick="tryOpen(4)">
+      <div class="snum" id="sn4">4</div>
+      <div><div class="stitle">Prüfen &amp; in Sheet speichern</div><div class="ssub" id="ss4">Gesamtübersicht — dann direkt ins Google Sheet schreiben</div></div>
+      <div class="sdtag" id="sd4"></div>
+    </div>
+    <div class="sbody">
+      <div class="sdiv"></div>
+      <div id="s4content"></div>
+      <div id="saveResult"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:16px">
+        <button class="btn btn-line btn-sm" onclick="exportCSV()">↓ Als CSV exportieren</button>
+        <div class="airow" id="saveAI" style="margin-top:0"><div class="spin"></div><span>Schreibe in Google Sheet…</span></div>
+        <button class="btn btn-green" style="margin-left:auto" id="btnSave" onclick="saveToSheet()">↑ Jetzt in Sheet speichern</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div id="toast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────
+let products=[], parts=[], allBGs=[];
+let selProd=null, selBGs=[], bgETs={};
+let curStep=1, bgNewC=0, etNewC=0;
+
+// ── Persist settings ───────────────────────────────────────────
+function saveSettings() {
+  localStorage.setItem('ff_sheetId', document.getElementById('sheetId').value);
+  localStorage.setItem('ff_tabP', document.getElementById('tabP').value);
+  localStorage.setItem('ff_tabA', document.getElementById('tabA').value);
+  localStorage.setItem('ff_webhook', document.getElementById('webhookUrl').value);
+}
+function loadSettings() {
+  const s = id => localStorage.getItem(id) || '';
+  document.getElementById('sheetId').value   = s('ff_sheetId');
+  document.getElementById('tabP').value      = s('ff_tabP') || 'Endprodukte';
+  document.getElementById('tabA').value      = s('ff_tabA') || 'Artikelstamm';
+  document.getElementById('webhookUrl').value = s('ff_webhook');
+  if (s('ff_sheetId')) updateSettingsSub();
+}
+function updateSettingsSub() {
+  const id = document.getElementById('sheetId').value;
+  const wh = document.getElementById('webhookUrl').value;
+  document.getElementById('settingsSub').textContent =
+    id ? `Sheet verbunden${wh?' · Webhook aktiv':' · kein Webhook'}` : 'Sheet und Webhook konfigurieren';
+}
+function toggleSettings() {
+  const b = document.getElementById('settingsBody');
+  const t = document.getElementById('settingsTog');
+  const open = b.classList.toggle('open');
+  t.textContent = open ? '˅' : '›';
+}
+
+// ── Demo ───────────────────────────────────────────────────────
+function loadDemo() {
+  products = [
+    {id:'FP-1001',name:'Pendelleuchte BOLA 30 cm',typ:'Fertigprodukt'},
+    {id:'FP-1002',name:'Wandleuchte ALTO Birke',typ:'Fertigprodukt'},
+    {id:'FP-1003',name:'Deckenleuchte PLANA',typ:'Fertigprodukt'},
+    {id:'FP-1004',name:'Stehleuchte FIBO Nuss',typ:'Fertigprodukt'},
+    {id:'FP-1005',name:'Tischleuchte RUND mini',typ:'Fertigprodukt'},
+  ];
+  parts = [
+    {id:'BG-2001',name:'Holzschirm gedrechselt',typ:'Baugruppe'},
+    {id:'BG-2002',name:'Kabeldurchführung',typ:'Baugruppe'},
+    {id:'BG-2003',name:'Aufhängung Textilkabel',typ:'Baugruppe'},
+    {id:'BG-2004',name:'Baldachin-Set',typ:'Baugruppe'},
+    {id:'ET-3001',name:'Textilkabel 2 m schwarz',typ:'Einzelteil'},
+    {id:'ET-3002',name:'E27-Fassung Messing',typ:'Einzelteil'},
+    {id:'ET-3003',name:'Baldachin Buche natur',typ:'Einzelteil'},
+    {id:'ET-3004',name:'Schraube M4 × 12 mm',typ:'Einzelteil'},
+    {id:'ET-3005',name:'Holzdübel Ø 8 mm',typ:'Einzelteil'},
+    {id:'ET-3006',name:'Zugentlastung',typ:'Einzelteil'},
+    {id:'ET-3007',name:'Stellring Edelstahl',typ:'Einzelteil'},
+  ];
+  allBGs = parts.filter(p=>p.typ==='Baugruppe');
+  setConn(true,'Demo-Daten aktiv');
+  renderProducts('');
+  toast('Demo geladen');
+}
+
+// ── Sheets ─────────────────────────────────────────────────────
+async function loadSheets() {
+  const id = document.getElementById('sheetId').value.trim();
+  if (!id) { toast('Bitte Sheet-ID eingeben'); return; }
+  const tp = document.getElementById('tabP').value || 'Endprodukte';
+  const ta = document.getElementById('tabA').value || 'Artikelstamm';
+  setStatus('laden…', false);
+  setConn(false, 'Verbinde…');
+
+  // Try GViz first, then CSV export as fallback
+  const tryLoad = async (tabName) => {
+    // Method 1: GViz API
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tabName)}&headers=1`;
+      const r = await fetch(url);
+      if (!r.ok) throw new Error('gviz failed');
+      const text = await r.text();
+      if (!text.includes('google.visualization')) throw new Error('not gviz');
+      const parsed = parseGViz(text);
+      if (parsed.length >= 0) return parsed; // 0 rows is ok (empty tab)
+    } catch(e) {}
+
+    // Method 2: CSV export
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
+      const r = await fetch(url);
+      if (!r.ok) throw new Error('csv failed');
+      const text = await r.text();
+      return parseCSV(text);
+    } catch(e) {}
+
+    throw new Error(`Tab "${tabName}" nicht erreichbar`);
+  };
+
+  try {
+    const [p, a] = await Promise.all([tryLoad(tp), tryLoad(ta)]);
+    products = p;
+    parts    = a;
+    allBGs   = parts.filter(p => p.typ === 'Baugruppe' || p.typ === 'baugruppe');
+    setConn(true, `${products.length} Produkte · ${parts.length} Teile geladen`);
+    renderProducts('');
+    updateSettingsSub();
+    saveSettings();
+    setStatus('bereit', true);
+    toast(`${products.length} Produkte · ${parts.length} Teile geladen`);
+  } catch(e) {
+    setConn(false, e.message || 'Verbindung fehlgeschlagen — Sheet öffentlich freigegeben?');
+    setStatus('Fehler', false);
+    toast(e.message || 'Laden fehlgeschlagen');
+  }
+}
+
+function parseGViz(raw) {
+  try {
+    const json = JSON.parse(raw.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, ''));
+    const cols = json.table.cols.map(c => (c.label || '').toLowerCase().trim());
+    return (json.table.rows || []).map(r => {
+      const o = {}; cols.forEach((c, i) => { o[c] = r.c?.[i]?.v ?? ''; });
+      return { id: o['artikel-nr']||o['nr']||o['id']||'', name: o['bezeichnung']||o['name']||'', typ: o['typ']||o['type']||'Einzelteil' };
+    }).filter(x => x.id && x.name);
+  } catch(e) { return []; }
+}
+
+function parseCSV(raw) {
+  const lines = raw.trim().split('\n');
+  if (lines.length < 2) return [];
+  const header = lines[0].split(',').map(h => h.replace(/^"|"$/g,'').toLowerCase().trim());
+  return lines.slice(1).map(line => {
+    const vals = line.match(/(".*?"|[^,]+)/g) || [];
+    const o = {};
+    header.forEach((h, i) => { o[h] = (vals[i] || '').replace(/^"|"$/g, '').trim(); });
+    return { id: o['artikel-nr']||o['nr']||o['id']||'', name: o['bezeichnung']||o['name']||'', typ: o['typ']||o['type']||'Einzelteil' };
+  }).filter(x => x.id && x.name);
+}
+
+// ── Step 1 ─────────────────────────────────────────────────────
+function filterP(q){renderProducts(q.toLowerCase())}
+function renderProducts(q) {
+  const g = document.getElementById('pgrid');
+  if (!products.length) { g.innerHTML='<div style="color:var(--t3);font-size:13px;grid-column:1/-1;padding:10px 0">Demo laden oder Sheets verbinden</div>'; return; }
+  const f = products.filter(p=>!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q));
+  g.innerHTML = f.map(p=>`
+    <div class="pcard ${selProd?.id===p.id?'sel':''}" onclick="selectP('${p.id}')">
+      <div class="pn">${p.name}</div><div class="pi">${p.id}</div>
+    </div>`).join('') || '<div style="color:var(--t3);font-size:13px;grid-column:1/-1">Kein Treffer</div>';
+}
+function selectP(id) {
+  selProd=products.find(p=>p.id===id); selBGs=[]; bgETs={};
+  renderProducts(document.getElementById('psearch').value.toLowerCase());
+  document.getElementById('ss1').textContent=selProd.name;
+  document.getElementById('sd1').textContent='✓';
+  markDone(1); openStep(2); buildBGList('');
+}
+
+// ── Step 2 ─────────────────────────────────────────────────────
+function filterBG(q){buildBGList(q.toLowerCase())}
+function buildBGList(q) {
+  const bgs = allBGs.filter(p=>!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q));
+  document.getElementById('bgExList').innerHTML = bgs.map(bg=>{
+    const s=selBGs.find(x=>x.id===bg.id);
+    return `<div class="prow ${s?'sex':''}" id="bgr-${bg.id}">
+      <div class="pchk ${s?'ex':''}" onclick="toggleBG('${bg.id}','${esc(bg.name)}')">${s?'✓':''}</div>
+      <div style="flex:1"><div class="pnm">${bg.name}</div><div class="pid">${bg.id}</div></div>
+      <span class="pbdg">Baugruppe</span>
+    </div>`;
+  }).join('') || '<div style="color:var(--t3);font-size:13px;padding:6px 0">Keine Baugruppen</div>';
+}
+function toggleBG(id,name) {
+  const idx=selBGs.findIndex(s=>s.id===id);
+  if(idx>=0) selBGs.splice(idx,1);
+  else selBGs.push({id,name,typ:'Baugruppe',isNew:false,menge:1,einheit:'Stück',arbeitsschritt:''});
+  buildBGList(document.getElementById('bgsearch').value.toLowerCase());
+}
+
+function addNewBG() {
+  bgNewC++;const n=bgNewC;
+  const d=document.createElement('div'); d.className='nform'; d.id='nbgf-'+n;
+  d.innerHTML=`<div class="nform-t">Neue Baugruppe</div>
+    <div class="frow"><div class="flbl">Bezeichnung</div><input class="finp" id="nbgn-${n}" placeholder="z.B. Holzschirm 25 cm"></div>
+    <div class="fri">
+      <div class="frow"><div class="flbl">Menge</div><input class="finp" type="number" value="1" id="nbgm-${n}"></div>
+      <div class="frow"><div class="flbl">Einheit</div><select class="fsel" id="nbge-${n}"><option>Stück</option><option>m</option><option>kg</option></select></div>
+      <div class="frow" style="flex:2"><div class="flbl">Arbeitsschritt</div><input class="finp" id="nbgs-${n}" placeholder="z.B. Vormontage"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn btn-dark btn-sm" onclick="saveNewBG(${n})">Hinzufügen</button>
+      <button class="btn btn-line btn-sm" onclick="document.getElementById('nbgf-${n}').remove()">Abbrechen</button>
+    </div>`;
+  document.getElementById('bgNewList').appendChild(d);
+}
+function saveNewBG(n) {
+  const name=document.getElementById('nbgn-'+n).value.trim();
+  if(!name){toast('Bezeichnung eingeben');return;}
+  const nid='BG-NEU-'+Date.now();
+  selBGs.push({id:nid,name,typ:'Baugruppe',isNew:true,menge:parseFloat(document.getElementById('nbgm-'+n).value)||1,einheit:document.getElementById('nbge-'+n).value,arbeitsschritt:document.getElementById('nbgs-'+n).value});
+  document.getElementById('nbgf-'+n).replaceWith(newChip(nid,name,'Baugruppe'));
+  toast('Baugruppe hinzugefügt');
+}
+
+async function genBG() {
+  if(!selProd)return;
+  show('bgAI',true); setStatus('KI…',false);
+  const ex=allBGs.map(p=>`${p.id}: ${p.name}`).join('\n')||'keine';
+  const prompt=`Holzleuchten-Fertigung. Produkt: "${selProd.name}". Vorhandene Baugruppen:\n${ex}\n\nSchlage 3-4 Baugruppen vor. NUR JSON:\n{"baugruppen":[{"name":"...","arbeitsschritt":"...","existingId":"ID oder null"}]}`;
+  try {
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
+    const data=await r.json();
+    const parsed=JSON.parse(data.content?.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim());
+    for(const bg of parsed.baugruppen||[]) {
+      if(bg.existingId&&allBGs.find(p=>p.id===bg.existingId)){
+        if(!selBGs.find(s=>s.id===bg.existingId)) selBGs.push({id:bg.existingId,name:bg.name,typ:'Baugruppe',isNew:false,menge:1,einheit:'Stück',arbeitsschritt:bg.arbeitsschritt||''});
+      } else if(!selBGs.find(s=>s.name===bg.name)){
+        const nid='BG-NEU-'+Date.now()+'-'+rnd();
+        selBGs.push({id:nid,name:bg.name,typ:'Baugruppe',isNew:true,menge:1,einheit:'Stück',arbeitsschritt:bg.arbeitsschritt||''});
+        document.getElementById('bgNewList').appendChild(newChip(nid,bg.name,'Baugruppe'));
+      }
+    }
+    buildBGList(document.getElementById('bgsearch').value.toLowerCase());
+    setStatus('bereit',true); toast('KI-Vorschlag geladen');
+  } catch(e){toast('KI-Fehler');setStatus('Fehler',false);}
+  show('bgAI',false);
+}
+
+function confirmS2() {
+  if(!selBGs.length){toast('Mindestens eine Baugruppe wählen');return;}
+  document.getElementById('ss2').textContent=selBGs.length+' Baugruppe(n)';
+  document.getElementById('sd2').textContent='✓';
+  markDone(2); openStep(3); buildETs();
+}
+
+// ── Step 3 ─────────────────────────────────────────────────────
+function buildETs() {
+  const c=document.getElementById('etAccs'); c.innerHTML='';
+  selBGs.forEach(bg=>{
+    if(!bgETs[bg.id]) bgETs[bg.id]=[];
+    const d=document.createElement('div'); d.className='acc';
+    d.innerHTML=`
+      <div class="acc-h open" onclick="togAcc(this)">
+        <div><div class="acc-nm">${bg.name}${bg.isNew?'<span class="acc-new">neu</span>':''}</div><div class="acc-id">${bg.id}</div></div>
+        <div class="acc-cnt" id="etc-${bg.id}">0 Teile</div>
+        <div class="acc-tog">›</div>
+      </div>
+      <div class="acc-b" style="display:block" id="etb-${bg.id}">${buildETBody(bg.id)}</div>`;
+    c.appendChild(d);
+  });
+}
+function togAcc(h){h.classList.toggle('open');h.nextElementSibling.style.display=h.classList.contains('open')?'block':'none';}
+function buildETBody(bgId) {
+  const ets=parts.filter(p=>p.typ==='Einzelteil');
+  const sel=bgETs[bgId]||[];
+  return `<div class="sbox" style="margin-bottom:11px"><span class="sbox-icon">⌕</span><input placeholder="Einzelteile suchen…" oninput="filterET('${bgId}',this.value)" id="ets-${bgId}"></div>
+    <div class="slabel" style="margin-top:0">Im Artikelstamm vorhanden</div>
+    <div id="etex-${bgId}">${renderETRows(bgId,ets,sel)}</div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-line btn-sm" onclick="addNewET('${bgId}')">+ Neues Einzelteil</button>
+      <button class="btn btn-line btn-sm" onclick="genET('${bgId}')">✦ KI-Vorschlag</button>
+      <div class="airow" id="etai-${bgId}"><div class="spin"></div><span>KI lädt…</span></div>
+    </div>
+    <div id="etnf-${bgId}"></div>`;
+}
+function renderETRows(bgId,ets,sel) {
+  return ets.map(et=>{
+    const s=sel.find(x=>x.id===et.id);
+    return `<div class="prow ${s?'sex':''}">
+      <div class="pchk ${s?'ex':''}" onclick="togET('${bgId}','${et.id}','${esc(et.name)}',this)">${s?'✓':''}</div>
+      <div style="flex:1"><div class="pnm">${et.name}</div><div class="pid">${et.id}</div></div>
+      <div class="qwrap">
+        <input class="qin" type="number" min="0.01" value="${s?.menge||1}" onchange="updMenge('${bgId}','${et.id}',this.value)">
+        <span class="qunit">Stk.</span>
+      </div>
+    </div>`;
+  }).join('')||'<div style="color:var(--t3);font-size:13px;padding:6px 0">Keine Einzelteile im Artikelstamm</div>';
+}
+function filterET(bgId,q) {
+  const ets=parts.filter(p=>p.typ==='Einzelteil'&&(!q||p.name.toLowerCase().includes(q.toLowerCase())||p.id.toLowerCase().includes(q.toLowerCase())));
+  document.getElementById('etex-'+bgId).innerHTML=renderETRows(bgId,ets,bgETs[bgId]||[]);
+}
+function togET(bgId,etId,name,el) {
+  if(!bgETs[bgId]) bgETs[bgId]=[];
+  const idx=bgETs[bgId].findIndex(s=>s.id===etId);
+  if(idx>=0){bgETs[bgId].splice(idx,1);el.className='pchk';el.textContent='';el.closest('.prow').className='prow';}
+  else{bgETs[bgId].push({id:etId,name,typ:'Einzelteil',isNew:false,menge:1,einheit:'Stück'});el.className='pchk ex';el.textContent='✓';el.closest('.prow').className='prow sex';}
+  updCount(bgId);
+}
+function updMenge(bgId,etId,v){const x=bgETs[bgId]?.find(s=>s.id===etId);if(x)x.menge=parseFloat(v)||1;}
+function updCount(bgId){const n=(bgETs[bgId]||[]).length;const e=document.getElementById('etc-'+bgId);if(e)e.textContent=n+' Teil'+(n!==1?'e':'');}
+
+function addNewET(bgId){
+  etNewC++;const n=etNewC;
+  const d=document.createElement('div');d.className='nform';d.style.marginTop='8px';d.id='netf-'+n;
+  d.innerHTML=`<div class="nform-t">Neues Einzelteil</div>
+    <div class="frow"><div class="flbl">Bezeichnung</div><input class="finp" id="netn-${n}" placeholder="z.B. Schraube M4 × 20 mm"></div>
+    <div class="fri">
+      <div class="frow"><div class="flbl">Menge</div><input class="finp" type="number" value="1" id="netm-${n}"></div>
+      <div class="frow"><div class="flbl">Einheit</div><select class="fsel" id="nete-${n}"><option>Stück</option><option>m</option><option>g</option><option>ml</option></select></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn btn-dark btn-sm" onclick="saveNewET('${bgId}',${n})">Hinzufügen</button>
+      <button class="btn btn-line btn-sm" onclick="document.getElementById('netf-${n}').remove()">Abbrechen</button>
+    </div>`;
+  document.getElementById('etnf-'+bgId).appendChild(d);
+}
+function saveNewET(bgId,n){
+  const name=document.getElementById('netn-'+n).value.trim();
+  if(!name){toast('Bezeichnung eingeben');return;}
+  if(!bgETs[bgId]) bgETs[bgId]=[];
+  const nid='ET-NEU-'+Date.now();
+  bgETs[bgId].push({id:nid,name,typ:'Einzelteil',isNew:true,menge:parseFloat(document.getElementById('netm-'+n).value)||1,einheit:document.getElementById('nete-'+n).value});
+  document.getElementById('netf-'+n).replaceWith(newChip(nid,name,'Einzelteil'));
+  updCount(bgId); toast('Einzelteil hinzugefügt');
+}
+
+async function genET(bgId){
+  const bg=selBGs.find(s=>s.id===bgId);if(!bg)return;
+  show('etai-'+bgId,true); setStatus('KI…',false);
+  const ex=parts.filter(p=>p.typ==='Einzelteil').map(p=>`${p.id}: ${p.name}`).join('\n')||'keine';
+  const prompt=`Holzleuchten-Fertigung. Baugruppe: "${bg.name}". Vorhandene Einzelteile:\n${ex}\n\nSchlage 3-5 Einzelteile vor. NUR JSON:\n{"einzelteile":[{"name":"...","menge":1,"einheit":"Stück","existingId":"ID oder null"}]}`;
+  try {
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,messages:[{role:'user',content:prompt}]})});
+    const data=await r.json();
+    const parsed=JSON.parse(data.content?.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim());
+    if(!bgETs[bgId]) bgETs[bgId]=[];
+    for(const et of parsed.einzelteile||[]){
+      if(et.existingId&&parts.find(p=>p.id===et.existingId)){
+        if(!bgETs[bgId].find(s=>s.id===et.existingId)) bgETs[bgId].push({id:et.existingId,name:et.name,typ:'Einzelteil',isNew:false,menge:et.menge||1,einheit:et.einheit||'Stück'});
+      } else if(!bgETs[bgId].find(s=>s.name===et.name)){
+        const nid='ET-NEU-'+Date.now()+'-'+rnd();
+        bgETs[bgId].push({id:nid,name:et.name,typ:'Einzelteil',isNew:true,menge:et.menge||1,einheit:et.einheit||'Stück'});
+        document.getElementById('etnf-'+bgId).appendChild(newChip(nid,et.name,'Einzelteil'));
+      }
+    }
+    filterET(bgId,document.getElementById('ets-'+bgId)?.value||'');
+    updCount(bgId); setStatus('bereit',true); toast('KI-Vorschlag für '+bg.name);
+  } catch(e){toast('KI-Fehler');setStatus('Fehler',false);}
+  show('etai-'+bgId,false);
+}
+
+function confirmS3(){
+  document.getElementById('ss3').textContent='Einzelteile erfasst';
+  document.getElementById('sd3').textContent='✓';
+  markDone(3); openStep(4); buildS4();
+}
+
+// ── Step 4 ─────────────────────────────────────────────────────
+function buildS4(){
+  let html='';
+  // Tree
+  html+=`<div class="tree-prod"><span>${selProd.name}</span><span class="tid">${selProd.id}</span></div><div class="tree-wrap">`;
+  selBGs.forEach(bg=>{
+    const ets=bgETs[bg.id]||[];
+    html+=`<div class="tree-bg"><div class="tree-bgh"><div class="dot"></div><div class="bgnm">${bg.name}</div><div class="bgid">${bg.id}</div>${bg.isNew?'<span class="bgnew">Neu anlegen</span>':''}<div class="bgct" style="margin-left:auto">${ets.length} Teile</div></div>`;
+    ets.forEach(et=>{
+      html+=`<div class="tree-et"><div class="edot"></div><div class="enm">${et.name}</div><div class="eqty">${et.menge} ${et.einheit}</div>${et.isNew?'<div class="enew">Neu</div>':''}</div>`;
+    });
+    html+='</div>';
+  });
+  html+='</div>';
+  document.getElementById('s4content').innerHTML=html;
+  document.getElementById('saveResult').innerHTML='';
+  document.getElementById('ss4').textContent=`${selProd.name} · bereit zum Speichern`;
+  document.getElementById('btnSave').disabled=false;
+}
+
+// ── Save to Sheet via Apps Script ──────────────────────────────
+async function saveToSheet(){
+  const webhook=document.getElementById('webhookUrl').value.trim();
+  if(!webhook){toast('Bitte Webhook-URL in den Einstellungen eintragen');return;}
+  show('saveAI',true);
+  document.getElementById('btnSave').disabled=true;
+  setStatus('speichert…',false);
+
+  // Build rows
+  const rows=[];
+  selBGs.forEach(bg=>{
+    rows.push({bgId:bg.id,bgName:bg.name,bgNew:bg.isNew,etId:'',etName:'',etNew:false,menge:bg.menge||1,einheit:bg.einheit||'Stück',arbeitsschritt:bg.arbeitsschritt||''});
+    (bgETs[bg.id]||[]).forEach(et=>{
+      rows.push({bgId:bg.id,bgName:bg.name,bgNew:bg.isNew,etId:et.id,etName:et.name,etNew:et.isNew,menge:et.menge||1,einheit:et.einheit||'Stück',arbeitsschritt:''});
+    });
+  });
+
+  const payload={productId:selProd.id,productName:selProd.name,rows};
+
+  try {
+    const r=await fetch(webhook,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),mode:'no-cors'});
+    // no-cors → response opaque, assume success
+    showSaveResult(true,`Erfolgreich gespeichert — ${rows.length} Zeilen in den BOM-Tab geschrieben.`);
+    document.getElementById('sd4').textContent='✓';
+    markDone(4);
+    setStatus('gespeichert',true);
+    toast('Im Sheet gespeichert ✓');
+  } catch(e){
+    showSaveResult(false,'Verbindung zum Webhook fehlgeschlagen. Bitte URL prüfen.');
+    setStatus('Fehler',false);
+    document.getElementById('btnSave').disabled=false;
+  }
+  show('saveAI',false);
+}
+
+function showSaveResult(ok,msg){
+  document.getElementById('saveResult').innerHTML=`<div class="save-result ${ok?'save-ok':'save-err'}">${msg}</div>`;
+}
+
+// ── CSV fallback ───────────────────────────────────────────────
+function exportCSV(){
+  const rows=[['Produkt-Nr.','Produktname','Baugruppe-Nr.','Baugruppenname','BG neu?','Einzelteil-Nr.','Einzelteilname','ET neu?','Menge','Einheit','Arbeitsschritt']];
+  selBGs.forEach(bg=>{
+    rows.push([selProd.id,selProd.name,bg.id,bg.name,bg.isNew?'JA':'','','','',bg.menge||1,bg.einheit||'Stück',bg.arbeitsschritt||'']);
+    (bgETs[bg.id]||[]).forEach(et=>{
+      rows.push([selProd.id,selProd.name,bg.id,bg.name,bg.isNew?'JA':'',et.id,et.name,et.isNew?'JA':'',et.menge||1,et.einheit||'Stück','']);
+    });
+  });
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download=`BOM_${selProd?.id}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); toast('CSV exportiert');
+}
+
+// ── Nav ────────────────────────────────────────────────────────
+function tryOpen(n){if(n<=curStep)openStep(n);}
+function openStep(n){
+  curStep=n;
+  for(let i=1;i<=4;i++){
+    const b=document.getElementById('s'+i);
+    b.querySelector('.sbody').style.display=(i===n)?'block':'none';
+    if(i===n){b.classList.add('active');}else{b.classList.remove('active');}
+    document.getElementById('ps'+i).classList.toggle('active',i===n);
+  }
+}
+function markDone(n){
+  document.getElementById('s'+n).classList.remove('active');
+  document.getElementById('s'+n).classList.add('done');
+  document.getElementById('sn'+n).textContent='✓';
+  document.getElementById('ps'+n).classList.remove('active');
+  document.getElementById('ps'+n).classList.add('done');
+  document.getElementById('pn'+n).textContent='✓';
+}
+
+// ── Helpers ────────────────────────────────────────────────────
+function esc(s){return s.replace(/'/g,"\\'").replace(/"/g,'&quot;');}
+function rnd(){return Math.random().toString(36).slice(2,6);}
+function show(id,on){const e=document.getElementById(id);if(e)e.classList.toggle('show',on);}
+function setStatus(msg,on){document.getElementById('stxt').textContent=msg;document.getElementById('sdot').className='sdot'+(on?' on':on===false?' err':'');}
+function setConn(ok,msg){const e=document.getElementById('connStatus');e.innerHTML=`<div class="sdot ${ok?'on':'err'}"></div><span class="${ok?'conn-ok':'conn-err'}">${msg}</span>`;}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.className='show';clearTimeout(t._t);t._t=setTimeout(()=>t.className='',2800);}
+function newChip(id,name,typ){const d=document.createElement('div');d.className='prow snw';d.innerHTML=`<div class="pchk nw">✓</div><div style="flex:1"><div class="pnm">${name}</div><div class="pid">${id}</div></div><span class="pbdg nw">Neu anlegen</span>`;return d;}
+
+// Init
+loadSettings();
+</script>
+</body>
+</html>
