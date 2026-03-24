@@ -404,8 +404,8 @@ function loadDemo() {
   toast('Demo geladen');
 }
 
-// ── Sheets via paginiertes JSONP ────────────────────────────────
-function loadSheets() {
+// ── Sheets via CSV fetch ───────────────────────────────────────
+async function loadSheets() {
   const id = document.getElementById('sheetId').value.trim();
   if (!id) { toast('Bitte Sheet-ID eingeben'); return; }
   const tp = document.getElementById('tabP').value || 'Endprodukte';
@@ -413,31 +413,28 @@ function loadSheets() {
   setStatus('laden…', false);
   setConn(false, 'Lade Daten…');
   saveSettings();
-
-  let loaded = 0;
-  const results = {};
-
-  const loadTab = (tabName, key) => {
-    const cbName = 'cb_' + key + '_' + Date.now();
-    window[cbName] = (data) => {
-      try { results[key] = parseGViz2(data); } catch(e) { results[key] = []; }
-      delete window[cbName];
-      const s = document.getElementById('s_'+cbName); if(s) s.remove();
-      if(++loaded === 2) finishLoad(results, tp, ta);
-    };
-    const s = document.createElement('script');
-    s.id = 's_' + cbName;
-    // tq=select * lädt alle Zeilen ohne Limit
-    s.src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json%3BresponseHandler%3A${cbName}&sheet=${encodeURIComponent(tabName)}`;
-    s.onerror = () => {
-      results[key] = [];
-      if(++loaded === 2) finishLoad(results, tp, ta);
-    };
-    document.head.appendChild(s);
-  };
-
-  loadTab(tp, 'p');
-  loadTab(ta, 'a');
+  try {
+    const [rP, rA] = await Promise.all([
+      fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tp)}`),
+      fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(ta)}`)
+    ]);
+    const [tP, tA] = await Promise.all([rP.text(), rA.text()]);
+    products = parseCSV(tP);
+    parts    = parseCSV(tA);
+    allBGs   = parts.filter(p => p.typ === 'Baugruppe');
+    if (products.length > 0 || parts.length > 0) {
+      setConn(true, `${products.length} Produkte · ${parts.length} Teile geladen`);
+      renderProducts(''); updateSettingsSub(); setStatus('bereit', true);
+      toast(`${products.length} Produkte · ${parts.length} Teile geladen`);
+    } else {
+      setConn(false, `0 Einträge — Tab-Namen prüfen`);
+      setStatus('Fehler', false);
+    }
+  } catch(e) {
+    setConn(false, 'Verbindung fehlgeschlagen: ' + e.message);
+    setStatus('Fehler', false);
+    toast('Laden fehlgeschlagen');
+  }
 }
 
 function finishLoad(results, tp, ta) {
