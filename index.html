@@ -437,6 +437,15 @@ async function loadSheets() {
     saveSettings();
     setStatus('bereit', true);
     toast(`${products.length} Produkte · ${parts.length} Teile geladen`);
+    // Debug: show raw if still 0
+    if (products.length === 0) {
+      try {
+        const dbg = await fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tp)}`);
+        const txt = await dbg.text();
+        console.log('RAW CSV:', txt.slice(0, 500));
+        setConn(false, 'Verbunden aber 0 Produkte — öffne Browser-Konsole (F12) für Details');
+      } catch(e2) {}
+    }
   } catch(e) {
     setConn(false, e.message || 'Verbindung fehlgeschlagen — Sheet öffentlich freigegeben?');
     setStatus('Fehler', false);
@@ -447,30 +456,27 @@ async function loadSheets() {
 function parseGViz(raw) {
   try {
     const json = JSON.parse(raw.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, ''));
-    const cols = json.table.cols.map(c => (c.label || '').toLowerCase().trim().replace(/[.\-_\s]/g, ''));
-    return (json.table.rows || []).map(r => {
-      const o = {}; cols.forEach((c, i) => { o[c] = r.c?.[i]?.v ?? ''; });
-      const id   = o['artikelnr'] || o['artikelnummer'] || o['nr'] || o['id'] || '';
-      const name = o['bezeichnung'] || o['name'] || o['titel'] || '';
-      const typ  = o['typ'] || o['type'] || o['kategorie'] || 'Einzelteil';
-      return { id: String(id).trim(), name: String(name).trim(), typ: String(typ).trim() };
-    }).filter(x => x.id && x.name);
+    const rows = json.table.rows || [];
+    // Skip header row (row 0), use column positions A=0, B=1, C=2
+    return rows.map(r => {
+      const id   = String(r.c?.[0]?.v ?? '').trim();
+      const name = String(r.c?.[1]?.v ?? '').trim();
+      const typ  = String(r.c?.[2]?.v ?? '').trim() || 'Einzelteil';
+      return { id, name, typ };
+    }).filter(x => x.id && x.name && x.id !== 'Artikel-Nr.' && x.id !== 'Artikel-Nr');
   } catch(e) { return []; }
 }
 
 function parseCSV(raw) {
   const lines = raw.trim().split('\n');
   if (lines.length < 2) return [];
-  const header = lines[0].split(',').map(h => h.replace(/^"|"$/g,'').toLowerCase().trim().replace(/[.\-_\s]/g,''));
   return lines.slice(1).map(line => {
-    const vals = line.match(/(".*?"|[^,]+)/g) || [];
-    const o = {};
-    header.forEach((h, i) => { o[h] = (vals[i] || '').replace(/^"|"$/g, '').trim(); });
-    const id   = o['artikelnr'] || o['artikelnummer'] || o['nr'] || o['id'] || '';
-    const name = o['bezeichnung'] || o['name'] || o['titel'] || '';
-    const typ  = o['typ'] || o['type'] || o['kategorie'] || 'Einzelteil';
-    return { id: String(id).trim(), name: String(name).trim(), typ: String(typ).trim() };
-  }).filter(x => x.id && x.name);
+    const vals = line.match(/(".*?"|[^,\n]+)/g) || [];
+    const id   = (vals[0] || '').replace(/^"|"$/g, '').trim();
+    const name = (vals[1] || '').replace(/^"|"$/g, '').trim();
+    const typ  = (vals[2] || '').replace(/^"|"$/g, '').trim() || 'Einzelteil';
+    return { id, name, typ };
+  }).filter(x => x.id && x.name && x.id !== 'Artikel-Nr.' && x.id !== 'Artikel-Nr');
 }
 
 // ── Step 1 ─────────────────────────────────────────────────────
