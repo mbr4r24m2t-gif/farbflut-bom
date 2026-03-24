@@ -259,7 +259,14 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
   <div class="sblock active" id="s1">
     <div class="shdr">
       <div class="snum" id="sn1">1</div>
-      <div><div class="stitle">Endprodukt wählen</div><div class="ssub" id="ss1">Wähle das Produkt für die Stücklistenerfassung</div></div>
+      <div style="flex:1">
+        <div class="stitle">Endprodukt wählen</div>
+        <div class="ssub" id="ss1">Wähle das Produkt für die Stücklistenerfassung</div>
+        <div id="selProdDisplay" style="display:none;margin-top:8px;padding:10px 14px;background:var(--off);border:1px solid var(--b2);border-radius:var(--r);border-left:3px solid var(--t)">
+          <div id="selProdName" style="font-size:14px;font-weight:500;color:var(--t)"></div>
+          <div id="selProdId" style="font-size:11px;color:var(--t3);margin-top:2px;font-family:monospace"></div>
+        </div>
+      </div>
       <div class="sdtag" id="sd1"></div>
     </div>
     <div class="sbody">
@@ -282,7 +289,14 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
   <div class="sblock" id="s2">
     <div class="shdr" onclick="tryOpen(2)">
       <div class="snum" id="sn2">2</div>
-      <div><div class="stitle">Baugruppen wählen</div><div class="ssub" id="ss2">Welche Baugruppen enthält dieses Produkt?</div></div>
+      <div style="flex:1">
+        <div class="stitle">Baugruppen wählen</div>
+        <div class="ssub" id="ss2">Welche Baugruppen enthält dieses Produkt?</div>
+        <div id="s2ProdBanner" style="display:none;margin-top:6px;padding:8px 12px;background:var(--t);border-radius:var(--r)">
+          <div id="s2ProdName" style="font-size:13px;font-weight:500;color:var(--w)"></div>
+          <div id="s2ProdId" style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:1px;font-family:monospace"></div>
+        </div>
+      </div>
       <div class="sdtag" id="sd2"></div>
     </div>
     <div class="sbody">
@@ -566,16 +580,30 @@ async function markErledigtToggle(id, checked) {
 function selectP(id) {
   selProd=products.find(p=>p.id===id); selBGs=[]; bgETs={};
   renderProducts(document.getElementById('psearch').value.toLowerCase());
-  document.getElementById('ss1').textContent=selProd.name;
+  document.getElementById('ss1').textContent='Ausgewählt';
   document.getElementById('sd1').textContent='✓';
+  document.getElementById('selProdName').textContent=selProd.name;
+  document.getElementById('selProdId').textContent=selProd.id;
+  document.getElementById('selProdDisplay').style.display='block';
   markDone(1); openStep(2); buildBGList('');
 }
 
 // ── Step 2 ─────────────────────────────────────────────────────
 function filterBG(q){buildBGList(q.toLowerCase())}
 function buildBGList(q) {
+  if (selProd) {
+    const b = document.getElementById('s2ProdBanner');
+    if (b) { b.style.display='block'; document.getElementById('s2ProdName').textContent=selProd.name; document.getElementById('s2ProdId').textContent=selProd.id; }
+  }
   const bgs = allBGs.filter(p=>!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q));
-  document.getElementById('bgExList').innerHTML = bgs.map(bg=>{
+  const bgsShown = q ? bgs : bgs.slice(0, 20);
+  if (!q && bgs.length > 20) {
+    setTimeout(() => {
+      const el = document.getElementById('bgExList');
+      if (el) el.insertAdjacentHTML('beforeend', `<div style="font-size:12px;color:var(--t3);padding:8px 0;text-align:center">${bgs.length - 20} weitere — Suche verwenden</div>`);
+    }, 0);
+  }
+  document.getElementById('bgExList').innerHTML = bgsShown.map(bg=>{
     const s=selBGs.find(x=>x.id===bg.id);
     return `<div class="prow ${s?'sex':''}" id="bgr-${bg.id}">
       <div class="pchk ${s?'ex':''}" onclick="toggleBG('${bg.id}','${esc(bg.name)}')">${s?'✓':''}</div>
@@ -678,7 +706,9 @@ function buildETBody(bgId) {
     <div id="etnf-${bgId}"></div>`;
 }
 function renderETRows(bgId,ets,sel) {
-  return ets.map(et=>{
+  const shown = ets.slice(0, 20);
+  const extra = ets.length > 20 ? `<div style="font-size:12px;color:var(--t3);padding:8px 0;text-align:center">${ets.length - 20} weitere — Suche verwenden</div>` : '';
+  return shown.map(et=>{
     const s=sel.find(x=>x.id===et.id);
     return `<div class="prow ${s?'sex':''}">
       <div class="pchk ${s?'ex':''}" onclick="togET('${bgId}','${et.id}','${esc(et.name)}',this)">${s?'✓':''}</div>
@@ -688,7 +718,7 @@ function renderETRows(bgId,ets,sel) {
         <span class="qunit">Stk.</span>
       </div>
     </div>`;
-  }).join('')||'<div style="color:var(--t3);font-size:13px;padding:6px 0">Keine Einzelteile im Artikelstamm</div>';
+  }).join('') + extra||'<div style="color:var(--t3);font-size:13px;padding:6px 0">Keine Einzelteile im Artikelstamm</div>';
 }
 function filterET(bgId,q) {
   const ets=parts.filter(p=>p.typ==='Einzelteil'&&(!q||p.name.toLowerCase().includes(q.toLowerCase())||p.id.toLowerCase().includes(q.toLowerCase())));
