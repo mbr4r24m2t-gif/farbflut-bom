@@ -284,6 +284,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
       <div class="slabel">Neu anlegen</div>
       <div id="bgNewList"></div>
       <div style="display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-line btn-sm" onclick="goBack(1)">← Zurück</button>
         <button class="btn btn-line btn-sm" onclick="addNewBG()">+ Neue Baugruppe</button>
         <button class="btn btn-line btn-sm" onclick="genBG()">✦ KI-Vorschlag</button>
         <div class="airow" id="bgAI"><div class="spin"></div><span>KI analysiert…</span></div>
@@ -302,8 +303,9 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
     <div class="sbody">
       <div class="sdiv"></div>
       <div id="etAccs"></div>
-      <div style="display:flex;justify-content:flex-end;margin-top:12px">
-        <button class="btn btn-dark" onclick="confirmS3()">Weiter →</button>
+      <div style="display:flex;gap:8px;justify-content:flex-start;margin-top:12px">
+        <button class="btn btn-line btn-sm" onclick="goBack(2)">← Zurück</button>
+        <button class="btn btn-dark" style="margin-left:auto" onclick="confirmS3()">Weiter →</button>
       </div>
     </div>
   </div>
@@ -320,6 +322,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
       <div id="s4content"></div>
       <div id="saveResult"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:16px">
+        <button class="btn btn-line btn-sm" onclick="goBack(3)">← Zurück</button>
         <button class="btn btn-line btn-sm" onclick="exportCSV()">↓ Als CSV exportieren</button>
         <div class="airow" id="saveAI" style="margin-top:0"><div class="spin"></div><span>Schreibe in Google Sheet…</span></div>
         <button class="btn btn-green" style="margin-left:auto" id="btnSave" onclick="saveToSheet()">↑ Jetzt in Sheet speichern</button>
@@ -392,40 +395,66 @@ function loadDemo() {
   toast('Demo geladen');
 }
 
-// ── Sheets via JSONP (bypasses CORS) ───────────────────────────
-function loadSheets() {
-  const id = document.getElementById('sheetId').value.trim();
-  if (!id) { toast('Bitte Sheet-ID eingeben'); return; }
-  const tp = document.getElementById('tabP').value || 'Endprodukte';
-  const ta = document.getElementById('tabA').value || 'Artikelstamm';
+// ── Sheets via Webhook (kein CORS, kein Größenlimit) ───────────
+async function loadSheets() {
+  const webhook = document.getElementById('webhookUrl').value.trim();
+  const id      = document.getElementById('sheetId').value.trim();
+  if (!webhook && !id) { toast('Bitte Webhook-URL oder Sheet-ID eingeben'); return; }
   setStatus('laden…', false);
   setConn(false, 'Verbinde…');
   saveSettings();
 
-  let loaded = 0;
-  const results = {};
+  // Methode 1: Webhook doGet (bevorzugt, kein Limit)
+  if (webhook) {
+    try {
+      const r = await fetch(webhook + '?action=read', { method: 'GET', mode: 'no-cors' });
+      // no-cors → opaque, try redirect trick
+    } catch(e) {}
 
-  const loadTab = (tabName, key) => {
-    const cbName = 'gvizCb_' + key + '_' + Date.now();
-    window[cbName] = (data) => {
-      try {
+    // Webhook über script-tag (JSONP-ähnlich aber GET)
+    try {
+      const data = await fetchViaProxy(webhook);
+      if (data && data.products) {
+        products = data.products;
+        parts    = data.parts || [];
+        allBGs   = parts.filter(p => p.typ === 'Baugruppe');
+        setConn(true, `${products.length} Produkte · ${parts.length} Teile geladen`);
+        renderProducts(''); updateSettingsSub(); setStatus('bereit', true);
+        toast(`${products.length} Produkte · ${parts.length} Teile`);
+        return;
+      }
+    } catch(e) {}
+  }
+
+  // Methode 2: JSONP direkt (fallback für kleinere Sheets)
+  if (id) {
+    const tp = document.getElementById('tabP').value || 'Endprodukte';
+    const ta = document.getElementById('tabA').value || 'Artikelstamm';
+    let loaded = 0; const results = {};
+    const loadTab = (tabName, key) => {
+      const cbName = 'cb_' + key + '_' + Date.now();
+      window[cbName] = (data) => {
         results[key] = parseGViz2(data);
-      } catch(e) { results[key] = []; }
-      delete window[cbName];
-      const s = document.getElementById('jsonp_' + cbName);
-      if (s) s.remove();
-      loaded++;
-      if (loaded === 2) finishLoad(results, tp, ta);
+        delete window[cbName];
+        const s = document.getElementById('s_'+cbName); if(s) s.remove();
+        if(++loaded === 2) finishLoad(results, tp, ta);
+      };
+      const s = document.createElement('script');
+      s.id = 's_' + cbName;
+      s.src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json;handler:${cbName}&sheet=${encodeURIComponent(tabName)}`;
+      s.onerror = () => { results[key]=[]; if(++loaded===2) finishLoad(results,tp,ta); };
+      document.head.appendChild(s);
     };
-    const s = document.createElement('script');
-    s.id = 'jsonp_' + cbName;
-    s.src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json;handler:${cbName}&sheet=${encodeURIComponent(tabName)}`;
-    s.onerror = () => { results[key] = []; loaded++; if(loaded===2) finishLoad(results,tp,ta); };
-    document.head.appendChild(s);
-  };
+    loadTab(tp, 'p'); loadTab(ta, 'a');
+  }
+}
 
-  loadTab(tp, 'p');
-  loadTab(ta, 'a');
+async function fetchViaProxy(webhookUrl) {
+  // Apps Script doGet liefert JSON — aber CORS blockiert fetch direkt.
+  // Lösung: iframe-basierter Trick oder einfach no-cors mit Response lesen
+  const r = await fetch(webhookUrl, { method: 'GET' });
+  if (!r.ok) throw new Error('fetch failed');
+  return await r.json();
 }
 
 function finishLoad(results, tp, ta) {
@@ -765,7 +794,42 @@ function exportCSV(){
 }
 
 // ── Nav ────────────────────────────────────────────────────────
-function tryOpen(n){if(n<=curStep)openStep(n);}
+function tryOpen(n){if(n<=curStep)goBack(n);}
+
+function goBack(n) {
+  // Reset state for steps after target
+  if (n < 2) {
+    // Back to step 1: reset everything
+    selProd = null; selBGs = []; bgETs = {};
+    document.getElementById('ss1').textContent = 'Wähle das Produkt für die Stücklistenerfassung';
+    document.getElementById('sd1').textContent = '';
+    renderProducts(document.getElementById('psearch')?.value || '');
+  }
+  if (n < 3) {
+    // Reset baugruppen
+    selBGs = []; bgETs = {};
+    document.getElementById('ss2').textContent = 'Welche Baugruppen enthält dieses Produkt?';
+    document.getElementById('sd2').textContent = '';
+    document.getElementById('bgNewList').innerHTML = '';
+    if (selProd) buildBGList('');
+  }
+  if (n < 4) {
+    // Reset einzelteile
+    bgETs = {};
+    document.getElementById('ss3').textContent = 'Für jede Baugruppe die Einzelteile wählen';
+    document.getElementById('sd3').textContent = '';
+  }
+  // Unmark done for all steps >= n
+  for (let i = n; i <= 4; i++) {
+    const b = document.getElementById('s'+i);
+    b.classList.remove('done');
+    document.getElementById('sn'+i).textContent = i;
+    document.getElementById('ps'+i).classList.remove('done');
+    document.getElementById('pn'+i).textContent = i;
+  }
+  openStep(n);
+}
+
 function openStep(n){
   curStep=n;
   for(let i=1;i<=4;i++){
