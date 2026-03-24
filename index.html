@@ -447,10 +447,13 @@ async function loadSheets() {
 function parseGViz(raw) {
   try {
     const json = JSON.parse(raw.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, ''));
-    const cols = json.table.cols.map(c => (c.label || '').toLowerCase().trim());
+    const cols = json.table.cols.map(c => (c.label || '').toLowerCase().trim().replace(/[.\-_\s]/g, ''));
     return (json.table.rows || []).map(r => {
       const o = {}; cols.forEach((c, i) => { o[c] = r.c?.[i]?.v ?? ''; });
-      return { id: o['artikel-nr']||o['nr']||o['id']||'', name: o['bezeichnung']||o['name']||'', typ: o['typ']||o['type']||'Einzelteil' };
+      const id   = o['artikelnr'] || o['artikelnummer'] || o['nr'] || o['id'] || '';
+      const name = o['bezeichnung'] || o['name'] || o['titel'] || '';
+      const typ  = o['typ'] || o['type'] || o['kategorie'] || 'Einzelteil';
+      return { id: String(id).trim(), name: String(name).trim(), typ: String(typ).trim() };
     }).filter(x => x.id && x.name);
   } catch(e) { return []; }
 }
@@ -458,12 +461,15 @@ function parseGViz(raw) {
 function parseCSV(raw) {
   const lines = raw.trim().split('\n');
   if (lines.length < 2) return [];
-  const header = lines[0].split(',').map(h => h.replace(/^"|"$/g,'').toLowerCase().trim());
+  const header = lines[0].split(',').map(h => h.replace(/^"|"$/g,'').toLowerCase().trim().replace(/[.\-_\s]/g,''));
   return lines.slice(1).map(line => {
     const vals = line.match(/(".*?"|[^,]+)/g) || [];
     const o = {};
     header.forEach((h, i) => { o[h] = (vals[i] || '').replace(/^"|"$/g, '').trim(); });
-    return { id: o['artikel-nr']||o['nr']||o['id']||'', name: o['bezeichnung']||o['name']||'', typ: o['typ']||o['type']||'Einzelteil' };
+    const id   = o['artikelnr'] || o['artikelnummer'] || o['nr'] || o['id'] || '';
+    const name = o['bezeichnung'] || o['name'] || o['titel'] || '';
+    const typ  = o['typ'] || o['type'] || o['kategorie'] || 'Einzelteil';
+    return { id: String(id).trim(), name: String(name).trim(), typ: String(typ).trim() };
   }).filter(x => x.id && x.name);
 }
 
