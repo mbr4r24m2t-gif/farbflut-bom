@@ -264,8 +264,17 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
     </div>
     <div class="sbody">
       <div class="sdiv"></div>
+      <div id="prodProgress" style="display:none;margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:12px;color:var(--t2)" id="progLabel"></span>
+          <span style="font-size:11px;color:var(--t3)" id="progPct"></span>
+        </div>
+        <div style="height:3px;background:var(--b);border-radius:2px;overflow:hidden">
+          <div id="progBar" style="height:100%;background:var(--green);border-radius:2px;transition:width 0.3s"></div>
+        </div>
+      </div>
       <div class="sbox"><span class="sbox-icon">⌕</span><input placeholder="Produkt suchen…" oninput="filterP(this.value)" id="psearch"></div>
-      <div class="pgrid" id="pgrid"><div style="color:var(--t3);font-size:13px;grid-column:1/-1;padding:10px 0">Demo laden oder Sheets verbinden</div></div>
+      <div id="pgrid"><div style="color:var(--t3);font-size:13px;padding:10px 0">Demo laden oder Sheets verbinden</div></div>
     </div>
   </div>
 
@@ -395,66 +404,40 @@ function loadDemo() {
   toast('Demo geladen');
 }
 
-// ── Sheets via Webhook (kein CORS, kein Größenlimit) ───────────
-async function loadSheets() {
-  const webhook = document.getElementById('webhookUrl').value.trim();
-  const id      = document.getElementById('sheetId').value.trim();
-  if (!webhook && !id) { toast('Bitte Webhook-URL oder Sheet-ID eingeben'); return; }
+// ── Sheets via paginiertes JSONP ────────────────────────────────
+function loadSheets() {
+  const id = document.getElementById('sheetId').value.trim();
+  if (!id) { toast('Bitte Sheet-ID eingeben'); return; }
+  const tp = document.getElementById('tabP').value || 'Endprodukte';
+  const ta = document.getElementById('tabA').value || 'Artikelstamm';
   setStatus('laden…', false);
-  setConn(false, 'Verbinde…');
+  setConn(false, 'Lade Daten…');
   saveSettings();
 
-  // Methode 1: Webhook doGet (bevorzugt, kein Limit)
-  if (webhook) {
-    try {
-      const r = await fetch(webhook + '?action=read', { method: 'GET', mode: 'no-cors' });
-      // no-cors → opaque, try redirect trick
-    } catch(e) {}
+  let loaded = 0;
+  const results = {};
 
-    // Webhook über script-tag (JSONP-ähnlich aber GET)
-    try {
-      const data = await fetchViaProxy(webhook);
-      if (data && data.products) {
-        products = data.products;
-        parts    = data.parts || [];
-        allBGs   = parts.filter(p => p.typ === 'Baugruppe');
-        setConn(true, `${products.length} Produkte · ${parts.length} Teile geladen`);
-        renderProducts(''); updateSettingsSub(); setStatus('bereit', true);
-        toast(`${products.length} Produkte · ${parts.length} Teile`);
-        return;
-      }
-    } catch(e) {}
-  }
-
-  // Methode 2: JSONP direkt (fallback für kleinere Sheets)
-  if (id) {
-    const tp = document.getElementById('tabP').value || 'Endprodukte';
-    const ta = document.getElementById('tabA').value || 'Artikelstamm';
-    let loaded = 0; const results = {};
-    const loadTab = (tabName, key) => {
-      const cbName = 'cb_' + key + '_' + Date.now();
-      window[cbName] = (data) => {
-        results[key] = parseGViz2(data);
-        delete window[cbName];
-        const s = document.getElementById('s_'+cbName); if(s) s.remove();
-        if(++loaded === 2) finishLoad(results, tp, ta);
-      };
-      const s = document.createElement('script');
-      s.id = 's_' + cbName;
-      s.src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json;handler:${cbName}&sheet=${encodeURIComponent(tabName)}`;
-      s.onerror = () => { results[key]=[]; if(++loaded===2) finishLoad(results,tp,ta); };
-      document.head.appendChild(s);
+  const loadTab = (tabName, key) => {
+    const cbName = 'cb_' + key + '_' + Date.now();
+    window[cbName] = (data) => {
+      try { results[key] = parseGViz2(data); } catch(e) { results[key] = []; }
+      delete window[cbName];
+      const s = document.getElementById('s_'+cbName); if(s) s.remove();
+      if(++loaded === 2) finishLoad(results, tp, ta);
     };
-    loadTab(tp, 'p'); loadTab(ta, 'a');
-  }
-}
+    const s = document.createElement('script');
+    s.id = 's_' + cbName;
+    // tq=select * lädt alle Zeilen ohne Limit
+    s.src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json;handler:${cbName}&sheet=${encodeURIComponent(tabName)}&tq=select%20*`;
+    s.onerror = () => {
+      results[key] = [];
+      if(++loaded === 2) finishLoad(results, tp, ta);
+    };
+    document.head.appendChild(s);
+  };
 
-async function fetchViaProxy(webhookUrl) {
-  // Apps Script doGet liefert JSON — aber CORS blockiert fetch direkt.
-  // Lösung: iframe-basierter Trick oder einfach no-cors mit Response lesen
-  const r = await fetch(webhookUrl, { method: 'GET' });
-  if (!r.ok) throw new Error('fetch failed');
-  return await r.json();
+  loadTab(tp, 'p');
+  loadTab(ta, 'a');
 }
 
 function finishLoad(results, tp, ta) {
@@ -477,10 +460,11 @@ function finishLoad(results, tp, ta) {
 function parseGViz2(data) {
   const rows = data.table.rows || [];
   return rows.map(r => {
-    const id   = String(r.c?.[0]?.v ?? '').trim();
-    const name = String(r.c?.[1]?.v ?? '').trim();
-    const typ  = String(r.c?.[2]?.v ?? '').trim() || 'Einzelteil';
-    return { id, name, typ };
+    const id      = String(r.c?.[0]?.v ?? '').trim();
+    const name    = String(r.c?.[1]?.v ?? '').trim();
+    const typ     = String(r.c?.[2]?.v ?? '').trim() || 'Einzelteil';
+    const erfasst = String(r.c?.[3]?.v ?? '').trim().toLowerCase() === 'ja';
+    return { id, name, typ, erfasst };
   }).filter(x => x.id && x.name && !x.id.toLowerCase().includes('artikel'));
 }
 
@@ -512,14 +496,75 @@ function parseCSV(raw) {
 
 // ── Step 1 ─────────────────────────────────────────────────────
 function filterP(q){renderProducts(q.toLowerCase())}
+
 function renderProducts(q) {
   const g = document.getElementById('pgrid');
-  if (!products.length) { g.innerHTML='<div style="color:var(--t3);font-size:13px;grid-column:1/-1;padding:10px 0">Demo laden oder Sheets verbinden</div>'; return; }
-  const f = products.filter(p=>!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q));
-  g.innerHTML = f.map(p=>`
-    <div class="pcard ${selProd?.id===p.id?'sel':''}" onclick="selectP('${p.id}')">
-      <div class="pn">${p.name}</div><div class="pi">${p.id}</div>
-    </div>`).join('') || '<div style="color:var(--t3);font-size:13px;grid-column:1/-1">Kein Treffer</div>';
+  if (!products.length) { g.innerHTML='<div style="color:var(--t3);font-size:13px;padding:10px 0">Demo laden oder Sheets verbinden</div>'; return; }
+
+  const total    = products.length;
+  const done     = products.filter(p=>p.erfasst).length;
+  const pending  = products.filter(p=>!p.erfasst);
+  const open     = total - done;
+
+  // Update progress
+  const pp = document.getElementById('prodProgress');
+  if (pp) {
+    pp.style.display = 'block';
+    document.getElementById('progLabel').textContent = open + ' von ' + total + ' noch offen';
+    document.getElementById('progPct').textContent = Math.round(done/total*100) + '% erledigt';
+    document.getElementById('progBar').style.width = (done/total*100) + '%';
+  }
+
+  // Filter by search or show first 10 pending
+  let shown;
+  if (q) {
+    shown = products.filter(p => !p.erfasst && (p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q)));
+  } else {
+    shown = pending.slice(0, 10);
+  }
+
+  if (!shown.length) {
+    g.innerHTML = q
+      ? '<div style="color:var(--t3);font-size:13px;padding:8px 0">Kein offenes Produkt gefunden</div>'
+      : '<div style="color:var(--green);font-size:13px;padding:8px 0">Alle Produkte erfasst!</div>';
+    return;
+  }
+
+  g.innerHTML = shown.map(p => `
+    <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--off);border:1px solid var(--b);border-radius:var(--r);margin-bottom:5px;transition:border-color 0.12s" class="prow-item">
+      <div style="flex:1;cursor:pointer" onclick="selectP('${p.id}')">
+        <div style="font-size:13px;font-weight:500;color:var(--t)">${p.name}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">${p.id}</div>
+      </div>
+      <button class="btn btn-dark btn-sm" onclick="selectP('${p.id}')">Erfassen →</button>
+      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;color:var(--t3);white-space:nowrap">
+        <input type="checkbox" onchange="markErledigtToggle('${p.id}',this.checked)" style="cursor:pointer">
+        Erledigt
+      </label>
+    </div>`).join('');
+
+  if (!q && pending.length > 10) {
+    g.innerHTML += `<div style="font-size:12px;color:var(--t3);padding:8px 0;text-align:center">${pending.length - 10} weitere offen — Suche verwenden um gezielt zu finden</div>`;
+  }
+}
+
+async function markErledigtToggle(id, checked) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  p.erfasst = checked;
+  const webhook = document.getElementById('webhookUrl').value.trim();
+  if (webhook) {
+    try {
+      await fetch(webhook, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'markErledigt', productId: id, erfasst: checked ? 'JA' : '' }),
+        mode: 'no-cors'
+      });
+    } catch(e) {}
+  }
+  renderProducts(document.getElementById('psearch')?.value?.toLowerCase() || '');
+  toast(checked ? id + ' als erledigt markiert' : id + ' wieder geöffnet');
 }
 function selectP(id) {
   selProd=products.find(p=>p.id===id); selBGs=[]; bgETs={};
