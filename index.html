@@ -428,7 +428,7 @@ function loadSheets() {
     const s = document.createElement('script');
     s.id = 's_' + cbName;
     // tq=select * lädt alle Zeilen ohne Limit
-    s.src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json;handler:${cbName}&sheet=${encodeURIComponent(tabName)}`;
+    s.src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json%3BresponseHandler%3A${cbName}&sheet=${encodeURIComponent(tabName)}`;
     s.onerror = () => {
       results[key] = [];
       if(++loaded === 2) finishLoad(results, tp, ta);
