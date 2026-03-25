@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>farbflut BOM Agent v1.11.0</title>
+<title>farbflut BOM Agent v1.12.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
 :root {
@@ -203,7 +203,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
   <div class="hdr-div"></div>
   <div class="hdr-sub">Stücklisten-Erfassung</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
-    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v1.11.0</span>
+    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v1.12.0</span>
     <div class="hdr-r" style="margin-left:0">
       <div class="sdot on" id="sdot"></div>
       <span id="stxt">bereit</span>
@@ -234,6 +234,12 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
         <input class="sinp" id="tabP" value="Endprodukte" style="max-width:180px" oninput="saveSettings()">
         <span class="slbl">Tab Teile</span>
         <input class="sinp" id="tabA" value="Artikelstamm" style="max-width:180px" oninput="saveSettings()">
+      </div>
+      <div class="srow">
+        <span class="slbl">BG-Prefix</span>
+        <input class="sinp" id="bgPrefix" value="BG-99-" style="max-width:120px" oninput="saveSettings()" title="Präfix für neue Baugruppen-Nummern">
+        <span class="slbl">ET-Prefix</span>
+        <input class="sinp" id="etPrefix" value="ET-01-" style="max-width:120px" oninput="saveSettings()" title="Präfix für neue Einzelteil-Nummern">
       </div>
       <div class="srow">
         <span class="slbl">Webhook-URL</span>
@@ -360,12 +366,42 @@ let selProd=null, selBGs=[], bgETs={};
 let newButDeselected=[]; // new BGs/ETs created but not assigned to product
 let curStep=1, bgNewC=0, etNewC=0;
 
+// ── Auto ID generation ─────────────────────────────────────────
+function getNextId(prefix, parts_list) {
+  // Find all existing IDs matching the prefix pattern e.g. "BG-99-"
+  const matching = parts_list
+    .map(p => p.id)
+    .filter(id => id.toUpperCase().startsWith(prefix.toUpperCase()));
+  if (!matching.length) return prefix + '10000';
+  // Extract numeric suffix and find max
+  const nums = matching.map(id => {
+    const suffix = id.slice(prefix.length);
+    return parseInt(suffix.replace(/\D/g,'')) || 0;
+  });
+  const next = Math.max(...nums) + 1;
+  // Pad to same length as existing
+  const sample = matching[0].slice(prefix.length);
+  const padLen = sample.replace(/\D/g,'').length;
+  return prefix + String(next).padStart(padLen, '0');
+}
+
+function nextBGId() {
+  const p = document.getElementById('bgPrefix')?.value || 'BG-99-';
+  return getNextId(p, parts);
+}
+function nextETId() {
+  const p = document.getElementById('etPrefix')?.value || 'ET-01-';
+  return getNextId(p, parts);
+}
+
 // ── Persist settings ───────────────────────────────────────────
 function saveSettings() {
   localStorage.setItem('ff_sheetId', document.getElementById('sheetId').value);
   localStorage.setItem('ff_tabP', document.getElementById('tabP').value);
   localStorage.setItem('ff_tabA', document.getElementById('tabA').value);
   localStorage.setItem('ff_webhook', document.getElementById('webhookUrl').value);
+  localStorage.setItem('ff_bgPrefix', document.getElementById('bgPrefix').value);
+  localStorage.setItem('ff_etPrefix', document.getElementById('etPrefix').value);
 }
 function loadSettings() {
   const s = id => localStorage.getItem(id) || '';
@@ -373,6 +409,8 @@ function loadSettings() {
   document.getElementById('tabP').value      = s('ff_tabP') || 'Endprodukte';
   document.getElementById('tabA').value      = s('ff_tabA') || 'Artikelstamm';
   document.getElementById('webhookUrl').value = s('ff_webhook');
+  document.getElementById('bgPrefix').value = s('ff_bgPrefix') || 'BG-99-';
+  document.getElementById('etPrefix').value = s('ff_etPrefix') || 'ET-01-';
   if (s('ff_sheetId')) updateSettingsSub();
 }
 function updateSettingsSub() {
@@ -651,7 +689,10 @@ function addNewBG() {
 function saveNewBG(n) {
   const name=document.getElementById('nbgn-'+n).value.trim();
   if(!name){toast('Bezeichnung eingeben');return;}
-  const nid='BG-NEU-'+Date.now();
+  const nid=nextBGId();
+  // Add to parts cache so next BG gets incremented ID
+  parts.push({id:nid, name, typ:'Baugruppe'});
+  allBGs.push({id:nid, name, typ:'Baugruppe'});
   selBGs.push({id:nid,name,typ:'Baugruppe',isNew:true,menge:parseFloat(document.getElementById('nbgm-'+n).value)||1,einheit:document.getElementById('nbge-'+n).value,arbeitsschritt:document.getElementById('nbgs-'+n).value});
   document.getElementById('nbgf-'+n).replaceWith(newChip(nid,name,'Baugruppe',true));
   toast('Baugruppe hinzugefügt');
@@ -790,7 +831,8 @@ function saveNewET(bgId,n){
   const name=document.getElementById('netn-'+n).value.trim();
   if(!name){toast('Bezeichnung eingeben');return;}
   if(!bgETs[bgId]) bgETs[bgId]=[];
-  const nid='ET-NEU-'+Date.now();
+  const nid=nextETId();
+  parts.push({id:nid, name, typ:'Einzelteil'});
   const etMenge = parseFloat(document.getElementById('netm-'+n).value)||1;
   const etEinheit = document.getElementById('nete-'+n).value;
   bgETs[bgId].push({id:nid,name,typ:'Einzelteil',isNew:true,menge:etMenge,einheit:etEinheit});
@@ -812,7 +854,7 @@ async function genET(bgId){
       if(et.existingId&&parts.find(p=>p.id===et.existingId)){
         if(!bgETs[bgId].find(s=>s.id===et.existingId)) bgETs[bgId].push({id:et.existingId,name:et.name,typ:'Einzelteil',isNew:false,menge:et.menge||1,einheit:et.einheit||'Stück'});
       } else if(!bgETs[bgId].find(s=>s.name===et.name)){
-        const nid='ET-NEU-'+Date.now()+'-'+rnd();
+        const nid=nextETId(); parts.push({id:nid, name:et.name, typ:'Einzelteil'});
         bgETs[bgId].push({id:nid,name:et.name,typ:'Einzelteil',isNew:true,menge:et.menge||1,einheit:et.einheit||'Stück'});
         document.getElementById('etnf-'+bgId).appendChild(newETChip(nid,et.name,et.menge||1,et.einheit||'Stück',bgId,true));
       }
