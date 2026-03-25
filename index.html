@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>farbflut BOM Agent v1.14.0</title>
+<title>farbflut BOM Agent v1.15.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
 :root {
@@ -203,7 +203,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
   <div class="hdr-div"></div>
   <div class="hdr-sub">Stücklisten-Erfassung</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
-    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v1.14.0</span>
+    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v1.15.0</span>
     <div class="hdr-r" style="margin-left:0">
       <div class="sdot on" id="sdot"></div>
       <span id="stxt">bereit</span>
@@ -731,38 +731,52 @@ function confirmS2() {
 }
 
 // ── Step 3 ─────────────────────────────────────────────────────
+function getAllBGsForET() {
+  const nurAnlegen = newButDeselected
+    .filter(x => x.typ === 'Baugruppe')
+    .filter(x => !selBGs.find(s => s.id === x.id))
+    .map(x => ({...x, isNew:true, nurAnlegen:true}));
+  return [...selBGs, ...nurAnlegen];
+}
+
 function buildETs() {
-  const c=document.getElementById('etAccs'); c.innerHTML='';
-  // All BGs: assigned + nur-anlegen (newButDeselected)
-  const nurAnlegen = newButDeselected.filter(x=>x.typ==='Baugruppe');
-  const allBGsToShow = [
-    ...selBGs,
-    ...nurAnlegen.filter(x=>!selBGs.find(s=>s.id===x.id)).map(x=>({...x, isNew:true, nurAnlegen:true}))
-  ];
-  if (!allBGsToShow.length) {
-    c.innerHTML='<div style="color:var(--t3);font-size:13px;padding:10px 0">Keine Baugruppen ausgewählt</div>';
+  const c = document.getElementById('etAccs');
+  c.innerHTML = '';
+  const allBGs = getAllBGsForET();
+  if (!allBGs.length) {
+    c.innerHTML = '<div style="color:var(--t3);font-size:13px;padding:10px 0">Keine Baugruppen ausgewählt</div>';
     return;
   }
-  allBGsToShow.forEach(bg=>{
-    if(!bgETs[bg.id]) bgETs[bg.id]=[];
-    const d=document.createElement('div'); d.className='acc';
+  allBGs.forEach((bg, idx) => {
+    if (!bgETs[bg.id]) bgETs[bg.id] = [];
     const etCount = bgETs[bg.id].length;
-    const isFirst = c.children.length === 0;
-    d.innerHTML=`
-      <div class="acc-h ${isFirst?'open':''}" onclick="togAcc(this)">
-        <div><div class="acc-nm">${bg.name}${bg.isNew?'<span class="acc-new">'+(bg.nurAnlegen?'nur anlegen':'neu')+'</span>':''}</div><div class="acc-id">${bg.id}</div></div>
-        <div class="acc-cnt" id="etc-${bg.id}">${etCount} Teil${etCount!==1?'e':''}</div>
-        <div class="acc-tog">›</div>
-      </div>
-      <div class="acc-b" style="display:${isFirst?'block':'none'}" id="etb-${bg.id}">${isFirst?buildETBody(bg.id):''}</div>`;
-    c.appendChild(d);
-    // Restore new ET chips
-    const nf = d.querySelector('#etnf-'+bg.id) || d.querySelector('[id="etnf-'+bg.id+'"]');
-    if (nf) {
-      bgETs[bg.id].filter(et=>et.isNew).forEach(et => {
-        nf.appendChild(newETChip(et.id, et.name, et.menge, et.einheit, bg.id, true));
-      });
+    const open = idx === 0;
+    const badge = bg.nurAnlegen ? 'nur anlegen' : (bg.isNew ? 'neu' : '');
+    const d = document.createElement('div');
+    d.className = 'acc';
+    // Header
+    const hdr = document.createElement('div');
+    hdr.className = 'acc-h' + (open ? ' open' : '');
+    hdr.onclick = function(){ togAcc(this); };
+    hdr.innerHTML = `<div><div class="acc-nm">${bg.name}${badge?`<span class="acc-new">${badge}</span>`:''}</div><div class="acc-id">${bg.id}</div></div><div class="acc-cnt" id="etc-${bg.id}">${etCount} Teil${etCount!==1?'e':''}</div><div class="acc-tog">›</div>`;
+    d.appendChild(hdr);
+    // Body
+    const body = document.createElement('div');
+    body.className = 'acc-b';
+    body.id = 'etb-' + bg.id;
+    body.style.display = open ? 'block' : 'none';
+    if (open) {
+      body.innerHTML = buildETBody(bg.id);
+      // Restore new ET chips
+      const nf = body.querySelector('[id="etnf-'+bg.id+'"]');
+      if (nf) {
+        bgETs[bg.id].filter(et=>et.isNew).forEach(et => {
+          nf.appendChild(newETChip(et.id, et.name, et.menge, et.einheit, bg.id, true));
+        });
+      }
     }
+    d.appendChild(body);
+    c.appendChild(d);
   });
 }
 function togAcc(h){
