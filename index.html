@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>farbflut BOM Agent v1.13.0</title>
+<title>farbflut BOM Agent v1.14.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
 :root {
@@ -203,7 +203,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
   <div class="hdr-div"></div>
   <div class="hdr-sub">Stücklisten-Erfassung</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
-    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v1.13.0</span>
+    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v1.14.0</span>
     <div class="hdr-r" style="margin-left:0">
       <div class="sdot on" id="sdot"></div>
       <span id="stxt">bereit</span>
@@ -747,13 +747,14 @@ function buildETs() {
     if(!bgETs[bg.id]) bgETs[bg.id]=[];
     const d=document.createElement('div'); d.className='acc';
     const etCount = bgETs[bg.id].length;
+    const isFirst = c.children.length === 0;
     d.innerHTML=`
-      <div class="acc-h open" onclick="togAcc(this)">
+      <div class="acc-h ${isFirst?'open':''}" onclick="togAcc(this)">
         <div><div class="acc-nm">${bg.name}${bg.isNew?'<span class="acc-new">'+(bg.nurAnlegen?'nur anlegen':'neu')+'</span>':''}</div><div class="acc-id">${bg.id}</div></div>
         <div class="acc-cnt" id="etc-${bg.id}">${etCount} Teil${etCount!==1?'e':''}</div>
         <div class="acc-tog">›</div>
       </div>
-      <div class="acc-b" style="display:block" id="etb-${bg.id}">${buildETBody(bg.id)}</div>`;
+      <div class="acc-b" style="display:${isFirst?'block':'none'}" id="etb-${bg.id}">${isFirst?buildETBody(bg.id):''}</div>`;
     c.appendChild(d);
     // Restore new ET chips
     const nf = d.querySelector('#etnf-'+bg.id) || d.querySelector('[id="etnf-'+bg.id+'"]');
@@ -764,7 +765,24 @@ function buildETs() {
     }
   });
 }
-function togAcc(h){h.classList.toggle('open');h.nextElementSibling.style.display=h.classList.contains('open')?'block':'none';}
+function togAcc(h){
+  h.classList.toggle('open');
+  const body = h.nextElementSibling;
+  const isOpen = h.classList.contains('open');
+  body.style.display = isOpen ? 'block' : 'none';
+  // Lazy-load ET body on first open
+  if (isOpen && body.innerHTML.trim() === '') {
+    const bgId = h.querySelector('.acc-id').textContent;
+    body.innerHTML = buildETBody(bgId);
+    // Restore new ET chips
+    const nf = body.querySelector('#etnf-'+bgId);
+    if (nf) {
+      (bgETs[bgId]||[]).filter(et=>et.isNew).forEach(et => {
+        nf.appendChild(newETChip(et.id, et.name, et.menge, et.einheit, bgId, true));
+      });
+    }
+  }
+}
 function buildETBody(bgId) {
   const ets=parts.filter(p=>p.typ==='Einzelteil');
   const sel=bgETs[bgId]||[];
