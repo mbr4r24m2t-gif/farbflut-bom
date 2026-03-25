@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>farbflut BOM Agent v1.15.0</title>
+<title>farbflut BOM Agent v2.0.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
 :root {
@@ -188,6 +188,14 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
 .save-ok{background:rgba(61,107,79,0.06);border-color:rgba(61,107,79,0.25);color:var(--green)}
 .save-err{background:rgba(192,64,64,0.06);border-color:rgba(192,64,64,0.25);color:var(--red)}
 
+/* Mode switcher */
+.mode-sw{display:flex;gap:0;border:1px solid var(--b2);border-radius:var(--r2);overflow:hidden;margin-bottom:28px}
+.mode-btn{flex:1;padding:11px 16px;font-family:var(--f);font-size:13px;font-weight:400;cursor:pointer;border:none;background:var(--w);color:var(--t2);transition:all 0.15s;text-align:center}
+.mode-btn:first-child{border-right:1px solid var(--b2)}
+.mode-btn.active{background:var(--t);color:var(--w);font-weight:500}
+.mode-btn:hover:not(.active){background:var(--off)}
+.mode-lbl{font-size:10px;display:block;opacity:0.6;margin-top:2px;font-weight:300}
+
 /* Toast */
 #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--t);color:var(--w);padding:9px 18px;border-radius:var(--r);font-size:13px;font-weight:300;opacity:0;transition:all 0.2s;pointer-events:none;z-index:999;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -203,7 +211,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
   <div class="hdr-div"></div>
   <div class="hdr-sub">Stücklisten-Erfassung</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
-    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v1.15.0</span>
+    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.0.0</span>
     <div class="hdr-r" style="margin-left:0">
       <div class="sdot on" id="sdot"></div>
       <span id="stxt">bereit</span>
@@ -256,12 +264,24 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
     </div>
   </div>
 
-  <!-- Progress -->
+  <!-- Mode Switcher -->
+  <div class="mode-sw">
+    <button class="mode-btn active" id="modeABtn" onclick="switchMode('A')">
+      A — Produkte erfassen
+      <span class="mode-lbl">Endprodukte → Baugruppen zuordnen</span>
+    </button>
+    <button class="mode-btn" id="modeBBtn" onclick="switchMode('B')">
+      B — Baugruppen erfassen
+      <span class="mode-lbl">Baugruppen → Einzelteile zuordnen</span>
+    </button>
+  </div>
+
+  <!-- Mode A: Progress -->
+  <div id="modeAContent">
   <div class="progress">
     <div class="pstep active" id="ps1"><div class="pnum" id="pn1">1</div><div class="plbl">Endprodukt</div></div>
     <div class="pstep" id="ps2"><div class="pnum" id="pn2">2</div><div class="plbl">Baugruppen</div></div>
-    <div class="pstep" id="ps3"><div class="pnum" id="pn3">3</div><div class="plbl">Einzelteile</div></div>
-    <div class="pstep" id="ps4"><div class="pnum" id="pn4">4</div><div class="plbl">Speichern</div></div>
+    <div class="pstep" id="ps3"><div class="pnum" id="pn3">3</div><div class="plbl">Speichern</div></div>
   </div>
 
   <!-- Step 1 -->
@@ -319,42 +339,96 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
     </div>
   </div>
 
-  <!-- Step 3 -->
+  <!-- Step 3: Speichern (Mode A) -->
   <div class="sblock" id="s3">
     <div class="shdr" onclick="tryOpen(3)">
       <div class="snum" id="sn3">3</div>
-      <div><div class="stitle">Einzelteile erfassen</div><div class="ssub" id="ss3">Für jede Baugruppe die Einzelteile wählen</div></div>
+      <div><div class="stitle">Prüfen &amp; speichern</div><div class="ssub" id="ss3">Übersicht — dann in Google Sheet schreiben</div></div>
       <div class="sdtag" id="sd3"></div>
     </div>
     <div class="sbody">
       <div class="sdiv"></div>
-      <div id="etAccs"></div>
-      <div style="display:flex;gap:8px;justify-content:flex-start;margin-top:12px">
-        <button class="btn btn-line btn-sm" onclick="goBack(2)">← Zurück</button>
-        <button class="btn btn-dark" style="margin-left:auto" onclick="confirmS3()">Weiter →</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Step 4 -->
-  <div class="sblock" id="s4">
-    <div class="shdr" onclick="tryOpen(4)">
-      <div class="snum" id="sn4">4</div>
-      <div><div class="stitle">Prüfen &amp; in Sheet speichern</div><div class="ssub" id="ss4">Gesamtübersicht — dann direkt ins Google Sheet schreiben</div></div>
-      <div class="sdtag" id="sd4"></div>
-    </div>
-    <div class="sbody">
-      <div class="sdiv"></div>
-      <div id="s4content"></div>
+      <div id="s3content"></div>
       <div id="saveResult"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:16px">
-        <button class="btn btn-line btn-sm" onclick="goBack(3)">← Zurück</button>
-        <button class="btn btn-line btn-sm" onclick="exportCSV()">↓ Als CSV exportieren</button>
+        <button class="btn btn-line btn-sm" onclick="goBack(2)">← Zurück</button>
         <div class="airow" id="saveAI" style="margin-top:0"><div class="spin"></div><span>Schreibe in Google Sheet…</span></div>
         <button class="btn btn-green" style="margin-left:auto" id="btnSave" onclick="saveToSheet()">↑ Jetzt in Sheet speichern</button>
       </div>
     </div>
   </div>
+  </div><!-- end modeAContent -->
+
+  <!-- Mode B: Baugruppen → Einzelteile -->
+  <div id="modeBContent" style="display:none">
+  <div class="progress">
+    <div class="pstep active" id="bps1"><div class="pnum" id="bpn1">1</div><div class="plbl">Baugruppe</div></div>
+    <div class="pstep" id="bps2"><div class="pnum" id="bpn2">2</div><div class="plbl">Einzelteile</div></div>
+    <div class="pstep" id="bps3"><div class="pnum" id="bpn3">3</div><div class="plbl">Speichern</div></div>
+  </div>
+
+  <!-- Mode B Step 1: Baugruppe wählen -->
+  <div class="sblock active" id="bs1">
+    <div class="shdr">
+      <div class="snum" id="bsn1">1</div>
+      <div style="flex:1">
+        <div class="stitle">Baugruppe wählen</div>
+        <div class="ssub" id="bss1">Wähle die Baugruppe für die Einzelteil-Erfassung</div>
+        <div id="selBGDisplay" style="display:none;margin-top:8px;padding:10px 14px;background:var(--off);border:1px solid var(--b2);border-radius:var(--r);border-left:3px solid var(--t);user-select:text;cursor:text">
+          <div id="selBGName" style="font-size:14px;font-weight:500;color:var(--t);user-select:text"></div>
+          <div id="selBGId" style="font-size:11px;color:var(--t3);margin-top:2px;font-family:monospace;user-select:text"></div>
+        </div>
+      </div>
+      <div class="sdtag" id="bsd1"></div>
+    </div>
+    <div class="sbody">
+      <div class="sdiv"></div>
+      <div class="sbox"><span class="sbox-icon">⌕</span><input placeholder="Baugruppe suchen…" oninput="filterBGMode(this.value)" id="bgsearchB"></div>
+      <div id="bgModeList"></div>
+    </div>
+  </div>
+
+  <!-- Mode B Step 2: Einzelteile -->
+  <div class="sblock" id="bs2">
+    <div class="shdr" onclick="tryOpenB(2)">
+      <div class="snum" id="bsn2">2</div>
+      <div><div class="stitle">Einzelteile zuordnen</div><div class="ssub" id="bss2">Welche Einzelteile enthält diese Baugruppe?</div></div>
+      <div class="sdtag" id="bsd2"></div>
+    </div>
+    <div class="sbody">
+      <div class="sdiv"></div>
+      <div class="sbox"><span class="sbox-icon">⌕</span><input placeholder="Einzelteile suchen…" oninput="filterETMode(this.value)" id="etsearchB"></div>
+      <div class="slabel">Im Artikelstamm vorhanden</div>
+      <div id="etModeList"></div>
+      <div class="slabel">Neu anlegen</div>
+      <div id="etModeNewList"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-line btn-sm" onclick="goBackB(1)">← Zurück</button>
+        <button class="btn btn-line btn-sm" onclick="addNewETMode()">+ Neues Einzelteil</button>
+        <button class="btn btn-dark" style="margin-left:auto" onclick="confirmBS2()">Weiter →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mode B Step 3: Speichern -->
+  <div class="sblock" id="bs3">
+    <div class="shdr" onclick="tryOpenB(3)">
+      <div class="snum" id="bsn3">3</div>
+      <div><div class="stitle">Prüfen &amp; speichern</div><div class="ssub" id="bss3">Übersicht — dann in Google Sheet schreiben</div></div>
+      <div class="sdtag" id="bsd3"></div>
+    </div>
+    <div class="sbody">
+      <div class="sdiv"></div>
+      <div id="bs3content"></div>
+      <div id="bsSaveResult"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:16px">
+        <button class="btn btn-line btn-sm" onclick="goBackB(2)">← Zurück</button>
+        <div class="airow" id="bsSaveAI" style="margin-top:0"><div class="spin"></div><span>Schreibe in Google Sheet…</span></div>
+        <button class="btn btn-green" style="margin-left:auto" id="btnSaveB" onclick="saveToSheetB()">↑ Jetzt in Sheet speichern</button>
+      </div>
+    </div>
+  </div>
+  </div><!-- end modeBContent -->
 
 </div>
 <div id="toast"></div>
@@ -725,9 +799,10 @@ async function genBG() {
 function confirmS2() {
   const nurBGs = newButDeselected.filter(x=>x.typ==='Baugruppe');
   if(!selBGs.length && !nurBGs.length){toast('Mindestens eine Baugruppe wählen oder anlegen');return;}
-  document.getElementById('ss2').textContent=selBGs.length+' Baugruppe(n)';
-  document.getElementById('sd2').textContent='✓';
-  markDone(2); openStep(3); buildETs();
+  const total = selBGs.length + nurBGs.length;
+  document.getElementById('ss2').textContent = total + ' Baugruppe(n)';
+  document.getElementById('sd2').textContent = '✓';
+  markDone(2); openStep(3); buildS3();
 }
 
 // ── Step 3 ─────────────────────────────────────────────────────
@@ -912,6 +987,34 @@ function confirmS3(){
 }
 
 // ── Step 4 ─────────────────────────────────────────────────────
+function buildS3(){
+  let html='';
+  // Zugeordnete BGs
+  html+=`<div class="tree-prod"><span>${selProd.name}</span><span class="tid">${selProd.id}</span></div><div class="tree-wrap">`;
+  if(selBGs.length) {
+    selBGs.forEach(bg=>{
+      html+=`<div class="tree-bg"><div class="tree-bgh"><div class="dot"></div><div class="bgnm">${bg.name}</div><div class="bgid">${bg.id}</div>${bg.isNew?'<span class="bgnew">Neu anlegen</span>':''}</div></div>`;
+    });
+  } else {
+    html+=`<div style="padding:12px 18px;color:var(--t3);font-size:13px">Keine Baugruppen zugeordnet</div>`;
+  }
+  html+='</div>';
+  // Nur anlegen
+  const nurBGs = newButDeselected.filter(x=>x.typ==='Baugruppe');
+  if(nurBGs.length) {
+    html+=`<div style="margin-top:16px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--amber);font-weight:400;margin-bottom:8px;display:flex;align-items:center;gap:8px">Nur anlegen — nicht zugeordnet<span style="flex:1;height:1px;background:rgba(184,124,42,0.25);display:block"></span></div>`;
+    html+=`<div style="border:1px solid rgba(184,124,42,0.25);border-radius:var(--r2);overflow:hidden">`;
+    nurBGs.forEach((bg,i)=>{
+      html+=`<div style="display:flex;align-items:center;gap:9px;padding:10px 18px;${i>0?'border-top:1px solid rgba(184,124,42,0.1)':''}"><div style="width:7px;height:7px;border-radius:50%;background:var(--amber);flex-shrink:0"></div><div style="font-size:13px;font-weight:500">${bg.name}</div><div style="font-size:11px;color:var(--t3)">${bg.id}</div><span style="font-size:10px;color:var(--amber);border:1px solid rgba(184,124,42,0.3);border-radius:10px;padding:1px 7px;margin-left:4px">Nur anlegen</span></div>`;
+    });
+    html+='</div></div>';
+  }
+  document.getElementById('s3content').innerHTML=html;
+  document.getElementById('saveResult').innerHTML='';
+  document.getElementById('ss3').textContent=`${selProd.name} · bereit zum Speichern`;
+  document.getElementById('btnSave').disabled=false;
+}
+
 function buildS4(){
   let html='';
 
@@ -993,27 +1096,24 @@ async function saveToSheet(){
   document.getElementById('btnSave').disabled=true;
   setStatus('speichert…',false);
 
-  // Build rows
-  const rows=[];
-  selBGs.forEach(bg=>{
-    rows.push({bgId:bg.id,bgName:bg.name,bgNew:bg.isNew,etId:'',etName:'',etNew:false,menge:bg.menge||1,einheit:bg.einheit||'Stück',arbeitsschritt:bg.arbeitsschritt||''});
-    (bgETs[bg.id]||[]).forEach(et=>{
-      rows.push({bgId:bg.id,bgName:bg.name,bgNew:bg.isNew,etId:et.id,etName:et.name,etNew:et.isNew,menge:et.menge||1,einheit:et.einheit||'Stück',arbeitsschritt:''});
-    });
-  });
-
-  const payload={productId:selProd.id,productName:selProd.name,rows,newArticles:newButDeselected};
+  const bomRows=selBGs.map(bg=>({
+    bgId:bg.id,bgName:bg.name,bgNew:bg.isNew||false,
+    menge:bg.menge||1,einheit:bg.einheit||'Stück',arbeitsschritt:bg.arbeitsschritt||''
+  }));
+  const newArticles=[
+    ...newButDeselected,
+    ...selBGs.filter(bg=>bg.isNew).map(bg=>({id:bg.id,name:bg.name,typ:'Baugruppe'}))
+  ];
+  const payload={action:'saveBOM',productId:selProd.id,productName:selProd.name,bomRows,newArticles};
 
   try {
-    const r=await fetch(webhook,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),mode:'no-cors'});
-    // no-cors → response opaque, assume success
-    showSaveResult(true,`Erfolgreich gespeichert — ${rows.length} Zeilen in den BOM-Tab geschrieben.`);
-    document.getElementById('sd4').textContent='✓';
-    markDone(4);
-    setStatus('gespeichert',true);
-    toast('Im Sheet gespeichert ✓');
+    await fetch(webhook,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),mode:'no-cors'});
+    showSaveResult(true,`Gespeichert — ${bomRows.length} Baugruppe(n) für ${selProd.name}`);
+    document.getElementById('sd3').textContent='✓';
+    markDone(3); setStatus('gespeichert',true); toast('Im Sheet gespeichert ✓');
+    const p=products.find(x=>x.id===selProd.id); if(p) p.erfasst=true;
   } catch(e){
-    showSaveResult(false,'Verbindung zum Webhook fehlgeschlagen. Bitte URL prüfen.');
+    showSaveResult(false,'Verbindung zum Webhook fehlgeschlagen.');
     setStatus('Fehler',false);
     document.getElementById('btnSave').disabled=false;
   }
@@ -1025,19 +1125,32 @@ function showSaveResult(ok,msg){
 }
 
 // ── CSV fallback ───────────────────────────────────────────────
+function dlCSV(rows, filename) {
+  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download = filename;
+  a.click();
+}
 function exportCSV(){
-  const rows=[['Produkt-Nr.','Produktname','Baugruppe-Nr.','Baugruppenname','BG neu?','Einzelteil-Nr.','Einzelteilname','ET neu?','Menge','Einheit','Arbeitsschritt']];
+  const date = new Date().toISOString().slice(0,10);
+  // BOM: Produkt → Baugruppen
+  const bom=[['Produkt-Nr.','Produktname','Baugruppe-Nr.','Baugruppenname','BG neu?','Menge','Einheit','Arbeitsschritt']];
   selBGs.forEach(bg=>{
-    rows.push([selProd.id,selProd.name,bg.id,bg.name,bg.isNew?'JA':'','','','',bg.menge||1,bg.einheit||'Stück',bg.arbeitsschritt||'']);
+    bom.push([selProd.id,selProd.name,bg.id,bg.name,bg.isNew?'JA':'',bg.menge||1,bg.einheit||'Stück',bg.arbeitsschritt||'']);
+  });
+  dlCSV(bom, `BOM_${selProd?.id}_${date}.csv`);
+
+  // BOM_BG: Baugruppe → Einzelteile (alle BGs inkl. nur-anlegen)
+  const allBGs2 = [...selBGs, ...newButDeselected.filter(x=>x.typ==='Baugruppe').map(x=>({...x,isNew:true}))];
+  const bomBG=[['Baugruppe-Nr.','Baugruppenname','BG neu?','Einzelteil-Nr.','Einzelteilname','ET neu?','Menge','Einheit']];
+  allBGs2.forEach(bg=>{
     (bgETs[bg.id]||[]).forEach(et=>{
-      rows.push([selProd.id,selProd.name,bg.id,bg.name,bg.isNew?'JA':'',et.id,et.name,et.isNew?'JA':'',et.menge||1,et.einheit||'Stück','']);
+      bomBG.push([bg.id,bg.name,bg.isNew?'JA':'',et.id,et.name,et.isNew?'JA':'',et.menge||1,et.einheit||'Stück']);
     });
   });
-  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
-  a.download=`BOM_${selProd?.id}_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click(); toast('CSV exportiert');
+  if(bomBG.length>1) setTimeout(()=>dlCSV(bomBG, `BOM_BG_${date}.csv`),300);
+  toast('2 CSV-Dateien exportiert');
 }
 
 // ── Nav ────────────────────────────────────────────────────────
@@ -1045,7 +1158,6 @@ function tryOpen(n){if(n<curStep)goBack(n);}
 
 function goBack(n) {
   if (n === 1) {
-    // Full reset — new product
     selProd = null; selBGs = []; bgETs = {}; newButDeselected = [];
     document.getElementById('ss1').textContent = 'Wähle das Produkt für die Stücklistenerfassung';
     document.getElementById('sd1').textContent = '';
@@ -1053,20 +1165,13 @@ function goBack(n) {
     renderProducts(document.getElementById('psearch')?.value || '');
   }
   if (n === 2) {
-    // Back to baugruppen — keep ALL state (selBGs, bgETs, newButDeselected)
     document.getElementById('ss2').textContent = selBGs.length ? selBGs.length + ' Baugruppe(n)' : 'Welche Baugruppen enthält dieses Produkt?';
     document.getElementById('sd2').textContent = '';
     if (selProd) buildBGList(document.getElementById('bgsearch')?.value?.toLowerCase() || '');
   }
-  if (n === 3) {
-    // Back to einzelteile — keep everything, just rebuild ET accordions
-    document.getElementById('ss3').textContent = 'Für jede Baugruppe die Einzelteile wählen';
-    document.getElementById('sd3').textContent = '';
-    buildETs();
-  }
-  // Unmark done for all steps >= n
-  for (let i = n; i <= 4; i++) {
+  for (let i = n; i <= 3; i++) {
     const b = document.getElementById('s'+i);
+    if(!b) continue;
     b.classList.remove('done');
     document.getElementById('sn'+i).textContent = i;
     document.getElementById('ps'+i).classList.remove('done');
@@ -1077,16 +1182,17 @@ function goBack(n) {
 
 function openStep(n){
   curStep=n;
-  for(let i=1;i<=4;i++){
+  for(let i=1;i<=3;i++){
     const b=document.getElementById('s'+i);
+    if(!b) continue;
     b.querySelector('.sbody').style.display=(i===n)?'block':'none';
     if(i===n){b.classList.add('active');}else{b.classList.remove('active');}
     document.getElementById('ps'+i).classList.toggle('active',i===n);
   }
 }
 function markDone(n){
-  document.getElementById('s'+n).classList.remove('active');
-  document.getElementById('s'+n).classList.add('done');
+  const b=document.getElementById('s'+n); if(!b) return;
+  b.classList.remove('active'); b.classList.add('done');
   document.getElementById('sn'+n).textContent='✓';
   document.getElementById('ps'+n).classList.remove('active');
   document.getElementById('ps'+n).classList.add('done');
@@ -1222,6 +1328,182 @@ function deleteNewChip(id) {
   const chip = document.getElementById('chip-'+id);
   if (chip) chip.remove();
   toast('Gelöscht — wird weder angelegt noch zugeordnet');
+}
+
+// ── Mode switching ────────────────────────────────────────────
+let currentMode = 'A';
+function switchMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeAContent').style.display = mode==='A' ? 'block' : 'none';
+  document.getElementById('modeBContent').style.display = mode==='B' ? 'block' : 'none';
+  document.getElementById('modeABtn').classList.toggle('active', mode==='A');
+  document.getElementById('modeBBtn').classList.toggle('active', mode==='B');
+  if(mode==='B') { bCurStep=1; renderBGMode(''); }
+}
+
+// ── Mode B State ───────────────────────────────────────────────
+let selBG=null, selETs=[], bCurStep=1, etModeNewC=0;
+let bNewButDeselected=[];
+
+let bgModePage=0;
+function filterBGMode(q){ bgModePage=0; renderBGMode(q.toLowerCase()); }
+function renderBGMode(q) {
+  const g=document.getElementById('bgModeList');
+  if(!parts.length){g.innerHTML='<div style="color:var(--t3);font-size:13px;padding:10px 0">Bitte zuerst Daten laden</div>';return;}
+  const bgs=parts.filter(p=>p.typ==='Baugruppe'&&(!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q)));
+  if(!bgs.length){g.innerHTML='<div style="color:var(--t3);font-size:13px;padding:8px 0">Keine Baugruppen gefunden</div>';return;}
+  const pages=Math.ceil(bgs.length/10)||1;
+  if(bgModePage>=pages) bgModePage=pages-1;
+  const shown=bgs.slice(bgModePage*10,(bgModePage+1)*10);
+  g.innerHTML=shown.map(bg=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--off);border:1px solid var(--b);border-radius:var(--r);margin-bottom:5px;cursor:pointer" onclick="selectBGMode('${bg.id}')">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500;color:var(--t)">${bg.name}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">${bg.id}</div>
+      </div>
+      <button class="btn btn-dark btn-sm">Erfassen →</button>
+    </div>`).join('')+pager(bgModePage,pages,`bgModePage=%p;renderBGMode('${q}')`);
+}
+
+function selectBGMode(id) {
+  selBG=parts.find(p=>p.id===id); selETs=[]; bNewButDeselected=[];
+  document.getElementById('bss1').textContent='Ausgewählt';
+  document.getElementById('bsd1').textContent='✓';
+  document.getElementById('selBGName').textContent=selBG.name;
+  document.getElementById('selBGId').textContent=selBG.id;
+  document.getElementById('selBGDisplay').style.display='block';
+  markDoneB(1); openStepB(2); buildETModeList('');
+}
+
+let etModePage=0;
+function filterETMode(q){ etModePage=0; buildETModeList(q.toLowerCase()); }
+function buildETModeList(q) {
+  const ets=parts.filter(p=>p.typ==='Einzelteil'&&(!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q)));
+  const unsel=ets.filter(et=>!selETs.find(s=>s.id===et.id));
+  const pages=Math.ceil(unsel.length/10)||1;
+  if(etModePage>=pages) etModePage=pages-1;
+  const shown=unsel.slice(etModePage*10,(etModePage+1)*10);
+  const selExisting=selETs.filter(s=>!s.isNew);
+  const allToShow=[...selExisting.map(s=>({...(parts.find(p=>p.id===s.id)||{id:s.id,name:s.name})})),...shown];
+  document.getElementById('etModeList').innerHTML=(allToShow.length?allToShow.map(et=>{
+    const s=selETs.find(x=>x.id===et.id);
+    return `<div class="prow ${s?'sex':''}">
+      <div class="pchk ${s?'ex':''}" onclick="togETMode('${et.id}','${esc(et.name)}',this)">${s?'✓':''}</div>
+      <div style="flex:1"><div class="pnm">${et.name}</div><div class="pid">${et.id}</div></div>
+      <div class="qwrap">
+        <input class="qin" type="number" min="0.01" value="${s?.menge||1}" onchange="updETModeMenge('${et.id}',this.value)">
+        <span class="qunit">Stk.</span>
+      </div>
+    </div>`;
+  }).join(''):'<div style="color:var(--t3);font-size:13px;padding:6px 0">Keine Einzelteile gefunden</div>')
+  +pager(etModePage,pages,`etModePage=%p;filterETMode(document.getElementById('etsearchB')?.value||'')`);
+}
+
+function togETMode(id,name,el) {
+  const idx=selETs.findIndex(s=>s.id===id);
+  if(idx>=0){selETs.splice(idx,1);el.className='pchk';el.textContent='';el.closest('.prow').className='prow';}
+  else{selETs.push({id,name,typ:'Einzelteil',isNew:false,menge:1,einheit:'Stück'});el.className='pchk ex';el.textContent='✓';el.closest('.prow').className='prow sex';}
+}
+function updETModeMenge(id,v){const x=selETs.find(s=>s.id===id);if(x)x.menge=parseFloat(v)||1;}
+
+function addNewETMode(){
+  etModeNewC++;const n=etModeNewC;
+  const d=document.createElement('div');d.className='nform';d.style.marginTop='8px';d.id='netmf-'+n;
+  d.innerHTML=`<div class="nform-t">Neues Einzelteil</div>
+    <div class="frow"><div class="flbl">Bezeichnung</div><input class="finp" id="netmn-${n}" placeholder="z.B. Schraube M4 × 20 mm"></div>
+    <div class="fri">
+      <div class="frow"><div class="flbl">Menge</div><input class="finp" type="number" value="1" id="netmm-${n}"></div>
+      <div class="frow"><div class="flbl">Einheit</div><select class="fsel" id="netme-${n}"><option>Stück</option><option>m</option><option>g</option><option>ml</option></select></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn btn-dark btn-sm" onclick="saveNewETMode(${n})">Hinzufügen</button>
+      <button class="btn btn-line btn-sm" onclick="document.getElementById('netmf-${n}').remove()">Abbrechen</button>
+    </div>`;
+  document.getElementById('etModeNewList').appendChild(d);
+}
+function saveNewETMode(n){
+  const name=document.getElementById('netmn-'+n).value.trim();
+  if(!name){toast('Bezeichnung eingeben');return;}
+  const nid=nextETId();
+  parts.push({id:nid,name,typ:'Einzelteil'});
+  const menge=parseFloat(document.getElementById('netmm-'+n).value)||1;
+  const einheit=document.getElementById('netme-'+n).value;
+  selETs.push({id:nid,name,typ:'Einzelteil',isNew:true,menge,einheit});
+  const chip=newETChip(nid,name,menge,einheit,null,true);
+  document.getElementById('netmf-'+n).replaceWith(chip);
+  toast('Einzelteil hinzugefügt: '+nid);
+}
+
+function confirmBS2(){
+  if(!selETs.length){toast('Mindestens ein Einzelteil wählen');return;}
+  document.getElementById('bss2').textContent=selETs.length+' Einzelteil(e)';
+  document.getElementById('bsd2').textContent='✓';
+  markDoneB(2); openStepB(3); buildBS3();
+}
+
+function buildBS3(){
+  let html=`<div class="tree-prod"><span>${selBG.name}</span><span class="tid">${selBG.id}</span></div><div class="tree-wrap">`;
+  selETs.forEach(et=>{
+    html+=`<div class="tree-et" style="padding:9px 18px;border-top:1px solid var(--b)"><div class="edot"></div><div class="enm">${et.name}</div><div class="eqty">${et.menge} ${et.einheit}</div>${et.isNew?'<div class="enew">Neu</div>':''}</div>`;
+  });
+  html+='</div>';
+  document.getElementById('bs3content').innerHTML=html;
+  document.getElementById('bsSaveResult').innerHTML='';
+  document.getElementById('bss3').textContent=`${selBG.name} · bereit`;
+  document.getElementById('btnSaveB').disabled=false;
+}
+
+async function saveToSheetB(){
+  const webhook=document.getElementById('webhookUrl').value.trim();
+  if(!webhook){toast('Bitte Webhook-URL eintragen');return;}
+  show('bsSaveAI',true);
+  document.getElementById('btnSaveB').disabled=true;
+  setStatus('speichert…',false);
+  const payload={
+    action:'saveBOMBG',
+    bgId:selBG.id, bgName:selBG.name,
+    etRows:selETs.map(et=>({etId:et.id,etName:et.name,etNew:et.isNew||false,menge:et.menge||1,einheit:et.einheit||'Stück'})),
+    newArticles:selETs.filter(et=>et.isNew).map(et=>({id:et.id,name:et.name,typ:'Einzelteil'}))
+  };
+  try {
+    await fetch(webhook,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),mode:'no-cors'});
+    document.getElementById('bsSaveResult').innerHTML='<div class="save-result save-ok">Gespeichert — '+selETs.length+' Einzelteile für '+selBG.name+'</div>';
+    document.getElementById('bsd3').textContent='✓';
+    markDoneB(3); setStatus('gespeichert',true); toast('BG-BOM gespeichert ✓');
+  } catch(e){
+    document.getElementById('bsSaveResult').innerHTML='<div class="save-result save-err">Webhook-Fehler. URL prüfen.</div>';
+    setStatus('Fehler',false); document.getElementById('btnSaveB').disabled=false;
+  }
+  show('bsSaveAI',false);
+}
+
+function tryOpenB(n){if(n<bCurStep)goBackB(n);}
+function goBackB(n){
+  if(n===1){selBG=null;selETs=[];bNewButDeselected=[];document.getElementById('bss1').textContent='Wähle die Baugruppe';document.getElementById('bsd1').textContent='';document.getElementById('selBGDisplay').style.display='none';renderBGMode('');}
+  if(n===2){document.getElementById('bss2').textContent='Welche Einzelteile enthält diese Baugruppe?';document.getElementById('bsd2').textContent='';buildETModeList('');}
+  for(let i=n;i<=3;i++){
+    const b=document.getElementById('bs'+i);if(!b)continue;
+    b.classList.remove('done');document.getElementById('bsn'+i).textContent=i;
+    document.getElementById('bps'+i).classList.remove('done');document.getElementById('bpn'+i).textContent=i;
+  }
+  openStepB(n);
+}
+function openStepB(n){
+  bCurStep=n;
+  for(let i=1;i<=3;i++){
+    const b=document.getElementById('bs'+i);if(!b)continue;
+    b.querySelector('.sbody').style.display=(i===n)?'block':'none';
+    if(i===n)b.classList.add('active');else b.classList.remove('active');
+    document.getElementById('bps'+i).classList.toggle('active',i===n);
+  }
+}
+function markDoneB(n){
+  const b=document.getElementById('bs'+n);if(!b)return;
+  b.classList.remove('active');b.classList.add('done');
+  document.getElementById('bsn'+n).textContent='✓';
+  document.getElementById('bps'+n).classList.remove('active');
+  document.getElementById('bps'+n).classList.add('done');
+  document.getElementById('bpn'+n).textContent='✓';
 }
 
 // Init
