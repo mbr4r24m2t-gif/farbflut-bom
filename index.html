@@ -202,9 +202,12 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
   </div>
   <div class="hdr-div"></div>
   <div class="hdr-sub">Stücklisten-Erfassung</div>
-  <div class="hdr-r">
-    <div class="sdot on" id="sdot"></div>
-    <span id="stxt">bereit</span>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
+    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v1.4.0</span>
+    <div class="hdr-r" style="margin-left:0">
+      <div class="sdot on" id="sdot"></div>
+      <span id="stxt">bereit</span>
+    </div>
   </div>
 </div>
 
@@ -909,30 +912,30 @@ function exportCSV(){
 }
 
 // ── Nav ────────────────────────────────────────────────────────
-function tryOpen(n){if(n<=curStep)goBack(n);}
+function tryOpen(n){if(n<curStep)goBack(n);}
 
 function goBack(n) {
-  // Reset state for steps after target
-  if (n < 2) {
-    // Back to step 1: reset everything
-    selProd = null; selBGs = []; bgETs = {};
+  if (n === 1) {
+    // Full reset — new product
+    selProd = null; selBGs = []; bgETs = {}; newButDeselected = [];
     document.getElementById('ss1').textContent = 'Wähle das Produkt für die Stücklistenerfassung';
     document.getElementById('sd1').textContent = '';
+    document.getElementById('selProdDisplay').style.display = 'none';
     renderProducts(document.getElementById('psearch')?.value || '');
   }
-  if (n < 3) {
-    // Reset baugruppen
-    selBGs = []; bgETs = {};
-    document.getElementById('ss2').textContent = 'Welche Baugruppen enthält dieses Produkt?';
-    document.getElementById('sd2').textContent = '';
-    document.getElementById('bgNewList').innerHTML = '';
-    if (selProd) buildBGList('');
-  }
-  if (n < 4) {
-    // Reset einzelteile
+  if (n === 2) {
+    // Back to baugruppen — keep selBGs + newButDeselected, reset only bgETs
     bgETs = {};
+    document.getElementById('ss2').textContent = selBGs.length ? selBGs.length + ' Baugruppe(n)' : 'Welche Baugruppen enthält dieses Produkt?';
+    document.getElementById('sd2').textContent = '';
+    // Rebuild BG list with existing state
+    if (selProd) buildBGList(document.getElementById('bgsearch')?.value?.toLowerCase() || '');
+  }
+  if (n === 3) {
+    // Back to einzelteile — keep everything, just rebuild ET accordions
     document.getElementById('ss3').textContent = 'Für jede Baugruppe die Einzelteile wählen';
     document.getElementById('sd3').textContent = '';
+    buildETs();
   }
   // Unmark done for all steps >= n
   for (let i = n; i <= 4; i++) {
@@ -1090,6 +1093,14 @@ function deleteNewChip(id) {
 
 // Init
 loadSettings();
+// Auto-load if Sheet-ID is saved
+setTimeout(() => {
+  const id = localStorage.getItem('ff_sheetId');
+  if (id && id.length > 10) {
+    document.getElementById('sheetId').value = id;
+    loadSheets();
+  }
+}, 100);
 </script>
 </body>
 </html>
