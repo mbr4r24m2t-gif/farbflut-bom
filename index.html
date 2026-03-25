@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>farbflut BOM Agent v1.8.0</title>
+<title>farbflut BOM Agent v1.9.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
 :root {
@@ -203,7 +203,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
   <div class="hdr-div"></div>
   <div class="hdr-sub">Stücklisten-Erfassung</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
-    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v1.8.0</span>
+    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v1.9.0</span>
     <div class="hdr-r" style="margin-left:0">
       <div class="sdot on" id="sdot"></div>
       <span id="stxt">bereit</span>
@@ -308,8 +308,6 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
       <div style="display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap">
         <button class="btn btn-line btn-sm" onclick="goBack(1)">← Zurück</button>
         <button class="btn btn-line btn-sm" onclick="addNewBG()">+ Neue Baugruppe</button>
-        <button class="btn btn-line btn-sm" onclick="genBG()">✦ KI-Vorschlag</button>
-        <div class="airow" id="bgAI"><div class="spin"></div><span>KI analysiert…</span></div>
         <button class="btn btn-dark" style="margin-left:auto" onclick="confirmS2()">Weiter →</button>
       </div>
     </div>
@@ -693,13 +691,16 @@ function confirmS2() {
 // ── Step 3 ─────────────────────────────────────────────────────
 function buildETs() {
   const c=document.getElementById('etAccs'); c.innerHTML='';
-  selBGs.forEach(bg=>{
+  // Include both assigned BGs and "nur anlegen" BGs (from newButDeselected)
+  const nurAnlegen = newButDeselected.filter(x=>x.typ==='Baugruppe');
+  const allBGsToShow = [...selBGs, ...nurAnlegen.map(x=>({...x, isNew:true, nurAnlegen:true}))];
+  allBGsToShow.forEach(bg=>{
     if(!bgETs[bg.id]) bgETs[bg.id]=[];
     const d=document.createElement('div'); d.className='acc';
     const etCount = bgETs[bg.id].length;
     d.innerHTML=`
       <div class="acc-h open" onclick="togAcc(this)">
-        <div><div class="acc-nm">${bg.name}${bg.isNew?'<span class="acc-new">neu</span>':''}</div><div class="acc-id">${bg.id}</div></div>
+        <div><div class="acc-nm">${bg.name}${bg.isNew?'<span class="acc-new">'+(bg.nurAnlegen?'nur anlegen':'neu')+'</span>':''}</div><div class="acc-id">${bg.id}</div></div>
         <div class="acc-cnt" id="etc-${bg.id}">${etCount} Teil${etCount!==1?'e':''}</div>
         <div class="acc-tog">›</div>
       </div>
@@ -723,8 +724,6 @@ function buildETBody(bgId) {
     <div id="etex-${bgId}">${renderETRows(bgId,ets,sel)}</div>
     <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center">
       <button class="btn btn-line btn-sm" onclick="addNewET('${bgId}')">+ Neues Einzelteil</button>
-      <button class="btn btn-line btn-sm" onclick="genET('${bgId}')">✦ KI-Vorschlag</button>
-      <div class="airow" id="etai-${bgId}"><div class="spin"></div><span>KI lädt…</span></div>
     </div>
     <div id="etnf-${bgId}"></div>`;
 }
