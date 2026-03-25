@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>farbflut BOM Agent v2.3.0</title>
+<title>farbflut BOM Agent v2.4.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
 :root {
@@ -211,7 +211,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
   <div class="hdr-div"></div>
   <div class="hdr-sub">Stücklisten-Erfassung</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
-    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.3.0</span>
+    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.4.0</span>
     <div class="hdr-r" style="margin-left:0">
       <div class="sdot on" id="sdot"></div>
       <span id="stxt">bereit</span>
@@ -607,9 +607,9 @@ function parseGViz2(data) {
     const id      = String(r.c?.[0]?.v ?? '').trim();
     const name    = String(r.c?.[1]?.v ?? '').trim();
     const typ     = String(r.c?.[2]?.v ?? '').trim() || 'Einzelteil';
-    const erfasst = String(r.c?.[3]?.v ?? '').trim().toLowerCase() === 'ja';
+    const erfasst = String(r.c?.[3]?.v ?? '').trim().toUpperCase() === 'JA';
     return { id, name, typ, erfasst };
-  }).filter(x => x.id && x.name && !x.id.toLowerCase().includes('artikel'));
+  }).filter(x => x.id && x.name && !x.id.toLowerCase().includes('artikel') && x.id.toLowerCase() !== 'artikel-nr.');
 }
 
 function parseGViz(raw) {
@@ -674,10 +674,6 @@ function renderProducts(q) {
         <div style="font-size:11px;color:var(--t3);margin-top:2px">${p.id}</div>
       </div>
       <button class="btn btn-dark btn-sm" onclick="selectP('${p.id}')">Erfassen →</button>
-      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;color:var(--t3);white-space:nowrap">
-        <input type="checkbox" onchange="markErledigtToggle('${p.id}',this.checked)" style="cursor:pointer">
-        Erledigt
-      </label>
     </div>`).join('') + pager(prodPage, pages, `prodPage=%p;renderProducts('${q}')`);
 }
 
@@ -1160,7 +1156,8 @@ async function saveToSheet(){
       document.getElementById('saveResult').innerHTML='';
       document.getElementById('btnSave').disabled=false;
       openStep(1);
-      renderProducts(document.getElementById('psearch')?.value||'');
+      // Reload from sheet to get fresh erfasst status
+      loadSheets();
     },1500);
   } catch(e){
     showSaveResult(false,'Verbindung zum Webhook fehlgeschlagen.');
@@ -1571,7 +1568,8 @@ async function saveToSheetB(){
       document.getElementById('bsd1').textContent='';
       document.getElementById('bsSaveResult').innerHTML='';
       openStepB(1);
-      renderBGMode(document.getElementById('bgsearchB')?.value||'');
+      // Reload from sheet to get fresh erfasst status
+      loadSheets();
     },1500);
   } catch(e){
     document.getElementById('bsSaveResult').innerHTML='<div class="save-result save-err">Webhook-Fehler. URL prüfen.</div>';
