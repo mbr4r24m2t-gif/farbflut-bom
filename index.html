@@ -506,43 +506,35 @@ function parseCSV(raw) {
 }
 
 // ── Step 1 ─────────────────────────────────────────────────────
-function filterP(q){renderProducts(q.toLowerCase())}
+let prodPage = 0;
+function filterP(q){ prodPage=0; renderProducts(q.toLowerCase()); }
 
 function renderProducts(q) {
   const g = document.getElementById('pgrid');
   if (!products.length) { g.innerHTML='<div style="color:var(--t3);font-size:13px;padding:10px 0">Demo laden oder Sheets verbinden</div>'; return; }
-
-  const total    = products.length;
-  const done     = products.filter(p=>p.erfasst).length;
-  const pending  = products.filter(p=>!p.erfasst);
-  const open     = total - done;
-
-  // Update progress
+  const total = products.length;
+  const done  = products.filter(p=>p.erfasst).length;
+  const open  = total - done;
   const pp = document.getElementById('prodProgress');
   if (pp) {
-    pp.style.display = 'block';
-    document.getElementById('progLabel').textContent = open + ' von ' + total + ' noch offen';
-    document.getElementById('progPct').textContent = Math.round(done/total*100) + '% erledigt';
-    document.getElementById('progBar').style.width = (done/total*100) + '%';
+    pp.style.display='block';
+    document.getElementById('progLabel').textContent=open+' von '+total+' noch offen';
+    document.getElementById('progPct').textContent=Math.round(done/total*100)+'% erledigt';
+    document.getElementById('progBar').style.width=(done/total*100)+'%';
   }
-
-  // Filter by search or show first 10 pending
-  let shown;
-  if (q) {
-    shown = products.filter(p => !p.erfasst && (p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q)));
-  } else {
-    shown = pending.slice(0, 10);
-  }
-
-  if (!shown.length) {
-    g.innerHTML = q
-      ? '<div style="color:var(--t3);font-size:13px;padding:8px 0">Kein offenes Produkt gefunden</div>'
-      : '<div style="color:var(--green);font-size:13px;padding:8px 0">Alle Produkte erfasst!</div>';
+  const filtered = q
+    ? products.filter(p=>!p.erfasst&&(p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q)))
+    : products.filter(p=>!p.erfasst);
+  if (!filtered.length) {
+    g.innerHTML = q ? '<div style="color:var(--t3);font-size:13px;padding:8px 0">Kein offenes Produkt gefunden</div>'
+                    : '<div style="color:var(--green);font-size:13px;padding:8px 0">Alle Produkte erfasst!</div>';
     return;
   }
-
-  g.innerHTML = shown.map(p => `
-    <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--off);border:1px solid var(--b);border-radius:var(--r);margin-bottom:5px;transition:border-color 0.12s" class="prow-item">
+  const pages = Math.ceil(filtered.length / 10);
+  if (prodPage >= pages) prodPage = pages - 1;
+  const shown = filtered.slice(prodPage*10, (prodPage+1)*10);
+  g.innerHTML = shown.map(p=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--off);border:1px solid var(--b);border-radius:var(--r);margin-bottom:5px">
       <div style="flex:1;cursor:pointer" onclick="selectP('${p.id}')">
         <div style="font-size:13px;font-weight:500;color:var(--t)">${p.name}</div>
         <div style="font-size:11px;color:var(--t3);margin-top:2px">${p.id}</div>
@@ -552,11 +544,7 @@ function renderProducts(q) {
         <input type="checkbox" onchange="markErledigtToggle('${p.id}',this.checked)" style="cursor:pointer">
         Erledigt
       </label>
-    </div>`).join('');
-
-  if (!q && pending.length > 10) {
-    g.innerHTML += `<div style="font-size:12px;color:var(--t3);padding:8px 0;text-align:center">${pending.length - 10} weitere offen — Suche verwenden um gezielt zu finden</div>`;
-  }
+    </div>`).join('') + pager(prodPage, pages, `prodPage=%p;renderProducts('${q}')`);
 }
 
 async function markErledigtToggle(id, checked) {
@@ -589,19 +577,21 @@ function selectP(id) {
 }
 
 // ── Step 2 ─────────────────────────────────────────────────────
-function filterBG(q){buildBGList(q.toLowerCase())}
+let bgPage = 0;
+function filterBG(q){ bgPage=0; buildBGList(q.toLowerCase()); }
 function buildBGList(q) {
   const bgs = allBGs.filter(p=>!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q));
-  const bgsShown = bgs.slice(0, 10);
-  const bgsExtra = bgs.length > 10 ? `<div style="font-size:12px;color:var(--t3);padding:8px 0;text-align:center">${bgs.length - 10} ${q?'weitere Treffer':'weitere'} — Suche ${q?'verfeinern':'verwenden'}</div>` : '';
+  const unsel = bgs.filter(bg=>!selBGs.find(s=>s.id===bg.id));
+  const pages = Math.ceil(unsel.length/10)||1;
+  if(bgPage>=pages) bgPage=pages-1;
+  const bgsShown = unsel.slice(bgPage*10,(bgPage+1)*10);
+  const bgsExtra = pager(bgPage, pages, `bgPage=%p;buildBGList('${q}')`);
 
   // 1. Selected existing BGs (always show, regardless of search)
   const selectedExisting = selBGs.filter(s => !s.isNew);
-  // 2. Unselected from current search/list
-  const unselectedShown = bgsShown.filter(bg => !selBGs.find(s => s.id === bg.id));
   const allToShow = [
     ...selectedExisting.map(s => ({...(allBGs.find(b=>b.id===s.id)||{id:s.id,name:s.name,typ:'Baugruppe'}), _sel:true})),
-    ...unselectedShown
+    ...bgsShown
   ];
 
   document.getElementById('bgExList').innerHTML = (allToShow.length
@@ -739,11 +729,14 @@ function buildETBody(bgId) {
     <div id="etnf-${bgId}"></div>`;
 }
 function renderETRows(bgId,ets,sel) {
-  // Always show selected ETs first (excluding new ones which appear in nf div)
+  if(!window.etPages) window.etPages={};
+  const etPage = window.etPages[bgId]||0;
   const selectedExisting = (sel||[]).filter(s=>!s.isNew);
-  const unselected = ets.filter(et => !sel.find(s=>s.id===et.id)).slice(0, 10);
-  const extra = ets.filter(et=>!sel.find(s=>s.id===et.id)).length > 10
-    ? `<div style="font-size:12px;color:var(--t3);padding:8px 0;text-align:center">${ets.filter(et=>!sel.find(s=>s.id===et.id)).length - 10} weitere — Suche verfeinern</div>` : '';
+  const unselAll = ets.filter(et=>!sel.find(s=>s.id===et.id));
+  const pages = Math.ceil(unselAll.length/10)||1;
+  const curP = Math.min(etPage, pages-1);
+  const unselected = unselAll.slice(curP*10,(curP+1)*10);
+  const extra = pager(curP, pages, `window.etPages['${bgId}']=%p;filterET('${bgId}',document.getElementById('ets-${bgId}')?.value||'',true)`);
   const allToShow = [...selectedExisting.map(s=>({...(parts.find(p=>p.id===s.id)||{id:s.id,name:s.name,typ:'Einzelteil'})})), ...unselected];
   return (allToShow.length ? allToShow.map(et=>{
     const s=sel.find(x=>x.id===et.id);
@@ -757,7 +750,8 @@ function renderETRows(bgId,ets,sel) {
     </div>`;
   }).join('') : '<div style="color:var(--t3);font-size:13px;padding:6px 0">Keine Einzelteile im Artikelstamm</div>') + extra;
 }
-function filterET(bgId,q) {
+function filterET(bgId,q,keepPage=false) {
+  if(!keepPage){window.etPages=window.etPages||{};window.etPages[bgId]=0;}
   const ets=parts.filter(p=>p.typ==='Einzelteil'&&(!q||p.name.toLowerCase().includes(q.toLowerCase())||p.id.toLowerCase().includes(q.toLowerCase())));
   document.getElementById('etex-'+bgId).innerHTML=renderETRows(bgId,ets,bgETs[bgId]||[]);
   // Restore new ET chips after re-render
@@ -967,6 +961,11 @@ function markDone(n){
 }
 
 // ── Helpers ────────────────────────────────────────────────────
+function pager(cur, total, action) {
+  const prev = cur > 0 ? `<button class="btn btn-line btn-sm" onclick="${action.replace('%p',cur-1)}" style="padding:5px 12px">‹</button>` : `<button class="btn btn-line btn-sm" style="opacity:0.3;padding:5px 12px" disabled>‹</button>`;
+  const next = cur < total-1 ? `<button class="btn btn-line btn-sm" onclick="${action.replace('%p',cur+1)}" style="padding:5px 12px">›</button>` : `<button class="btn btn-line btn-sm" style="opacity:0.3;padding:5px 12px" disabled>›</button>`;
+  return `<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;font-size:12px;color:var(--t3)">${prev}<span>Seite ${cur+1} von ${total}</span>${next}</div>`;
+}
 function esc(s){return s.replace(/'/g,"\\'").replace(/"/g,'&quot;');}
 function rnd(){return Math.random().toString(36).slice(2,6);}
 function show(id,on){const e=document.getElementById(id);if(e)e.classList.toggle('show',on);}
