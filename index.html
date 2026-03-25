@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>farbflut BOM Agent v2.0.0</title>
+<title>farbflut BOM Agent v2.1.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
 :root {
@@ -211,7 +211,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
   <div class="hdr-div"></div>
   <div class="hdr-sub">Stücklisten-Erfassung</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
-    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.0.0</span>
+    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.1.0</span>
     <div class="hdr-r" style="margin-left:0">
       <div class="sdot on" id="sdot"></div>
       <span id="stxt">bereit</span>
@@ -383,6 +383,15 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
     </div>
     <div class="sbody">
       <div class="sdiv"></div>
+      <div id="bgModeProgress" style="margin-bottom:14px;display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:12px;color:var(--t2)" id="bgModeProgLabel"></span>
+          <span style="font-size:11px;color:var(--t3)" id="bgModeProgPct"></span>
+        </div>
+        <div style="height:3px;background:var(--b);border-radius:2px;overflow:hidden">
+          <div id="bgModeProgBar" style="height:100%;background:var(--green);border-radius:2px;transition:width 0.3s"></div>
+        </div>
+      </div>
       <div class="sbox"><span class="sbox-icon">⌕</span><input placeholder="Baugruppe suchen…" oninput="filterBGMode(this.value)" id="bgsearchB"></div>
       <div id="bgModeList"></div>
     </div>
@@ -1112,6 +1121,25 @@ async function saveToSheet(){
     document.getElementById('sd3').textContent='✓';
     markDone(3); setStatus('gespeichert',true); toast('Im Sheet gespeichert ✓');
     const p=products.find(x=>x.id===selProd.id); if(p) p.erfasst=true;
+    setTimeout(()=>{
+      selProd=null; selBGs=[]; bgETs={}; newButDeselected=[];
+      document.getElementById('selProdDisplay').style.display='none';
+      for(let i=1;i<=3;i++){
+        const b=document.getElementById('s'+i); if(!b) continue;
+        b.classList.remove('done','active');
+        document.getElementById('sn'+i).textContent=i;
+        document.getElementById('ps'+i).classList.remove('done','active');
+        document.getElementById('pn'+i).textContent=i;
+      }
+      document.getElementById('ss1').textContent='Wähle das Produkt für die Stücklistenerfassung';
+      document.getElementById('sd1').textContent='';
+      document.getElementById('ss2').textContent='Welche Baugruppen enthält dieses Produkt?';
+      document.getElementById('sd2').textContent='';
+      document.getElementById('saveResult').innerHTML='';
+      document.getElementById('btnSave').disabled=false;
+      openStep(1);
+      renderProducts(document.getElementById('psearch')?.value||'');
+    },1500);
   } catch(e){
     showSaveResult(false,'Verbindung zum Webhook fehlgeschlagen.');
     setStatus('Fehler',false);
@@ -1350,18 +1378,34 @@ function filterBGMode(q){ bgModePage=0; renderBGMode(q.toLowerCase()); }
 function renderBGMode(q) {
   const g=document.getElementById('bgModeList');
   if(!parts.length){g.innerHTML='<div style="color:var(--t3);font-size:13px;padding:10px 0">Bitte zuerst Daten laden</div>';return;}
-  const bgs=parts.filter(p=>p.typ==='Baugruppe'&&(!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q)));
-  if(!bgs.length){g.innerHTML='<div style="color:var(--t3);font-size:13px;padding:8px 0">Keine Baugruppen gefunden</div>';return;}
+  const allBGs=parts.filter(p=>p.typ==='Baugruppe');
+  // Update progress bar
+  const done=allBGs.filter(bg=>bg.erfasst).length;
+  const total=allBGs.length;
+  const pp=document.getElementById('bgModeProgress');
+  if(pp&&total>0){
+    pp.style.display='block';
+    document.getElementById('bgModeProgLabel').textContent=(total-done)+' von '+total+' Baugruppen noch offen';
+    document.getElementById('bgModeProgPct').textContent=Math.round(done/total*100)+'% erledigt';
+    document.getElementById('bgModeProgBar').style.width=(done/total*100)+'%';
+  }
+  const bgs=allBGs.filter(p=>!p.erfasst&&(!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q)));
+  if(!bgs.length){
+    g.innerHTML=q
+      ?'<div style="color:var(--t3);font-size:13px;padding:8px 0">Keine offenen Baugruppen gefunden</div>'
+      :'<div style="color:var(--green);font-size:13px;padding:8px 0">Alle Baugruppen erfasst!</div>';
+    return;
+  }
   const pages=Math.ceil(bgs.length/10)||1;
   if(bgModePage>=pages) bgModePage=pages-1;
   const shown=bgs.slice(bgModePage*10,(bgModePage+1)*10);
   g.innerHTML=shown.map(bg=>`
-    <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--off);border:1px solid var(--b);border-radius:var(--r);margin-bottom:5px;cursor:pointer" onclick="selectBGMode('${bg.id}')">
-      <div style="flex:1">
+    <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--off);border:1px solid var(--b);border-radius:var(--r);margin-bottom:5px">
+      <div style="flex:1;cursor:pointer" onclick="selectBGMode('${bg.id}')">
         <div style="font-size:13px;font-weight:500;color:var(--t)">${bg.name}</div>
         <div style="font-size:11px;color:var(--t3);margin-top:2px">${bg.id}</div>
       </div>
-      <button class="btn btn-dark btn-sm">Erfassen →</button>
+      <button class="btn btn-dark btn-sm" onclick="selectBGMode('${bg.id}')">Erfassen →</button>
     </div>`).join('')+pager(bgModePage,pages,`bgModePage=%p;renderBGMode('${q}')`);
 }
 
@@ -1470,6 +1514,25 @@ async function saveToSheetB(){
     document.getElementById('bsSaveResult').innerHTML='<div class="save-result save-ok">Gespeichert — '+selETs.length+' Einzelteile für '+selBG.name+'</div>';
     document.getElementById('bsd3').textContent='✓';
     markDoneB(3); setStatus('gespeichert',true); toast('BG-BOM gespeichert ✓');
+    // Mark BG as done in local cache
+    const bgObj=parts.find(x=>x.id===selBG.id); if(bgObj) bgObj.erfasst=true;
+    // Nach 1.5s zurücksetzen
+    setTimeout(()=>{
+      selBG=null; selETs=[]; bNewButDeselected=[];
+      document.getElementById('selBGDisplay').style.display='none';
+      for(let i=1;i<=3;i++){
+        const b=document.getElementById('bs'+i); if(!b) continue;
+        b.classList.remove('done','active');
+        document.getElementById('bsn'+i).textContent=i;
+        document.getElementById('bps'+i).classList.remove('done','active');
+        document.getElementById('bpn'+i).textContent=i;
+      }
+      document.getElementById('bss1').textContent='Wähle die Baugruppe für die Einzelteil-Erfassung';
+      document.getElementById('bsd1').textContent='';
+      document.getElementById('bsSaveResult').innerHTML='';
+      openStepB(1);
+      renderBGMode(document.getElementById('bgsearchB')?.value||'');
+    },1500);
   } catch(e){
     document.getElementById('bsSaveResult').innerHTML='<div class="save-result save-err">Webhook-Fehler. URL prüfen.</div>';
     setStatus('Fehler',false); document.getElementById('btnSaveB').disabled=false;
