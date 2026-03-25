@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>farbflut BOM Agent v1.12.0</title>
+<title>farbflut BOM Agent v1.13.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
 :root {
@@ -203,7 +203,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
   <div class="hdr-div"></div>
   <div class="hdr-sub">Stücklisten-Erfassung</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
-    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v1.12.0</span>
+    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v1.13.0</span>
     <div class="hdr-r" style="margin-left:0">
       <div class="sdot on" id="sdot"></div>
       <span id="stxt">bereit</span>
@@ -723,7 +723,8 @@ async function genBG() {
 }
 
 function confirmS2() {
-  if(!selBGs.length){toast('Mindestens eine Baugruppe wählen');return;}
+  const nurBGs = newButDeselected.filter(x=>x.typ==='Baugruppe');
+  if(!selBGs.length && !nurBGs.length){toast('Mindestens eine Baugruppe wählen oder anlegen');return;}
   document.getElementById('ss2').textContent=selBGs.length+' Baugruppe(n)';
   document.getElementById('sd2').textContent='✓';
   markDone(2); openStep(3); buildETs();
@@ -732,9 +733,16 @@ function confirmS2() {
 // ── Step 3 ─────────────────────────────────────────────────────
 function buildETs() {
   const c=document.getElementById('etAccs'); c.innerHTML='';
-  // Include both assigned BGs and "nur anlegen" BGs (from newButDeselected)
+  // All BGs: assigned + nur-anlegen (newButDeselected)
   const nurAnlegen = newButDeselected.filter(x=>x.typ==='Baugruppe');
-  const allBGsToShow = [...selBGs, ...nurAnlegen.map(x=>({...x, isNew:true, nurAnlegen:true}))];
+  const allBGsToShow = [
+    ...selBGs,
+    ...nurAnlegen.filter(x=>!selBGs.find(s=>s.id===x.id)).map(x=>({...x, isNew:true, nurAnlegen:true}))
+  ];
+  if (!allBGsToShow.length) {
+    c.innerHTML='<div style="color:var(--t3);font-size:13px;padding:10px 0">Keine Baugruppen ausgewählt</div>';
+    return;
+  }
   allBGsToShow.forEach(bg=>{
     if(!bgETs[bg.id]) bgETs[bg.id]=[];
     const d=document.createElement('div'); d.className='acc';
@@ -1157,9 +1165,10 @@ function toggleNewChip(id) {
     chk.className = 'pchk'; chk.textContent = '';
     chk.style.borderColor = 'var(--b2)';
     if (badge) { badge.textContent = 'Nur anlegen'; badge.classList.remove('nw'); }
+    const bgFull = selBGs.find(s=>s.id===id) || {id, name: chip.querySelector('.pnm').textContent, typ:'Baugruppe', isNew:true, menge:1, einheit:'Stück', arbeitsschritt:''};
     selBGs = selBGs.filter(s => s.id !== id);
     const existing = newButDeselected.find(x=>x.id===id);
-    if (!existing) newButDeselected.push({id, name: chip.querySelector('.pnm').textContent, typ:'Baugruppe'});
+    if (!existing) newButDeselected.push({...bgFull});
     toast('Nicht zugeordnet — wird aber im Artikelstamm angelegt');
   } else {
     // Re-assign
