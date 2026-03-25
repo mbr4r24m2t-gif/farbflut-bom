@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>farbflut BOM Agent v2.4.0</title>
+<title>farbflut BOM Agent v2.6.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
 :root {
@@ -211,7 +211,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
   <div class="hdr-div"></div>
   <div class="hdr-sub">Stücklisten-Erfassung</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
-    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.4.0</span>
+    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.6.0</span>
     <div class="hdr-r" style="margin-left:0">
       <div class="sdot on" id="sdot"></div>
       <span id="stxt">bereit</span>
@@ -551,16 +551,18 @@ function loadDemo() {
   toast('Demo geladen');
 }
 
-// ── Sheets via CSV fetch ───────────────────────────────────────
+// ── Sheets via CSV + Webhook für erfasst-Status ────────────────
 async function loadSheets() {
   const id = document.getElementById('sheetId').value.trim();
   if (!id) { toast('Bitte Sheet-ID eingeben'); return; }
   const tp = document.getElementById('tabP').value || 'Endprodukte';
   const ta = document.getElementById('tabA').value || 'Artikelstamm';
+  const webhook = document.getElementById('webhookUrl').value.trim();
   setStatus('laden…', false);
   setConn(false, 'Lade Daten…');
   saveSettings();
   try {
+    // CSV für Produkte + Artikelstamm
     const [rP, rA] = await Promise.all([
       fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tp)}`),
       fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(ta)}`)
@@ -569,10 +571,36 @@ async function loadSheets() {
     products = parseCSV(tP);
     parts    = parseCSV(tA);
     allBGs   = parts.filter(p => p.typ === 'Baugruppe');
+
+    // Webhook GET für erfasst-Status aus BOM + BOM_BG
+    if (webhook) {
+      try {
+        const rW = await fetch(webhook);
+        const wData = await rW.json();
+        // Merge erfasst flags
+        if (wData.products) {
+          wData.products.forEach(wp => {
+            const p = products.find(x => x.id === wp.id);
+            if (p) p.erfasst = wp.erfasst;
+          });
+        }
+        if (wData.parts) {
+          wData.parts.forEach(wp => {
+            const p = parts.find(x => x.id === wp.id);
+            if (p) p.erfasst = wp.erfasst;
+          });
+        }
+        allBGs = parts.filter(p => p.typ === 'Baugruppe');
+      } catch(we) {
+        console.warn('Webhook GET fehlgeschlagen, erfasst-Status nicht verfügbar:', we);
+      }
+    }
+
     if (products.length > 0 || parts.length > 0) {
+      const erfasstCount = products.filter(p=>p.erfasst).length;
       setConn(true, `${products.length} Produkte · ${parts.length} Teile geladen`);
       renderProducts(''); updateSettingsSub(); setStatus('bereit', true);
-      toast(`${products.length} Produkte · ${parts.length} Teile geladen`);
+      toast(`${products.length} Produkte geladen · ${erfasstCount} erledigt`);
     } else {
       setConn(false, `0 Einträge — Tab-Namen prüfen`);
       setStatus('Fehler', false);
@@ -589,11 +617,12 @@ function finishLoad(results, tp, ta) {
   parts    = results.a || [];
   allBGs   = parts.filter(p => p.typ === 'Baugruppe');
   if (products.length > 0 || parts.length > 0) {
+    const erfasstCount = products.filter(p=>p.erfasst).length;
     setConn(true, `${products.length} Produkte · ${parts.length} Teile geladen`);
     renderProducts('');
     updateSettingsSub();
     setStatus('bereit', true);
-    toast(`${products.length} Produkte · ${parts.length} Teile geladen`);
+    toast(`${products.length} Produkte geladen · ${erfasstCount} erledigt`);
   } else {
     setConn(false, `0 Einträge — Tab-Namen prüfen: "${tp}" und "${ta}"`);
     setStatus('Fehler', false);
@@ -607,8 +636,7 @@ function parseGViz2(data) {
     const id      = String(r.c?.[0]?.v ?? '').trim();
     const name    = String(r.c?.[1]?.v ?? '').trim();
     const typ     = String(r.c?.[2]?.v ?? '').trim() || 'Einzelteil';
-    const erfasst = String(r.c?.[3]?.v ?? '').trim().toUpperCase() === 'JA';
-    return { id, name, typ, erfasst };
+    return { id, name, typ, erfasst: false }; // erfasst set by server via BOM check
   }).filter(x => x.id && x.name && !x.id.toLowerCase().includes('artikel') && x.id.toLowerCase() !== 'artikel-nr.');
 }
 
@@ -634,8 +662,7 @@ function parseCSV(raw) {
     const id      = (vals[0] || '').replace(/^"|"$/g, '').trim();
     const name    = (vals[1] || '').replace(/^"|"$/g, '').trim();
     const typ     = (vals[2] || '').replace(/^"|"$/g, '').trim() || 'Einzelteil';
-    const erfasst = (vals[3] || '').replace(/^"|"$/g, '').trim().toUpperCase() === 'JA';
-    return { id, name, typ, erfasst };
+    return { id, name, typ, erfasst: false }; // erfasst set by server via BOM check
   }).filter(x => x.id && x.name && x.id !== 'Artikel-Nr.' && x.id !== 'Artikel-Nr');
 }
 
