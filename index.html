@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>farbflut BOM Agent v2.2.0</title>
+<title>farbflut BOM Agent v2.3.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
 :root {
@@ -211,7 +211,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
   <div class="hdr-div"></div>
   <div class="hdr-sub">Stücklisten-Erfassung</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
-    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.2.0</span>
+    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.3.0</span>
     <div class="hdr-r" style="margin-left:0">
       <div class="sdot on" id="sdot"></div>
       <span id="stxt">bereit</span>
@@ -245,9 +245,11 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
       </div>
       <div class="srow">
         <span class="slbl">BG-Prefix</span>
-        <input class="sinp" id="bgPrefix" value="BG-99-" style="max-width:120px" oninput="saveSettings()" title="Präfix für neue Baugruppen-Nummern">
+        <input class="sinp" id="bgPrefix" value="BG-99-" style="max-width:110px" oninput="saveSettings()" title="Präfix für neue Baugruppen-Nummern">
+        <span class="slbl">ZP-Prefix</span>
+        <input class="sinp" id="zpPrefix" value="ZP-01-" style="max-width:110px" oninput="saveSettings()" title="Präfix für neue Zwischenprodukte">
         <span class="slbl">ET-Prefix</span>
-        <input class="sinp" id="etPrefix" value="ET-01-" style="max-width:120px" oninput="saveSettings()" title="Präfix für neue Einzelteil-Nummern">
+        <input class="sinp" id="etPrefix" value="ET-01-" style="max-width:110px" oninput="saveSettings()" title="Präfix für neue Einzelteil-Nummern">
       </div>
       <div class="srow">
         <span class="slbl">Webhook-URL</span>
@@ -372,8 +374,8 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
     <div class="shdr">
       <div class="snum" id="bsn1">1</div>
       <div style="flex:1">
-        <div class="stitle">Baugruppe wählen</div>
-        <div class="ssub" id="bss1">Wähle die Baugruppe für die Einzelteil-Erfassung</div>
+        <div class="stitle">Baugruppe / Zwischenprodukt wählen</div>
+        <div class="ssub" id="bss1">Wähle die Baugruppe oder das Zwischenprodukt für die Einzelteil-Erfassung</div>
         <div id="selBGDisplay" style="display:none;margin-top:8px;padding:10px 14px;background:var(--off);border:1px solid var(--b2);border-radius:var(--r);border-left:3px solid var(--t);user-select:text;cursor:text">
           <div id="selBGName" style="font-size:14px;font-weight:500;color:var(--t);user-select:text"></div>
           <div id="selBGId" style="font-size:11px;color:var(--t3);margin-top:2px;font-family:monospace;user-select:text"></div>
@@ -383,6 +385,12 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
     </div>
     <div class="sbody">
       <div class="sdiv"></div>
+      <!-- Type switcher -->
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <button class="btn btn-sm" id="bgTypeAll" onclick="setBGTypeFilter('all')" style="background:var(--t);color:var(--w);border-color:var(--t)">Alle</button>
+        <button class="btn btn-line btn-sm" id="bgTypeBG" onclick="setBGTypeFilter('bg')">Nur Baugruppen</button>
+        <button class="btn btn-line btn-sm" id="bgTypeZP" onclick="setBGTypeFilter('zp')">Nur Zwischenprodukte</button>
+      </div>
       <div id="bgModeProgress" style="margin-bottom:14px;display:none">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <span style="font-size:12px;color:var(--t2)" id="bgModeProgLabel"></span>
@@ -472,6 +480,10 @@ function nextBGId() {
   const p = document.getElementById('bgPrefix')?.value || 'BG-99-';
   return getNextId(p, parts);
 }
+function nextZPId() {
+  const p = document.getElementById('zpPrefix')?.value || 'ZP-01-';
+  return getNextId(p, parts);
+}
 function nextETId() {
   const p = document.getElementById('etPrefix')?.value || 'ET-01-';
   return getNextId(p, parts);
@@ -484,6 +496,7 @@ function saveSettings() {
   localStorage.setItem('ff_tabA', document.getElementById('tabA').value);
   localStorage.setItem('ff_webhook', document.getElementById('webhookUrl').value);
   localStorage.setItem('ff_bgPrefix', document.getElementById('bgPrefix').value);
+  localStorage.setItem('ff_zpPrefix', document.getElementById('zpPrefix').value);
   localStorage.setItem('ff_etPrefix', document.getElementById('etPrefix').value);
 }
 function loadSettings() {
@@ -493,6 +506,7 @@ function loadSettings() {
   document.getElementById('tabA').value      = s('ff_tabA') || 'Artikelstamm';
   document.getElementById('webhookUrl').value = s('ff_webhook');
   document.getElementById('bgPrefix').value = s('ff_bgPrefix') || 'BG-99-';
+  document.getElementById('zpPrefix').value = s('ff_zpPrefix') || 'ZP-01-';
   document.getElementById('etPrefix').value = s('ff_etPrefix') || 'ET-01-';
   if (s('ff_sheetId')) updateSettingsSub();
 }
@@ -717,10 +731,12 @@ function buildBGList(q) {
   document.getElementById('bgExList').innerHTML = (allToShow.length
     ? allToShow.map(bg=>{
         const s=selBGs.find(x=>x.id===bg.id);
+        const zpPfx=(document.getElementById('zpPrefix')?.value||'ZP-01-').toUpperCase();
+        const isZP=bg.id.toUpperCase().startsWith(zpPfx);
         return `<div class="prow ${s?'sex':''}" id="bgr-${bg.id}">
           <div class="pchk ${s?'ex':''}" onclick="toggleBG('${bg.id}','${esc(bg.name)}')">${s?'✓':''}</div>
           <div style="flex:1"><div class="pnm">${bg.name}</div><div class="pid">${bg.id}</div></div>
-          <span class="pbdg">Baugruppe</span>
+          <span class="pbdg${isZP?' nw':''}">${isZP?'Zwischenprodukt':'Baugruppe'}</span>
         </div>`;
       }).join('')
     : '<div style="color:var(--t3);font-size:13px;padding:6px 0">Keine Baugruppen gefunden</div>'
@@ -757,12 +773,16 @@ function toggleBG(id,name) {
 function addNewBG() {
   bgNewC++;const n=bgNewC;
   const d=document.createElement('div'); d.className='nform'; d.id='nbgf-'+n;
-  d.innerHTML=`<div class="nform-t">Neue Baugruppe</div>
+  d.innerHTML=`<div class="nform-t">Neue Baugruppe / Zwischenprodukt</div>
     <div class="frow"><div class="flbl">Bezeichnung</div><input class="finp" id="nbgn-${n}" placeholder="z.B. Holzschirm 25 cm"></div>
     <div class="fri">
       <div class="frow"><div class="flbl">Menge</div><input class="finp" type="number" value="1" id="nbgm-${n}"></div>
       <div class="frow"><div class="flbl">Einheit</div><select class="fsel" id="nbge-${n}"><option>Stück</option><option>m</option><option>kg</option></select></div>
       <div class="frow" style="flex:2"><div class="flbl">Arbeitsschritt</div><input class="finp" id="nbgs-${n}" placeholder="z.B. Vormontage"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+      <input type="checkbox" id="nbgzp-${n}" style="cursor:pointer">
+      <label for="nbgzp-${n}" style="font-size:12px;color:var(--t2);cursor:pointer">Als Zwischenprodukt anlegen (ZP-Prefix)</label>
     </div>
     <div style="display:flex;gap:8px;margin-top:10px">
       <button class="btn btn-dark btn-sm" onclick="saveNewBG(${n})">Hinzufügen</button>
@@ -773,13 +793,14 @@ function addNewBG() {
 function saveNewBG(n) {
   const name=document.getElementById('nbgn-'+n).value.trim();
   if(!name){toast('Bezeichnung eingeben');return;}
-  const nid=nextBGId();
-  // Add to parts cache so next BG gets incremented ID
+  const isZP=document.getElementById('nbgzp-'+n)?.checked;
+  const nid=isZP?nextZPId():nextBGId();
+  const label=isZP?'Zwischenprodukt':'Baugruppe';
   parts.push({id:nid, name, typ:'Baugruppe'});
   allBGs.push({id:nid, name, typ:'Baugruppe'});
-  selBGs.push({id:nid,name,typ:'Baugruppe',isNew:true,menge:parseFloat(document.getElementById('nbgm-'+n).value)||1,einheit:document.getElementById('nbge-'+n).value,arbeitsschritt:document.getElementById('nbgs-'+n).value});
+  selBGs.push({id:nid,name,typ:'Baugruppe',isNew:true,isZP,menge:parseFloat(document.getElementById('nbgm-'+n).value)||1,einheit:document.getElementById('nbge-'+n).value,arbeitsschritt:document.getElementById('nbgs-'+n).value});
   document.getElementById('nbgf-'+n).replaceWith(newChip(nid,name,'Baugruppe',true));
-  toast('Baugruppe hinzugefügt');
+  toast(label+' hinzugefügt: '+nid);
 }
 
 async function genBG() {
@@ -1376,10 +1397,28 @@ let bNewButDeselected=[];
 
 let bgModePage=0;
 function filterBGMode(q){ bgModePage=0; renderBGMode(q.toLowerCase()); }
+let bgTypeFilter='all';
+function setBGTypeFilter(type){
+  bgTypeFilter=type;
+  ['all','bg','zp'].forEach(t=>{
+    const b=document.getElementById('bgType'+t.charAt(0).toUpperCase()+t.slice(1));
+    if(b){b.style.background=t===type?'var(--t)':'';b.style.color=t===type?'var(--w)':'';b.style.borderColor=t===type?'var(--t)':'var(--b2)';}
+  });
+  bgModePage=0; renderBGMode(document.getElementById('bgsearchB')?.value||'');
+}
 function renderBGMode(q) {
   const g=document.getElementById('bgModeList');
   if(!parts.length){g.innerHTML='<div style="color:var(--t3);font-size:13px;padding:10px 0">Bitte zuerst Daten laden</div>';return;}
-  const allBGs=parts.filter(p=>p.typ==='Baugruppe');
+  const zpPfx=(document.getElementById('zpPrefix')?.value||'ZP-01-').toUpperCase();
+  const bgPfx=(document.getElementById('bgPrefix')?.value||'BG-99-').toUpperCase();
+  // Include both Baugruppen and Zwischenprodukte
+  const allBGs=parts.filter(p=>{
+    if(p.typ!=='Baugruppe') return false;
+    const isZP = p.id.toUpperCase().startsWith(zpPfx);
+    if(bgTypeFilter==='bg') return !isZP;
+    if(bgTypeFilter==='zp') return isZP;
+    return true; // 'all'
+  });
   // Update progress bar
   const done=allBGs.filter(bg=>bg.erfasst).length;
   const total=allBGs.length;
