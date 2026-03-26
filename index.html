@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>farbflut BOM Agent v2.8.0</title>
+<title>farbflut BOM Agent v2.9.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
 :root {
@@ -211,7 +211,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
   <div class="hdr-div"></div>
   <div class="hdr-sub">Stücklisten-Erfassung</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
-    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.8.0</span>
+    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.9.0</span>
     <div class="hdr-r" style="margin-left:0">
       <div class="sdot on" id="sdot"></div>
       <span id="stxt">bereit</span>
@@ -1309,12 +1309,37 @@ function newETChip(id, name, menge, einheit, bgId, removable=false) {
   return d;
 }
 function toggleNewETChip(bgId, id) {
-  if (!bgETs[bgId]) return;
-  const et = bgETs[bgId].find(x=>x.id===id);
   const chip = document.getElementById('etchip-'+id);
   const chk  = document.getElementById('etchk-'+id);
   const badge = document.getElementById('etbadge-'+id);
-  if (!et || !chip) return;
+  if (!chip) return;
+
+  // Modus B: uses selETs directly
+  if (bgId === 'modeB') {
+    const isAssigned = chip.dataset.assigned === 'true';
+    if (isAssigned) {
+      chip.dataset.assigned = 'false';
+      selETs = selETs.filter(x=>x.id!==id);
+      chip.classList.remove('snw'); chip.classList.add('sex');
+      if(chk){chk.className='pchk';chk.textContent='';}
+      if(badge){badge.textContent='Nur anlegen';badge.classList.remove('nw');}
+      toast('Nicht zugeordnet — wird aber im Artikelstamm angelegt');
+    } else {
+      chip.dataset.assigned = 'true';
+      const name = chip.querySelector('.pnm')?.textContent||'';
+      if(!selETs.find(x=>x.id===id)) selETs.push({id,name,typ:'Einzelteil',isNew:true,menge:1,einheit:'Stück'});
+      chip.classList.remove('sex'); chip.classList.add('snw');
+      if(chk){chk.className='pchk nw';chk.textContent='✓';}
+      if(badge){badge.textContent='Zugeordnet';badge.classList.add('nw');}
+      toast('Wieder zugeordnet');
+    }
+    return;
+  }
+
+  // Modus A: uses bgETs
+  if (!bgETs[bgId]) return;
+  const et = bgETs[bgId].find(x=>x.id===id);
+  if (!et) return;
   if (chip.dataset.assigned === 'true') {
     chip.dataset.assigned = 'false';
     bgETs[bgId] = bgETs[bgId].filter(x=>x.id!==id);
@@ -1335,11 +1360,15 @@ function toggleNewETChip(bgId, id) {
   updCount(bgId);
 }
 function deleteNewET(bgId, id) {
-  if(bgETs[bgId]) bgETs[bgId] = bgETs[bgId].filter(x=>x.id!==id);
-  newButDeselected = newButDeselected.filter(x=>x.id!==id);
+  if(bgId === 'modeB') {
+    selETs = selETs.filter(x=>x.id!==id);
+  } else {
+    if(bgETs[bgId]) bgETs[bgId] = bgETs[bgId].filter(x=>x.id!==id);
+    newButDeselected = newButDeselected.filter(x=>x.id!==id);
+    updCount(bgId);
+  }
   const chip = document.getElementById('etchip-'+id);
   if(chip) chip.remove();
-  updCount(bgId);
   toast('Gelöscht — wird weder angelegt noch zugeordnet');
 }
 function updNewETMenge(bgId, id, val) {
@@ -1538,7 +1567,7 @@ function saveNewETMode(n){
   const menge=parseFloat(document.getElementById('netmm-'+n).value)||1;
   const einheit=document.getElementById('netme-'+n).value;
   selETs.push({id:nid,name,typ:'Einzelteil',isNew:true,menge,einheit});
-  const chip=newETChip(nid,name,menge,einheit,null,true);
+  const chip=newETChip(nid,name,menge,einheit,'modeB',true);
   document.getElementById('netmf-'+n).replaceWith(chip);
   toast('Einzelteil hinzugefügt: '+nid);
 }
