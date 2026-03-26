@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>farbflut BOM Agent v2.7.0</title>
+<title>farbflut BOM Agent v2.8.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
 :root {
@@ -211,7 +211,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
   <div class="hdr-div"></div>
   <div class="hdr-sub">Stücklisten-Erfassung</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
-    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.7.0</span>
+    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.8.0</span>
     <div class="hdr-r" style="margin-left:0">
       <div class="sdot on" id="sdot"></div>
       <span id="stxt">bereit</span>
@@ -452,7 +452,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
 
 <script>
 // ── State ──────────────────────────────────────────────────────
-let products=[], parts=[], allBGs=[];
+let products=[], parts=[], allBGs=[], bomBGs=[];
 let selProd=null, selBGs=[], bgETs={};
 let newButDeselected=[]; // new BGs/ETs created but not assigned to product
 let curStep=1, bgNewC=0, etNewC=0;
@@ -591,6 +591,8 @@ async function loadSheets() {
           });
         }
         allBGs = parts.filter(p => p.typ === 'Baugruppe');
+        // BGs aus BOM Tab für Modus B
+        if (wData.bomBGs) bomBGs = wData.bomBGs;
       } catch(we) {
         console.warn('Webhook GET fehlgeschlagen, erfasst-Status nicht verfügbar:', we);
       }
@@ -1434,18 +1436,17 @@ function renderBGMode(q) {
   const g=document.getElementById('bgModeList');
   if(!parts.length){g.innerHTML='<div style="color:var(--t3);font-size:13px;padding:10px 0">Bitte zuerst Daten laden</div>';return;}
   const zpPfx=(document.getElementById('zpPrefix')?.value||'ZP-01-').toUpperCase();
-  const bgPfx=(document.getElementById('bgPrefix')?.value||'BG-99-').toUpperCase();
-  // Include both Baugruppen and Zwischenprodukte
-  const allBGs=parts.filter(p=>{
-    if(p.typ!=='Baugruppe') return false;
+  // Use bomBGs (from BOM tab) if available, otherwise fall back to parts
+  const source = bomBGs.length > 0 ? bomBGs : parts.filter(p=>p.typ==='Baugruppe');
+  const allBGsB = source.filter(p=>{
     const isZP = p.id.toUpperCase().startsWith(zpPfx);
     if(bgTypeFilter==='bg') return !isZP;
     if(bgTypeFilter==='zp') return isZP;
-    return true; // 'all'
+    return true;
   });
   // Update progress bar
-  const done=allBGs.filter(bg=>bg.erfasst).length;
-  const total=allBGs.length;
+  const done=allBGsB.filter(bg=>bg.erfasst).length;
+  const total=allBGsB.length;
   const pp=document.getElementById('bgModeProgress');
   if(pp&&total>0){
     pp.style.display='block';
@@ -1453,7 +1454,7 @@ function renderBGMode(q) {
     document.getElementById('bgModeProgPct').textContent=Math.round(done/total*100)+'% erledigt';
     document.getElementById('bgModeProgBar').style.width=(done/total*100)+'%';
   }
-  const bgs=allBGs.filter(p=>!p.erfasst&&(!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q)));
+  const bgs=allBGsB.filter(p=>!p.erfasst&&(!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q)));
   if(!bgs.length){
     g.innerHTML=q
       ?'<div style="color:var(--t3);font-size:13px;padding:8px 0">Keine offenen Baugruppen gefunden</div>'
