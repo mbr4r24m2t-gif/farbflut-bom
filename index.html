@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>farbflut BOM Agent v2.9.0</title>
+<title>farbflut BOM Agent v2.10.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
 :root {
@@ -211,7 +211,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
   <div class="hdr-div"></div>
   <div class="hdr-sub">Stücklisten-Erfassung</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
-    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.9.0</span>
+    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.10.0</span>
     <div class="hdr-r" style="margin-left:0">
       <div class="sdot on" id="sdot"></div>
       <span id="stxt">bereit</span>
@@ -1573,7 +1573,11 @@ function saveNewETMode(n){
 }
 
 function confirmBS2(){
-  if(!selETs.length){toast('Mindestens ein Einzelteil wählen');return;}
+  // Allow proceeding if there are assigned ETs OR new-but-deselected ETs to create
+  const nurAnlegen = parts.filter(p=>p.isNew && !selETs.find(s=>s.id===p.id));
+  // Check etModeNewList for any chips
+  const newChips = document.querySelectorAll('#etModeNewList [id^="etchip-"]');
+  if(!selETs.length && !newChips.length){toast('Mindestens ein Einzelteil wählen oder anlegen');return;}
   document.getElementById('bss2').textContent=selETs.length+' Einzelteil(e)';
   document.getElementById('bsd2').textContent='✓';
   markDoneB(2); openStepB(3); buildBS3();
@@ -1601,7 +1605,21 @@ async function saveToSheetB(){
     action:'saveBOMBG',
     bgId:selBG.id, bgName:selBG.name,
     etRows:selETs.map(et=>({etId:et.id,etName:et.name,etNew:et.isNew||false,menge:et.menge||1,einheit:et.einheit||'Stück'})),
-    newArticles:selETs.filter(et=>et.isNew).map(et=>({id:et.id,name:et.name,typ:'Einzelteil'}))
+    newArticles:[
+      ...selETs.filter(et=>et.isNew).map(et=>({id:et.id,name:et.name,typ:'Einzelteil'})),
+      // Nur-anlegen ETs (chip vorhanden aber Haken entfernt)
+      ...(() => {
+        const nurAnlegen = [];
+        document.querySelectorAll('#etModeNewList [id^="etchip-"]').forEach(chip => {
+          if(chip.dataset.assigned === 'false') {
+            const id = chip.id.replace('etchip-','');
+            const name = chip.querySelector('.pnm')?.textContent||'';
+            if(id && name) nurAnlegen.push({id, name, typ:'Einzelteil'});
+          }
+        });
+        return nurAnlegen;
+      })()
+    ]
   };
   try {
     await fetch(webhook,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),mode:'no-cors'});
