@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>farbflut BOM Agent v2.10.0</title>
+<title>farbflut BOM Agent v2.11.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
 :root {
@@ -211,7 +211,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
   <div class="hdr-div"></div>
   <div class="hdr-sub">Stücklisten-Erfassung</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
-    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.10.0</span>
+    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.11.0</span>
     <div class="hdr-r" style="margin-left:0">
       <div class="sdot on" id="sdot"></div>
       <span id="stxt">bereit</span>
@@ -1584,11 +1584,50 @@ function confirmBS2(){
 }
 
 function buildBS3(){
-  let html=`<div class="tree-prod"><span>${selBG.name}</span><span class="tid">${selBG.id}</span></div><div class="tree-wrap">`;
-  selETs.forEach(et=>{
-    html+=`<div class="tree-et" style="padding:9px 18px;border-top:1px solid var(--b)"><div class="edot"></div><div class="enm">${et.name}</div><div class="eqty">${et.menge} ${et.einheit}</div>${et.isNew?'<div class="enew">Neu</div>':''}</div>`;
+  // Collect nur-anlegen ETs from chips
+  const nurAnlegenETs = [];
+  document.querySelectorAll('#etModeNewList [id^="etchip-"]').forEach(chip => {
+    if(chip.dataset.assigned === 'false') {
+      const id = chip.id.replace('etchip-','');
+      const name = chip.querySelector('.pnm')?.textContent||'';
+      nurAnlegenETs.push({id, name, isNew:true, nurAnlegen:true});
+    }
   });
+
+  let html=`<div class="tree-prod"><span>${selBG.name}</span><span class="tid">${selBG.id}</span></div><div class="tree-wrap">`;
+
+  if(selETs.length) {
+    selETs.forEach(et=>{
+      html+=`<div class="tree-et" style="padding:9px 18px;border-top:1px solid var(--b)">
+        <div class="edot"></div>
+        <div class="enm">${et.name}</div>
+        <div class="eqty">${et.menge} ${et.einheit}</div>
+        ${et.isNew?'<div class="enew">Neu</div>':''}
+      </div>`;
+    });
+  } else {
+    html+=`<div style="padding:10px 18px;color:var(--t3);font-size:13px">Keine Einzelteile zugeordnet</div>`;
+  }
   html+='</div>';
+
+  // Nur-anlegen Sektion
+  if(nurAnlegenETs.length) {
+    html+=`<div style="margin-top:16px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--amber);font-weight:400;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+        Nur anlegen — nicht zugeordnet
+        <span style="flex:1;height:1px;background:rgba(184,124,42,0.25);display:block"></span>
+      </div>
+      <div style="border:1px solid rgba(184,124,42,0.25);border-radius:var(--r2);overflow:hidden">`;
+    nurAnlegenETs.forEach((et,i)=>{
+      html+=`<div style="display:flex;align-items:center;gap:8px;padding:9px 18px;${i>0?'border-top:1px solid rgba(184,124,42,0.1)':''}">
+        <div style="width:5px;height:5px;border-radius:50%;background:var(--amber);flex-shrink:0"></div>
+        <div style="flex:1;font-size:13px">${et.name}</div>
+        <span style="font-size:10px;color:var(--amber);border:1px solid rgba(184,124,42,0.3);border-radius:10px;padding:1px 7px">Nur anlegen</span>
+      </div>`;
+    });
+    html+='</div></div>';
+  }
+
   document.getElementById('bs3content').innerHTML=html;
   document.getElementById('bsSaveResult').innerHTML='';
   document.getElementById('bss3').textContent=`${selBG.name} · bereit`;
