@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>farbflut BOM Agent v2.11.0</title>
+<title>farbflut BOM Agent v2.13.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
 :root {
@@ -211,7 +211,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
   <div class="hdr-div"></div>
   <div class="hdr-sub">Stücklisten-Erfassung</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
-    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.11.0</span>
+    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.13.0</span>
     <div class="hdr-r" style="margin-left:0">
       <div class="sdot on" id="sdot"></div>
       <span id="stxt">bereit</span>
@@ -1465,8 +1465,8 @@ function renderBGMode(q) {
   const g=document.getElementById('bgModeList');
   if(!parts.length){g.innerHTML='<div style="color:var(--t3);font-size:13px;padding:10px 0">Bitte zuerst Daten laden</div>';return;}
   const zpPfx=(document.getElementById('zpPrefix')?.value||'ZP-01-').toUpperCase();
-  // Use bomBGs (from BOM tab) if available, otherwise fall back to parts
-  const source = bomBGs.length > 0 ? bomBGs : parts.filter(p=>p.typ==='Baugruppe');
+  // Show ALL Baugruppen from Artikelstamm (not just those in BOM tab)
+  const source = parts.filter(p=>p.typ==='Baugruppe');
   const allBGsB = source.filter(p=>{
     const isZP = p.id.toUpperCase().startsWith(zpPfx);
     if(bgTypeFilter==='bg') return !isZP;
@@ -1515,26 +1515,30 @@ function selectBGMode(id) {
 
 let etModePage=0;
 function filterETMode(q){ etModePage=0; buildETModeList(q.toLowerCase()); }
+function filterETModeKeepPage(q){ buildETModeList(q.toLowerCase()); }
 function buildETModeList(q) {
-  const ets=parts.filter(p=>p.typ==='Einzelteil'&&(!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q)));
+  // Show ALL Artikelstamm items (not just Einzelteile)
+  const ets=parts.filter(p=>!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q));
   const unsel=ets.filter(et=>!selETs.find(s=>s.id===et.id));
   const pages=Math.ceil(unsel.length/10)||1;
   if(etModePage>=pages) etModePage=pages-1;
   const shown=unsel.slice(etModePage*10,(etModePage+1)*10);
   const selExisting=selETs.filter(s=>!s.isNew);
-  const allToShow=[...selExisting.map(s=>({...(parts.find(p=>p.id===s.id)||{id:s.id,name:s.name})})),...shown];
+  const allToShow=[...selExisting.map(s=>({...(parts.find(p=>p.id===s.id)||{id:s.id,name:s.name,typ:s.typ})})),...shown];
+  const qSafe=(q||'').replace(/'/g,"\'");
   document.getElementById('etModeList').innerHTML=(allToShow.length?allToShow.map(et=>{
     const s=selETs.find(x=>x.id===et.id);
+    const typBdg = et.typ==='Baugruppe' ? '<span class="pbdg" style="margin-left:6px;font-size:10px">BG</span>' : '';
     return `<div class="prow ${s?'sex':''}">
       <div class="pchk ${s?'ex':''}" onclick="togETMode('${et.id}','${esc(et.name)}',this)">${s?'✓':''}</div>
-      <div style="flex:1"><div class="pnm">${et.name}</div><div class="pid">${et.id}</div></div>
+      <div style="flex:1"><div class="pnm">${et.name}${typBdg}</div><div class="pid">${et.id}</div></div>
       <div class="qwrap">
         <input class="qin" type="number" min="0.01" value="${s?.menge||1}" onchange="updETModeMenge('${et.id}',this.value)">
         <span class="qunit">Stk.</span>
       </div>
     </div>`;
-  }).join(''):'<div style="color:var(--t3);font-size:13px;padding:6px 0">Keine Einzelteile gefunden</div>')
-  +pager(etModePage,pages,`etModePage=%p;filterETMode(document.getElementById('etsearchB')?.value||'')`);
+  }).join(''):'<div style="color:var(--t3);font-size:13px;padding:6px 0">Keine Artikel gefunden</div>')
+  +pager(etModePage,pages,`etModePage=%p;buildETModeList('${qSafe}')`);
 }
 
 function togETMode(id,name,el) {
