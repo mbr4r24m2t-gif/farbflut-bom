@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>farbflut BOM Agent v2.13.0</title>
+<title>farbflut BOM Agent v2.14.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
 :root {
@@ -211,7 +211,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
   <div class="hdr-div"></div>
   <div class="hdr-sub">Stücklisten-Erfassung</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
-    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.13.0</span>
+    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.14.0</span>
     <div class="hdr-r" style="margin-left:0">
       <div class="sdot on" id="sdot"></div>
       <span id="stxt">bereit</span>
@@ -261,6 +261,7 @@ body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line
           <span class="conn-wait">Noch nicht verbunden — Daten eingeben und laden</span>
         </div>
         <button class="btn btn-line btn-sm" onclick="loadSheets()">Laden &amp; prüfen</button>
+        <button class="btn btn-line btn-sm" onclick="hardReload()">↺ Cache leeren & neu laden</button>
         <button class="btn btn-line btn-sm" onclick="loadDemo()">Demo</button>
       </div>
     </div>
@@ -1433,6 +1434,15 @@ function deleteNewChip(id) {
   const chip = document.getElementById('chip-'+id);
   if (chip) chip.remove();
   toast('Gelöscht — wird weder angelegt noch zugeordnet');
+}
+
+function hardReload() {
+  // Reset all local state and reload fresh from sheet
+  products=[]; parts=[]; allBGs=[]; bomBGs=[];
+  selProd=null; selBGs=[]; bgETs={}; newButDeselected=[];
+  selBG=null; selETs=[]; bNewButDeselected=[];
+  toast('Cache geleert — lade neu…');
+  setTimeout(()=>loadSheets(), 300);
 }
 
 // ── Mode switching ────────────────────────────────────────────
