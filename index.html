@@ -2,1347 +2,1749 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>farbflut Prozessdok</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>farbflut BOM Agent v2.15.0</title>
 <style>
-:root{--bg:#f5f4f0;--w:#fff;--k:#111;--g1:#444;--g2:#888;--g3:#bbb;--g4:#e0ddd8;--g5:#f0eee9;--gn:#2d6a45;--gnb:#edf5f0;--rd:#b83232;--br:#e0ddd8;--r:6px;--rl:10px;--f:'Inter',system-ui,sans-serif}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:var(--f);background:var(--bg);color:var(--k);min-height:100vh;font-size:14px;overscroll-behavior-y:contain}
-.hdr{background:var(--w);border-bottom:1px solid var(--br);padding:0 16px;height:50px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
-.logo{font-size:15px;font-weight:700;letter-spacing:-.02em}.logo-dot{color:var(--g3);margin:0 3px;font-weight:400}
-.back{display:none;align-items:center;gap:4px;background:none;border:none;color:var(--g2);font-family:var(--f);font-size:13px;cursor:pointer;padding:4px 0;touch-action:manipulation}
-.back.show{display:flex}.hdr-r{margin-left:auto;display:flex;align-items:center;gap:8px}
-.ver{font-size:10px;color:var(--g3);font-weight:600;letter-spacing:.04em}.hdr-u{font-size:12px;color:var(--g2)}
-.prog{height:2px;background:var(--g4);position:sticky;top:50px;z-index:99;display:none}
-.prog-f{height:100%;background:var(--k);transition:width .3s}
-.scr{display:none}.scr.on{display:block}
-.cw{min-height:calc(100vh - 50px);display:flex;align-items:center;justify-content:center;padding:24px 16px}
-.card{background:var(--w);border:1px solid var(--br);border-radius:var(--rl);padding:32px 24px;max-width:380px;width:100%;box-shadow:0 3px 12px rgba(0,0,0,.09)}
-.ey{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--g2);margin-bottom:6px}
-.ct{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px}
-.fl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--g2);margin-bottom:5px}
-.inp{width:100%;padding:10px 12px;background:var(--w);border:1px solid var(--br);border-radius:var(--r);color:var(--k);font-size:15px;font-family:var(--f);outline:none;transition:border-color .15s}
-.inp:focus{border-color:var(--k)}
-textarea.inp{min-height:100px;resize:vertical;line-height:1.5;font-size:14px}
-.btn{width:100%;padding:13px;border:none;border-radius:var(--r);font-size:13px;font-weight:600;font-family:var(--f);cursor:pointer;letter-spacing:.02em;margin-top:10px;touch-action:manipulation}
-.btn-k{background:var(--k);color:var(--w)}.btn-k:disabled{opacity:.3;cursor:not-allowed}
-.btn-d{background:var(--w);border:1.5px dashed var(--g2);color:var(--g1)}
-.pin-logo{font-size:20px;font-weight:700;margin-bottom:24px;text-align:center}
-.pin-hint{font-size:12px;color:var(--g2);margin-bottom:16px;text-align:center}
-.pin-dots{display:flex;justify-content:center;gap:14px;margin-bottom:24px}
-.pd{width:13px;height:13px;border-radius:50%;border:2px solid var(--g4);transition:all .15s}
-.pd.f{background:#6D745E;border-color:#6D745E}.pd.e{background:var(--rd);border-color:var(--rd)}
-.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.pk{background:var(--w);border:1.5px solid var(--br);border-radius:var(--r);padding:18px 16px;font-size:22px;font-weight:600;cursor:pointer;font-family:var(--f);min-height:60px;touch-action:manipulation;user-select:none;-webkit-user-select:none;color:#6D745E}
-.pk:active{background:var(--g5)}.pk.del{font-size:15px;color:var(--g2)}.pk.emp{background:transparent;border-color:transparent;cursor:default}
-.hints{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
-.hint{display:flex;align-items:flex-start;gap:10px;font-size:15px;color:var(--g1);line-height:1.6}
-.ph{background:var(--w);border-bottom:1px solid var(--br);padding:14px 16px 12px}
-.ph-ey{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--g2);margin-bottom:2px}
-.ph-t{font-size:18px;font-weight:700;letter-spacing:-.02em;line-height:1.2}.ph-s{font-size:11px;color:var(--g2);margin-top:3px}
-.lw{padding:12px 14px}
-.sc{background:var(--w);border:1px solid var(--br);border-radius:var(--rl);padding:18px 16px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:14px;box-shadow:0 1px 4px rgba(0,0,0,.07);touch-action:manipulation;flex-wrap:wrap}
-.sc:active{border-color:var(--k)}.sc-ic{width:44px;height:44px;border-radius:var(--r);background:var(--g5);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-.sc-n{font-size:16px;font-weight:700;word-break:break-word}.sc-m{font-size:13px;color:var(--g2);margin-top:3px}
-.pill{margin-left:auto;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--g5);color:var(--g2);white-space:nowrap;flex-shrink:0;min-width:fit-content}
-.pill.ok{background:var(--gnb);color:var(--gn)}
-.pi{background:var(--w);border:1px solid var(--br);border-radius:var(--r);padding:16px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:12px;touch-action:manipulation}
-.pi:active{border-color:var(--k)}.dot{width:9px;height:9px;border-radius:50%;background:var(--g3);flex-shrink:0}
-.dot.done{background:var(--gn)}.dot.ip{background:var(--k)}
-.pi-n{font-size:15px;font-weight:600;flex:1;line-height:1.3}.pi-m{font-size:12px;color:var(--g2);margin-top:3px}
-.dw{padding:0 0 90px}
-.sec{background:var(--w);border-bottom:1px solid var(--br);padding:28px 16px 20px;margin-bottom:0}
-.sec-l{font-size:14px;font-weight:700;letter-spacing:.02em;color:var(--k);margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--k)}
-.badge{display:inline-flex;align-items:center;gap:5px;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-top:8px}
-.badge.open{background:var(--g5);color:var(--g2)}.badge.done{background:var(--gnb);color:var(--gn)}.badge.ip{background:#f5f0e0;color:#7a6000}
-.trow{display:flex;gap:8px;align-items:center;margin-bottom:12px}
-.tbtn{flex:1;padding:11px;border:1px solid var(--br);border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--f);touch-action:manipulation;background:var(--w);color:var(--g1)}
-.tbtn.st{background:var(--k);color:#fff;border-color:var(--k)}.tbtn.sp{background:var(--w);border-color:var(--br);color:var(--g1)}
-.tdsp{background:var(--bg);border:1px solid var(--br);border-radius:var(--r);padding:10px 14px;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;min-width:80px;text-align:center}
-.sch{background:var(--bg);border:1px solid var(--br);border-radius:var(--r);padding:14px 14px 14px 16px;margin-bottom:8px;position:relative;border-left:3px solid var(--k)}
-.sch-n{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--g2);margin-bottom:10px}
-.sch-x{position:absolute;top:12px;right:10px;background:none;border:none;color:var(--g3);font-size:18px;cursor:pointer;padding:4px;line-height:1;touch-action:manipulation}
-.wt{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px;min-height:2px}
-.wtag{background:var(--w);border:1px solid var(--g4);border-radius:20px;padding:4px 10px;font-size:12px;display:flex;align-items:center;gap:5px}
-.wx{color:var(--g3);cursor:pointer;font-size:13px;line-height:1;touch-action:manipulation}
-.fr{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;min-height:2px}
-.fwrap{position:relative}
-.fimg{width:72px;height:72px;object-fit:cover;border-radius:var(--r);border:1px solid var(--br);display:block}
-.fdel{position:absolute;top:-5px;right:-5px;width:18px;height:18px;background:var(--k);color:#fff;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;line-height:1;touch-action:manipulation}
-.fbtns{display:flex;gap:7px;margin-top:8px}
-.fbtn{flex:1;padding:16px 6px;border:1px solid var(--br);border-radius:var(--r);background:var(--w);color:var(--g1);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--f);display:flex;align-items:center;justify-content:center;gap:6px;touch-action:manipulation}
-.fbtn:active{background:var(--g5);border-color:var(--k)}.fin{display:none}
-.bh{display:flex;align-items:center;gap:6px;padding-bottom:7px;border-bottom:1.5px solid var(--br);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--g2)}
-.br{display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid var(--g5);transition:background .2s;border-radius:4px}
-.br.bom-warn{background:#fff5f5;border-left:3px solid var(--rd);padding-left:6px;margin:0 -2px}
-.br:last-child{border:none}.bi{flex:1;min-width:0}
-.bn{font-size:13px;font-weight:500;line-height:1.3}.bnr{font-size:10px;color:var(--g2);margin-top:1px}
-.bs{width:44px;text-align:center;font-size:12px;color:var(--g2);flex-shrink:0}
-.bmi{width:58px;padding:6px;text-align:center;font-size:14px;border:1px solid var(--br);border-radius:var(--r);background:var(--bg);font-family:var(--f);outline:none;flex-shrink:0}
-.bmi:focus{border-color:var(--k);background:var(--w)}
-.bbtns{display:flex;gap:4px;flex-shrink:0}
-.bb{width:34px;height:34px;border:1.5px solid var(--g2);border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer;background:var(--w);color:var(--g1);font-family:var(--f);touch-action:manipulation}
-.bb.ok.on{background:var(--gn);border-color:var(--gn);color:#fff}.bb.fl.on{background:var(--rd);border-color:var(--rd);color:#fff}
-.btn-d{background:var(--w);border:1px dashed var(--g3);color:var(--g2);font-size:12px}
-.sbtn{width:100%;padding:15px;background:#6D745E;border:none;border-radius:var(--r);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--f);letter-spacing:.03em;position:sticky;bottom:14px;box-shadow:0 4px 20px rgba(0,0,0,.18);touch-action:manipulation}
-.a4{background:var(--w);border:1px solid var(--br);border-radius:var(--rl);padding:24px 20px;box-shadow:0 3px 12px rgba(0,0,0,.09);max-width:600px;margin:0 auto}
-.a4h{display:flex;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #111}
-.a4logo{font-size:17px;font-weight:800}.a4logo span{font-weight:300;color:#888}
-.a4mt{font-size:11px;color:#666;text-align:right;line-height:1.6}
-.a4t{font-size:22px;font-weight:700;margin-bottom:4px}.a4sub{font-size:13px;color:#888;margin-bottom:14px}
-.a4sl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#999;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #eee}
-.a4sc{display:flex;gap:10px;margin-bottom:12px;align-items:flex-start}
-.a4sn{width:22px;height:22px;border-radius:50%;background:#111;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
-.a4sb{flex:1}.a4st{font-size:13px;line-height:1.5;color:#111}
-.a4sw{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
-.a4swi{font-size:11px;background:#f5f5f5;border-radius:10px;padding:2px 8px;color:#555}
-.a4si{width:90px;height:68px;object-fit:cover;border-radius:4px;border:1px solid #eee;flex-shrink:0}
-.a4br{display:flex;font-size:12px;padding:4px 0;border-bottom:1px solid #f5f5f5;gap:6px;align-items:center}
-.a4br:last-child{border:none}.a4bn{flex:1;color:#111}.a4bnr{font-size:10px;color:#bbb}
-.a4bm{width:55px;text-align:right;font-weight:600}.a4bst{width:36px;text-align:center;font-weight:700;font-size:13px}
-.a4bst.ok{color:#2d6a45}.a4bst.fl{color:#b83232}
-.a4cf{margin-top:16px;padding:14px;background:#f9f8f5;border-radius:6px;cursor:pointer;display:flex;align-items:flex-start;gap:12px;touch-action:manipulation}
-.a4cb{width:22px;min-width:22px;height:22px;border:2px solid #ccc;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px}
-.a4cb.on{background:#111;border-color:#111;color:#fff}
-.ovl{display:none;position:fixed;inset:0;background:rgba(255,255,255,.92);z-index:200;flex-direction:column;align-items:center;justify-content:center;gap:10px}
-.ovl.on{display:flex}.spin{width:26px;height:26px;border:2px solid var(--g4);border-top-color:var(--k);border-radius:50%;animation:sp .7s linear infinite}
-@keyframes sp{to{transform:rotate(360deg)}}.ovt{font-size:13px;color:var(--g2)}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--k);color:#fff;padding:10px 22px;border-radius:40px;font-size:13px;font-weight:500;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;max-width:88vw;text-align:center}
-.toast.on{opacity:1}.toast.err{background:var(--rd)}
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
+:root {
+  --w:#ffffff; --off:#f7f7f5; --off2:#f0f0ec;
+  --b:#e4e4e0; --b2:#d0d0ca;
+  --t:#1a1a18; --t2:#6b6b65; --t3:#a8a8a0;
+  --green:#3d6b4f; --green2:#2d5040;
+  --amber:#b87c2a; --red:#c04040;
+  --f:'Outfit',system-ui,sans-serif;
+  --r:6px; --r2:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--f);background:var(--w);color:var(--t);font-size:14px;line-height:1.55}
+
+/* Header */
+.hdr{background:var(--w);border-bottom:1px solid var(--b);height:58px;display:flex;align-items:center;padding:0 32px;gap:20px;position:sticky;top:0;z-index:100}
+.hdr-logo{display:flex;align-items:center;gap:9px}
+.hdr-icon{width:20px;height:14px;display:flex;flex-direction:column;justify-content:space-between}
+.hdr-icon span{display:block;height:1.5px;background:var(--t);border-radius:1px}
+.hdr-icon span:nth-child(2){width:70%}
+.hdr-wm{font-size:14px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase}
+.hdr-div{width:1px;height:18px;background:var(--b)}
+.hdr-sub{font-size:12px;color:var(--t3);font-weight:300}
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t3)}
+.sdot{width:5px;height:5px;border-radius:50%;background:var(--t3)}
+.sdot.on{background:var(--green)}
+.sdot.err{background:var(--red)}
+
+/* Page */
+.page{max-width:800px;margin:0 auto;padding:36px 24px 100px}
+
+/* Settings panel */
+.settings{border:1px solid var(--b);border-radius:var(--r2);margin-bottom:32px;overflow:hidden}
+.settings-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;cursor:pointer;user-select:none;background:var(--off)}
+.settings-hdr:hover{background:var(--off2)}
+.settings-title{font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px}
+.settings-sub{font-size:11px;color:var(--t3);font-weight:300}
+.settings-toggle{font-size:11px;color:var(--t3);transition:transform 0.2s}
+.settings-toggle.open{transform:rotate(180deg)}
+.settings-body{padding:16px 20px;display:none;border-top:1px solid var(--b)}
+.settings-body.open{display:block}
+.srow{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.srow:last-child{margin-bottom:0}
+.slbl{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:0.07em;min-width:90px;font-weight:400}
+.sinp{flex:1;min-width:200px;background:var(--w);border:1px solid var(--b2);border-radius:var(--r);color:var(--t);font-family:var(--f);font-size:13px;font-weight:300;padding:7px 11px;outline:none}
+.sinp:focus{border-color:var(--t)}
+.sinp::placeholder{color:var(--t3)}
+.conn-status{display:flex;align-items:center;gap:6px;font-size:12px;padding:8px 12px;border-radius:var(--r);background:var(--off)}
+.conn-ok{color:var(--green)}
+.conn-err{color:var(--red)}
+.conn-wait{color:var(--t3)}
+
+/* Progress */
+.progress{display:flex;margin-bottom:32px}
+.pstep{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative}
+.pstep::after{content:'';position:absolute;top:12px;left:50%;width:100%;height:1px;background:var(--b)}
+.pstep:last-child::after{display:none}
+.pstep.done::after{background:var(--t)}
+.pnum{width:25px;height:25px;border-radius:50%;background:var(--w);border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t3);z-index:1;transition:all 0.2s}
+.pstep.active .pnum{background:var(--t);color:var(--w);border-color:var(--t)}
+.pstep.done .pnum{background:var(--t);color:var(--w);border-color:var(--t)}
+.plbl{font-size:11px;color:var(--t3);font-weight:300;text-align:center}
+.pstep.active .plbl{color:var(--t);font-weight:500}
+.pstep.done .plbl{color:var(--t2)}
+
+/* Step blocks */
+.sblock{border:1px solid var(--b);border-radius:var(--r2);margin-bottom:10px;background:var(--w);overflow:hidden}
+.sblock.active{border-color:var(--b2);box-shadow:0 2px 12px rgba(0,0,0,0.05)}
+.shdr{display:flex;align-items:center;gap:14px;padding:18px 22px;cursor:pointer;user-select:none}
+.sblock.active .shdr{cursor:default}
+.snum{width:28px;height:28px;border-radius:50%;background:var(--off);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--t2);font-weight:500;flex-shrink:0}
+.sblock.active .snum{background:var(--t);color:var(--w);border-color:var(--t)}
+.sblock.done .snum{background:var(--green);color:var(--w);border-color:var(--green);font-size:11px}
+.stitle{font-size:15px;font-weight:500}
+.ssub{font-size:12px;color:var(--t3);font-weight:300;margin-top:1px}
+.sdtag{margin-left:auto;font-size:11px;color:var(--green)}
+.sbody{padding:0 22px 22px;display:none}
+.sblock.active .sbody{display:block}
+.sdiv{height:1px;background:var(--b);margin-bottom:18px}
+
+/* Search */
+.sbox{position:relative;margin-bottom:14px}
+.sbox input{width:100%;background:var(--off);border:1px solid var(--b);border-radius:var(--r);color:var(--t);font-family:var(--f);font-size:13px;font-weight:300;padding:9px 14px 9px 34px;outline:none;transition:border-color 0.15s,background 0.15s}
+.sbox input:focus{background:var(--w);border-color:var(--t)}
+.sbox input::placeholder{color:var(--t3)}
+.sbox-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:14px;pointer-events:none}
+
+/* Product grid */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:7px}
+.pcard{padding:13px 15px;background:var(--off);border:1px solid var(--b);border-radius:var(--r);cursor:pointer;transition:all 0.12s}
+.pcard:hover{background:var(--off2);border-color:var(--b2)}
+.pcard.sel{background:var(--t);border-color:var(--t)}
+.pcard .pn{font-size:13px;font-weight:500;color:var(--t);line-height:1.3}
+.pcard.sel .pn{color:var(--w)}
+.pcard .pi{font-size:11px;color:var(--t3);margin-top:3px}
+.pcard.sel .pi{color:rgba(255,255,255,0.45)}
+
+/* Part rows */
+.prow{display:flex;align-items:center;gap:9px;padding:9px 13px;background:var(--w);border:1px solid var(--b);border-radius:var(--r);margin-bottom:4px;transition:border-color 0.1s}
+.prow:hover{border-color:var(--b2)}
+.prow.sex{border-left:3px solid var(--green)}
+.prow.snw{border-left:3px solid var(--amber)}
+.pchk{width:16px;height:16px;border:1.5px solid var(--b2);border-radius:3px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;background:var(--w);transition:all 0.1s;color:transparent}
+.pchk.ex{background:var(--green);border-color:var(--green);color:white}
+.pchk.nw{background:var(--amber);border-color:var(--amber);color:white}
+.pnm{flex:1;font-size:13px;font-weight:400}
+.pid{font-size:11px;color:var(--t3);font-family:monospace}
+.pbdg{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:400;white-space:nowrap;border:1px solid var(--b);background:var(--off);color:var(--t2)}
+.pbdg.nw{background:rgba(184,124,42,0.08);color:var(--amber);border-color:rgba(184,124,42,0.25)}
+.qwrap{display:flex;align-items:center;gap:3px}
+.qin{width:42px;background:var(--off);border:1px solid var(--b);border-radius:var(--r);color:var(--t);font-size:12px;padding:3px 5px;text-align:center;outline:none;font-family:var(--f)}
+.qin:focus{border-color:var(--t);background:var(--w)}
+.qunit{font-size:11px;color:var(--t3)}
+
+/* Section label */
+.slabel{font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--t3);font-weight:400;margin-bottom:8px;margin-top:16px;display:flex;align-items:center;gap:8px}
+.slabel::after{content:'';flex:1;height:1px;background:var(--b)}
+.slabel:first-child{margin-top:0}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 17px;border-radius:var(--r);font-family:var(--f);font-size:13px;font-weight:400;cursor:pointer;border:1px solid transparent;transition:all 0.12s;white-space:nowrap}
+.btn-dark{background:var(--t);color:var(--w)}
+.btn-dark:hover{background:#333}
+.btn-dark:disabled{opacity:0.3;cursor:not-allowed}
+.btn-line{background:transparent;color:var(--t2);border-color:var(--b2)}
+.btn-line:hover{background:var(--off);color:var(--t)}
+.btn-green{background:var(--green);color:white;border-color:var(--green)}
+.btn-green:hover{background:var(--green2)}
+.btn-green:disabled{opacity:0.4;cursor:not-allowed}
+.btn-sm{padding:6px 13px;font-size:12px}
+
+/* New form */
+.nform{background:rgba(184,124,42,0.04);border:1px dashed rgba(184,124,42,0.35);border-radius:var(--r);padding:14px 16px;margin-top:8px}
+.nform-t{font-size:11px;text-transform:uppercase;letter-spacing:0.07em;color:var(--amber);font-weight:400;margin-bottom:11px}
+.frow{margin-bottom:8px}
+.flbl{font-size:11px;color:var(--t3);margin-bottom:3px}
+.finp,.fsel{width:100%;background:var(--w);border:1px solid var(--b2);border-radius:var(--r);color:var(--t);font-family:var(--f);font-size:13px;font-weight:300;padding:7px 11px;outline:none}
+.finp:focus,.fsel:focus{border-color:var(--t)}
+.fri{display:flex;gap:8px}
+.fri .frow{flex:1;margin-bottom:0}
+
+/* Accordion */
+.acc{border:1px solid var(--b);border-radius:var(--r2);margin-bottom:7px;overflow:hidden}
+.acc-h{display:flex;align-items:center;gap:11px;padding:13px 17px;background:var(--w);cursor:pointer;user-select:none;transition:background 0.1s}
+.acc-h:hover{background:var(--off)}
+.acc-h.open{background:var(--off);border-bottom:1px solid var(--b)}
+.acc-nm{font-size:13px;font-weight:500}
+.acc-id{font-size:11px;color:var(--t3)}
+.acc-new{font-size:10px;color:var(--amber);background:rgba(184,124,42,0.1);border:1px solid rgba(184,124,42,0.25);border-radius:10px;padding:1px 7px;margin-left:4px}
+.acc-cnt{margin-left:auto;font-size:11px;color:var(--t2)}
+.acc-tog{color:var(--t3);font-size:15px;transition:transform 0.2s;margin-left:6px}
+.acc-h.open .acc-tog{transform:rotate(180deg)}
+.acc-b{padding:14px 17px;display:none}
+.acc-h.open+.acc-b{display:block}
+
+/* AI row */
+.airow{display:none;align-items:center;gap:8px;padding:9px 12px;background:var(--off);border-radius:var(--r);margin-top:8px;font-size:12px;color:var(--t3)}
+.airow.show{display:flex}
+.spin{width:14px;height:14px;border:2px solid var(--b2);border-top-color:var(--t);border-radius:50%;animation:spin 0.6s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Tree (step 4) */
+.tree-prod{padding:13px 18px;background:var(--t);color:var(--w);border-radius:var(--r2) var(--r2) 0 0;font-weight:500;font-size:14px;display:flex;align-items:center;gap:10px}
+.tree-prod .tid{font-size:11px;color:rgba(255,255,255,0.4);margin-left:auto;font-weight:300}
+.tree-wrap{border:1px solid var(--b);border-top:none;border-radius:0 0 var(--r2) var(--r2);margin-bottom:20px}
+.tree-bg{border-bottom:1px solid var(--b)}
+.tree-bg:last-child{border-bottom:none}
+.tree-bgh{display:flex;align-items:center;gap:9px;padding:10px 18px;background:var(--off)}
+.tree-bgh .dot{width:7px;height:7px;border-radius:50%;background:var(--t2);flex-shrink:0}
+.tree-bgh .bgnm{font-size:13px;font-weight:500}
+.tree-bgh .bgid{font-size:11px;color:var(--t3);margin-left:4px}
+.tree-bgh .bgnew{font-size:10px;color:var(--amber);border:1px solid rgba(184,124,42,0.3);border-radius:10px;padding:1px 7px;margin-left:4px}
+.tree-bgh .bgct{margin-left:auto;font-size:11px;color:var(--t3)}
+.tree-et{display:flex;align-items:center;gap:8px;padding:7px 18px 7px 38px;border-top:1px solid var(--b);font-size:13px;font-weight:300}
+.tree-et .edot{width:4px;height:4px;border-radius:50%;background:var(--b2);flex-shrink:0}
+.tree-et .enm{flex:1}
+.tree-et .eqty{font-size:11px;color:var(--t3)}
+.tree-et .enew{font-size:10px;color:var(--amber)}
+
+/* Save result */
+.save-result{padding:14px 18px;border-radius:var(--r2);border:1px solid;font-size:13px;margin-bottom:16px}
+.save-ok{background:rgba(61,107,79,0.06);border-color:rgba(61,107,79,0.25);color:var(--green)}
+.save-err{background:rgba(192,64,64,0.06);border-color:rgba(192,64,64,0.25);color:var(--red)}
+
+/* Mode switcher */
+.mode-sw{display:flex;gap:0;border:1px solid var(--b2);border-radius:var(--r2);overflow:hidden;margin-bottom:28px}
+.mode-btn{flex:1;padding:11px 16px;font-family:var(--f);font-size:13px;font-weight:400;cursor:pointer;border:none;background:var(--w);color:var(--t2);transition:all 0.15s;text-align:center}
+.mode-btn:first-child{border-right:1px solid var(--b2)}
+.mode-btn.active{background:var(--t);color:var(--w);font-weight:500}
+.mode-btn:hover:not(.active){background:var(--off)}
+.mode-lbl{font-size:10px;display:block;opacity:0.6;margin-top:2px;font-weight:300}
+
+/* Toast */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--t);color:var(--w);padding:9px 18px;border-radius:var(--r);font-size:13px;font-weight:300;opacity:0;transition:all 0.2s;pointer-events:none;z-index:999;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
 
 <div class="hdr">
-  <button class="back" id="bk" onclick="goBack()">&#8592; Zurück</button>
-  <div class="logo">farbflut<span class="logo-dot">·</span>Prozessdok</div>
-  <div class="hdr-r"><span class="ver">V3.11.21</span><span class="hdr-u" id="hu"></span></div>
-</div>
-<div class="prog" id="prog"><div class="prog-f" id="pf" style="width:0%"></div></div>
-<div class="ovl" id="ovl"><div class="spin"></div><div class="ovt" id="ovt"></div></div>
-<div class="toast" id="tst"></div>
-
-<div class="scr on" id="sLoad">
-  <div class="cw"><div style="text-align:center">
-    <div style="font-size:17px;font-weight:700;margin-bottom:8px">farbflut Design</div>
-    <div style="font-size:13px;color:var(--g2);margin-bottom:24px">Prozessdaten werden geladen…</div>
-    <div class="spin" style="margin:0 auto"></div>
-    <div style="font-size:11px;color:var(--g3);margin-top:20px" id="loadErr"></div>
-  </div></div>
-</div>
-
-<div class="scr" id="sPin">
-  <div class="cw"><div class="card" style="text-align:center">
-    <div class="pin-logo">Dokumentation Fertigungsprozesse</div>
-    <div class="pin-hint">PIN eingeben</div>
-    <div class="pin-dots">
-      <div class="pd" id="p0"></div><div class="pd" id="p1"></div>
-      <div class="pd" id="p2"></div><div class="pd" id="p3"></div>
-    </div>
-    <div class="pgrid">
-      <button class="pk" onclick="pk('1')">1</button>
-      <button class="pk" onclick="pk('2')">2</button>
-      <button class="pk" onclick="pk('3')">3</button>
-      <button class="pk" onclick="pk('4')">4</button>
-      <button class="pk" onclick="pk('5')">5</button>
-      <button class="pk" onclick="pk('6')">6</button>
-      <button class="pk" onclick="pk('7')">7</button>
-      <button class="pk" onclick="pk('8')">8</button>
-      <button class="pk" onclick="pk('9')">9</button>
-      <button class="pk emp"></button>
-      <button class="pk" onclick="pk('0')">0</button>
-      <button class="pk del" onclick="pdel()">&#9003;</button>
-    </div>
-  </div></div>
-</div>
-
-<div class="scr" id="sStby">
-  <div class="cw"><div class="card" style="max-width:420px;text-align:center">
-    <div class="ct" style="margin-bottom:16px">Hinweis zur Nutzung</div>
-    <div style="background:#f0f1ed;border-radius:6px;padding:16px;margin-bottom:20px;text-align:left">
-      <div style="font-weight:700;font-size:14px;margin-bottom:8px;color:#6D745E;text-align:center">⚠️ Das Tool speichert nicht automatisch ⚠️</div>
-      <div style="font-size:13px;color:#444;line-height:1.7">Alle erfassten Daten — Beschreibungen, Fotos und Stückliste — werden erst im letzten Schritt in der Cloud gespeichert. Das Gerät darf sich während der Arbeit nicht selbst ausschalten oder in den Standby gehen, sonst gehen alle Eingaben verloren. Bitte stelle die automatische Bildschirmsperre vor dem Start auf <strong>„Nie"</strong> oder mindestens <strong>10 Minuten</strong>.</div>
-    </div>
-    <button class="btn btn-k" onclick="go('sName')">Verstanden, weiter &#8594;</button>
-  </div></div>
-</div>
-
-<div class="scr" id="sName">
-  <div class="cw"><div class="card" style="text-align:center">
-    <div class="ct" style="margin-bottom:20px">Lass uns starten</div>
-    <div style="background:#6D745E;border-radius:8px;padding:16px 18px;margin-bottom:20px;text-align:left">
-      <div style="font-weight:700;font-size:14px;color:#fff;margin-bottom:10px">Wer dokumentiert den Prozess?</div>
-      <select class="inp" id="nIn" onchange="document.getElementById('nBtn').disabled=this.value==='';" style="background:#fff;border-color:#fff;color:#111">
-        <option value="">— Bitte auswählen —</option>
-        <option value="Bernhard">Bernhard</option>
-        <option value="Sebastian">Sebastian</option>
-        <option value="Henry">Henry</option>
-        <option value="Kathrin">Kathrin</option>
-        <option value="Ihor">Ihor</option>
-        <option value="Nataliia">Nataliia</option>
-      </select>
-    </div>
-    <button class="btn btn-k" id="nBtn" onclick="goW()" disabled>Weiter &#8594;</button>
-  </div></div>
-</div>
-
-<div class="scr" id="sWelc">
-  <div class="cw" style="align-items:flex-start;padding-top:24px;padding-bottom:40px"><div class="card" style="max-width:420px">
-    <div style="font-size:24px;font-weight:700;letter-spacing:-.03em;margin-bottom:20px">Hallo, <span id="wn"></span> 👋</div>
-
-    <!-- Block 1: Unser Ziel -->
-    <div style="background:#6D745E;border-radius:8px;padding:16px 18px;margin-bottom:8px">
-      <div style="font-weight:700;font-size:14px;color:#fff;margin-bottom:8px">Unser Ziel:</div>
-      <div style="font-size:15px;color:rgba(255,255,255,.85);line-height:1.7">Mit diesem Tool dokumentieren wir jeden unserer Fertigungsprozesse und beschreiben sie. Verwendete Materialien, Dauer des Prozesses, benutzte Werkzeuge/Maschinen, Fotos der Teile — das können wir hiermit alles erfassen und dokumentieren.</div>
-    </div>
-
-    <!-- Block 2: Hinweis zur Nutzung -->
-    <div style="border-top:1px solid var(--br);padding-top:20px;margin-top:12px;margin-bottom:8px">
-      <div style="font-weight:700;font-size:17px;margin-bottom:10px">Hinweis zur Nutzung:</div>
-      <div style="font-size:15px;color:var(--g1);line-height:1.7;margin-bottom:12px">Das Tool ist eine Webapp und hat keinen eigenen Speicher. Alle erfassten Daten, Beschreibungen, Fotos usw. werden erst im letzten Schritt in unserem Google Drive gespeichert. Das Gerät darf sich während der Dokumentation nicht ausschalten oder in den Standby gehen, da sonst alle Eingaben verloren gehen. Stelle bitte sicher, dass die automatische Bildschirmsperre deaktiviert ist.</div>
-      <label style="display:flex;align-items:center;gap:12px;cursor:pointer;background:#f0f1ed;border:2px solid #6D745E;border-radius:8px;padding:14px 16px;margin-top:8px">
-        <input type="checkbox" id="chk1" onchange="chkWelc()" style="width:26px;height:26px;flex-shrink:0;accent-color:#6D745E;cursor:pointer">
-        <span style="font-size:15px;font-weight:600;color:#6D745E">Check ✓</span>
-      </label>
-    </div>
-
-    <!-- Block 3: Was ist eine gute Prozessbeschreibung -->
-    <div style="border-top:1px solid var(--br);padding-top:20px;margin-top:12px;margin-bottom:8px">
-      <div style="font-weight:700;font-size:17px;margin-bottom:10px">Was ist eine gute Prozessbeschreibung?</div>
-      <div style="font-size:15px;color:var(--g1);line-height:1.7;margin-bottom:12px">Für uns ist vieles selbstverständlich — welcher Bohrer, welche Laser-Einstellungen für Acrylglas, wieviel Leim auf einen Ring. Das sind Dinge über die wir gar nicht mehr nachdenken, weil sie alle selbstverständlich sind. In der Prozessbeschreibung müssen wir es aber klar definieren.<br><br><strong>Nimm dir Zeit. Genauigkeit ist wichtiger als Schnelligkeit.</strong></div>
-      <div class="hints" style="margin-bottom:12px">
-        <div class="hint"><span>📐</span><div><strong>Alles messbar beschreiben</strong> — nicht "etwas Farbe", sondern "Rolle 2 cm eintauchen". Nicht "Kabel abisolieren", sondern "Kabel 6mm abisolieren".</div></div>
-        <div class="hint"><span>🎨</span><div><strong>Mengen &amp; Verhältnisse</strong> — wie viel Material, wie oft sprühen, wie lang, wie oft usw.</div></div>
-        <div class="hint"><span>✂️</span><div><strong>Maschineneinstellungen</strong> — Schnittwerte, Laserleistung, Sägeblattstellung — alles was man einstellen muss.</div></div>
-        <div class="hint"><span>👁</span><div><strong>Qualität &amp; Sichtbarkeit</strong> — wo dürfen Klebestellen sichtbar sein, was ist ein Fehler.</div></div>
-        <div class="hint"><span>📷</span><div><strong>Fotos</strong> — erklären ist gut, zeigen ist besser. Zustand vor/nach dem Schritt, Details, typische Fehler.</div></div>
-      </div>
-      <label style="display:flex;align-items:center;gap:12px;cursor:pointer;background:#f0f1ed;border:2px solid #6D745E;border-radius:8px;padding:14px 16px;margin-top:8px">
-        <input type="checkbox" id="chk2" onchange="chkWelc()" style="width:26px;height:26px;flex-shrink:0;accent-color:#6D745E;cursor:pointer">
-        <span style="font-size:15px;font-weight:600;color:#6D745E">Check ✓</span>
-      </label>
-    </div>
-
-    <!-- Block 4: Wie detailliert -->
-    <div style="border-top:1px solid var(--br);padding-top:20px;margin-top:12px;margin-bottom:8px">
-      <div style="font-weight:700;font-size:17px;margin-bottom:10px">Wie detailliert machen wir das?</div>
-      <div style="font-size:15px;color:var(--g1);line-height:1.7;margin-bottom:12px">Die Prozesse die wir jetzt definieren, werden die Basis für die neue Fertigungssoftware. Wir werden im ersten Schritt nicht direkt schaffen, alles zu 100% richtig und perfekt zu definieren — das ist OK. Das System wird leben und ständig angepasst werden. Wir müssen jetzt zum Start nicht die 100% erreichen, aber 90%.<br><br>Ihr müsst nicht von jedem Schritt drei Bilder anhängen. Wo es aber Sinn macht — z.B. wieviel Leim auf einem Ring — dann gerne 1x Positivbeispiel, 1x Negativbeispiel.</div>
-      <label style="display:flex;align-items:center;gap:12px;cursor:pointer;background:#f0f1ed;border:2px solid #6D745E;border-radius:8px;padding:14px 16px;margin-top:8px">
-        <input type="checkbox" id="chk3" onchange="chkWelc()" style="width:26px;height:26px;flex-shrink:0;accent-color:#6D745E;cursor:pointer">
-        <span style="font-size:15px;font-weight:600;color:#6D745E">Check ✓</span>
-      </label>
-    </div>
-
-
-    <!-- Block 4: Wie machen wir Fotos -->
-    <div style="border-top:1px solid var(--br);padding-top:20px;margin-top:12px;margin-bottom:8px">
-      <div style="font-weight:700;font-size:17px;margin-bottom:10px">Wie machen wir Fotos?</div>
-      <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">
-        <div style="flex:1;min-width:140px">
-          <div style="font-weight:700;font-size:14px;margin-bottom:8px">✅ Positivbeispiel</div>
-          <img src="https://cdn.shopify.com/s/files/1/0950/8057/9418/files/Positivbeispiel_Bild_800x800.jpg?v=1775742151" style="width:100%;border-radius:8px;margin-bottom:8px">
-          <div style="font-size:14px;color:var(--g1);line-height:1.7">
-            • Motiv in der Bildmitte<br>
-            • Ordentlich ausgerichtet, etwas Weißraum<br>
-            • Alle Teile erkennbar<br>
-            • Keine Teile/Motive im Hintergrund
-          </div>
-        </div>
-        <div style="flex:1;min-width:140px">
-          <div style="font-weight:700;font-size:14px;margin-bottom:8px">❌ Negativbeispiel</div>
-          <img src="https://cdn.shopify.com/s/files/1/0950/8057/9418/files/Negativbeispiel_Bild_800x800.jpg?v=1775742153" style="width:100%;border-radius:8px;margin-bottom:8px">
-          <div style="font-size:14px;color:var(--g1);line-height:1.7">
-            • Motiv zu weit weg<br>
-            • Motiv steht auf dem Kopf<br>
-            • Verschmutzte Oberflächen<br>
-            • Zusätzliche Teile im Bild
-          </div>
-        </div>
-      </div>
-      <label style="display:flex;align-items:center;gap:12px;cursor:pointer;background:#f0f1ed;border:2px solid #6D745E;border-radius:8px;padding:14px 16px;margin-top:8px">
-        <input type="checkbox" id="chk4" onchange="chkWelc()" style="width:26px;height:26px;flex-shrink:0;accent-color:#6D745E;cursor:pointer">
-        <span style="font-size:15px;font-weight:600;color:#6D745E">Check ✓</span>
-      </label>
-    </div>
-
-    <!-- Block 5: Am wichtigsten -->
-    <div style="border-top:1px solid var(--br);padding-top:20px;margin-top:12px;margin-bottom:20px">
-      <div style="font-weight:700;font-size:17px;margin-bottom:10px">Am wichtigsten:</div>
-      <div style="font-size:15px;color:var(--g1);line-height:1.7;margin-bottom:12px">Zeit! Wir müssen uns dafür Zeit nehmen. Wenn ihr euch bei etwas nicht sicher seid: fragt. Wenn ihr euch danach auch noch nicht sicher seid: fragt nochmal. Das schlimmste was uns hier passieren kann, ist wenn wir "schnell, schnell" machen — dann müssen wir es nochmal machen 😊</div>
-      <label style="display:flex;align-items:center;gap:12px;cursor:pointer;background:#f0f1ed;border:2px solid #6D745E;border-radius:8px;padding:14px 16px;margin-top:8px">
-        <input type="checkbox" id="chk5"" onchange="chkWelc()" style="width:26px;height:26px;flex-shrink:0;accent-color:#6D745E;cursor:pointer">
-        <span style="font-size:15px;font-weight:600;color:#6D745E">Check ✓</span>
-      </label>
-    </div>
-
-    <button class="btn btn-k" id="welcBtn" onclick="markWelcSeen();showStat()" disabled>Los geht's &#8594;</button>
-  </div></div>
-</div>
-
-<div class="scr" id="sStat">
-  <div class="ph"><div class="ph-ey">Übersicht</div><div class="ph-t">Fertigungsbereiche</div><div class="ph-s" id="statS"></div></div>
-  <div class="lw" id="statG"></div>
-</div>
-
-<div class="scr" id="sProz">
-  <div class="ph"><div class="ph-ey" id="pEy"></div><div class="ph-t">Prozesse</div><div class="ph-s" id="pSub"></div></div>
-  <div class="lw" id="pList"></div>
-</div>
-
-<div class="scr" id="sDet">
-  <div class="ph" id="dHdr"></div>
-  <div class="dw" id="dCont"></div>
-</div>
-
-<div class="scr" id="sVor">
-  <div class="ph"><div class="ph-ey">Schritt 2 von 2</div><div class="ph-t">Vorschau &amp; Bestätigen</div><div class="ph-s">Bitte prüfen bevor gespeichert wird</div></div>
-  <div style="padding:12px 14px 100px">
-    <div class="a4" id="a4"></div>
-    <div style="max-width:600px;margin:14px auto 0;display:flex;flex-direction:column;gap:8px">
-      <button class="sbtn" style="position:static" id="cfBtn" onclick="bestaetigen()" disabled>Bitte zuerst bestätigen</button>
-      <button class="btn btn-d" onclick="goBack()">&#8592; Zurück zum Bearbeiten</button>
+  <div class="hdr-logo">
+    <div class="hdr-icon"><span></span><span></span><span></span></div>
+    <div class="hdr-wm">Farbflut</div>
+  </div>
+  <div class="hdr-div"></div>
+  <div class="hdr-sub">Stücklisten-Erfassung</div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
+    <span style="font-size:10px;color:var(--t3);font-family:monospace;background:var(--off);padding:2px 8px;border-radius:10px;border:1px solid var(--b)">v2.15.0</span>
+    <div class="hdr-r" style="margin-left:0">
+      <div class="sdot on" id="sdot"></div>
+      <span id="stxt">bereit</span>
     </div>
   </div>
 </div>
 
-<script>
-
-var PZ = [];
-var WH = 'https://script.google.com/macros/s/AKfycbxLJuoa8_usU5knsLGq0kBax9Vj46YqEV7G_qjEwceCPR6lYNc8G7ifDUsouX4xiild/exec';
-var PN = '0116';
-var IC = {};
-var IC_NAMES = {
-  '1 / Bearbeitung Oberflächen': '🪵',
-  '2 / Laserbearbeitung': '✂️',
-  '3 / Montage Lampenschirme': '💡',
-  '4 / Verpacken Baugruppen': '📦',
-  '5 - Montage Baugruppen': '🔩',
-  '5 / Elektro Baugruppen': '⚡',
-  '8 / LAZO Baugruppen': '🏮',
-  '9 / ZEUS Baugruppen': '🪟'
-};
-
-var usr='', cStat=null, cProz=null, nav=[];
-var tIv=null, tSt=null, tSec=0;
-var loc={};
-var pin='';
-var confirmed=false;
-
-function initApp() {
-  try { loc = JSON.parse(localStorage.getItem('ffd30') || '{}'); } catch(e) { loc = {}; }
-  ladeProzesse();
-}
-
-function ladeProzesse() {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', WH + '?action=get_prozesse', true);
-  xhr.timeout = 20000;
-  xhr.onload = function() {
-    try {
-      var res = JSON.parse(xhr.responseText);
-      if (res.success && res.prozesse && res.prozesse.length > 0) {
-        PZ = res.prozesse;
-        // Status aus Sheet übernehmen (überschreibt localStorage nur wenn Sheet-Status "done")
-        res.prozesse.forEach(function(p) {
-          if (p.status === 'done' && (!loc[p.id] || loc[p.id].s !== 'done')) {
-            if (!loc[p.id]) loc[p.id] = {};
-            loc[p.id].s = 'done';
-          }
-        });
-        savL();
-        go('sPin');
-      } else {
-        zeigeLoadFehler('Fehler: ' + (res.error || 'Keine Prozesse gefunden'));
-      }
-    } catch(e) {
-      zeigeLoadFehler('Antwort konnte nicht gelesen werden.');
-    }
-  };
-  xhr.onerror = function() { zeigeLoadFehler('Keine Verbindung zum Server.'); };
-  xhr.ontimeout = function() { zeigeLoadFehler('Timeout — Server antwortet nicht.'); };
-  xhr.send();
-}
-
-function zeigeLoadFehler(msg) {
-  var el = document.getElementById('loadErr');
-  if (el) el.innerHTML = msg + '<br><br><button class="btn btn-k" style="max-width:200px;margin:0 auto" onclick="ladeProzesse()">Erneut versuchen</button>';
-}
-
-// PIN
-function pk(k) {
-  if (pin.length >= 4) return;
-  pin += String(k);
-  updP();
-  if (pin.length === 4) {
-    setTimeout(function() {
-      if (pin === String(PN)) {
-        go('sName');
-      } else {
-        for (var i = 0; i < 4; i++) document.getElementById('p' + i).className = 'pd e';
-        setTimeout(function() { pin = ''; updP(); }, 700);
-      }
-    }, 150);
-  }
-}
-function pdel() { pin = pin.slice(0, -1); updP(); }
-function updP() {
-  for (var i = 0; i < 4; i++) {
-    document.getElementById('p' + i).className = 'pd' + (i < pin.length ? ' f' : '');
-  }
-}
-
-// SAVE
-function savL() { try { localStorage.setItem('ffd30', JSON.stringify(loc)); } catch(e) {} }
-
-// NAV
-function go(id) {
-  document.querySelectorAll('.scr').forEach(function(s) { s.classList.remove('on'); });
-  document.getElementById(id).classList.add('on');
-  window.scrollTo(0, 0);
-}
-
-function goW() {
-  usr = document.getElementById('nIn').value.trim();
-  if (!usr) return;
-  document.getElementById('hu').textContent = usr;
-  document.getElementById('wn').textContent = usr;
-  // Check if welcome was already confirmed today
-  var today = new Date().toDateString();
-  var lastSeen = localStorage.getItem('ffd_welc_seen');
-  if (lastSeen === today) {
-    showStat();
-  } else {
-    go('sWelc');
-  }
-}
-
-
-function markWelcSeen() {
-  localStorage.setItem('ffd_welc_seen', new Date().toDateString());
-}
-
-function chkWelc() {
-  var all = document.getElementById('chk1').checked &&
-            document.getElementById('chk2').checked &&
-            document.getElementById('chk3').checked &&
-            document.getElementById('chk4').checked &&
-            document.getElementById('chk5').checked;
-  document.getElementById('welcBtn').disabled = !all;
-}
-
-function showStat() {
-  nav = ['stat'];
-  document.getElementById('bk').classList.remove('show');
-  document.getElementById('prog').style.display = 'none';
-  go('sStat');
-  
-  var stats = [];
-  PZ.forEach(function(p) { if (stats.indexOf(p.station) < 0) stats.push(p.station); });
-  stats.sort();
-  
-  var tot = PZ.length;
-  var don = PZ.filter(function(p) { return loc[p.id] && loc[p.id].s === 'done'; }).length;
-  document.getElementById('statS').textContent = don + ' von ' + tot + ' Prozessen dokumentiert';
-  
-  var g = document.getElementById('statG');
-  g.innerHTML = '';
-  stats.forEach(function(s) {
-    var ps = PZ.filter(function(p) { return p.station === s; });
-    var d = ps.filter(function(p) { return loc[p.id] && loc[p.id].s === 'done'; }).length;
-    var icon = IC_NAMES[s] || '🔧';
-    var name = s;
-    var c = document.createElement('div');
-    c.className = 'sc';
-    c.onclick = (function(st) { return function() { showProz(st); }; })(s);
-    
-    var ic = document.createElement('div'); ic.className = 'sc-ic'; ic.textContent = icon;
-    var info = document.createElement('div'); info.style.flex = '1';
-    var n = document.createElement('div'); n.className = 'sc-n'; n.textContent = name;
-    var m2 = document.createElement('div'); m2.className = 'sc-m'; m2.textContent = d + ' von ' + ps.length + ' abgeschlossen';
-    info.appendChild(n); info.appendChild(m2);
-    var pill = document.createElement('div');
-    pill.className = 'pill' + (d === ps.length ? ' ok' : '');
-    pill.textContent = d === ps.length ? '✓ fertig' : ps.length + ' Prozesse';
-    c.appendChild(ic); c.appendChild(info); c.appendChild(pill);
-    g.appendChild(c);
-  });
-}
-
-function showProz(station) {
-  cStat = station; nav = ['stat', 'proz'];
-  document.getElementById('bk').classList.add('show');
-  go('sProz');
-  
-  var ps = PZ.filter(function(p) { return p.station === station; });
-  var d = ps.filter(function(p) { return loc[p.id] && loc[p.id].s === 'done'; }).length;
-  document.getElementById('pEy').textContent = station;
-  document.getElementById('pSub').textContent = d + ' von ' + ps.length + ' dokumentiert';
-  
-  var l = document.getElementById('pList'); l.innerHTML = '';
-  ps.forEach(function(p) {
-    var ld = loc[p.id] || {};
-    var st = ld.s || 'open';
-    var item = document.createElement('div'); item.className = 'pi';
-    item.onclick = (function(pid) { return function() { showDet(pid); }; })(p.id);
-    
-    var dot = document.createElement('div');
-    dot.className = 'dot' + (st === 'done' ? ' done' : st === 'ip' ? ' ip' : '');
-    var inf = document.createElement('div'); inf.style.flex = '1';
-    var pn = document.createElement('div'); pn.className = 'pi-n'; pn.textContent = p.name;
-    var pm = document.createElement('div'); pm.className = 'pi-m';
-    pm.textContent = p.varianten + ' Variante' + (p.varianten > 1 ? 'n' : '') + ' · ' + p.id + (ld.datum ? ' · ' + ld.datum : '');
-    inf.appendChild(pn); inf.appendChild(pm);
-    var chev = document.createElement('span'); chev.style.color = 'var(--g3)'; chev.textContent = '›';
-    item.appendChild(dot); item.appendChild(inf); item.appendChild(chev);
-    l.appendChild(item);
-  });
-}
-
-function showDet(pid) {
-  cProz = PZ.find(function(p) { return p.id === pid; });
-  nav = ['stat', 'proz', 'det'];
-  document.getElementById('bk').classList.add('show');
-  document.getElementById('prog').style.display = 'block';
-  tSec = 0; if (tIv) { clearInterval(tIv); tIv = null; }
-  go('sDet');
-  renderDet();
-}
-
-function ens() {
-  if (!loc[cProz.id]) loc[cProz.id] = {};
-  if (!loc[cProz.id].schs) loc[cProz.id].schs = [{}];
-  if (loc[cProz.id].s !== 'done') loc[cProz.id].s = 'ip';
-}
-function aS(f, v) { ens(); loc[cProz.id][f] = v; savL(); }
-
-function renderDet() {
-  var p = cProz;
-  var d = loc[p.id] || {};
-  var schs = d.schs || [{}];
-  var boms = d.boms || {};
-  var bomM = d.bomM || {};
-  var st = d.s || 'open';
-
-  // Header
-  var hdr = document.getElementById('dHdr');
-  hdr.innerHTML = '';
-  var ey = document.createElement('div'); ey.className = 'ph-ey';
-  ey.textContent = cStat;
-  var tt = document.createElement('div'); tt.className = 'ph-t'; tt.textContent = p.name;
-  var bd = document.createElement('div'); bd.style.marginTop = '8px';
-  var bg = document.createElement('span');
-  bg.className = 'badge ' + (st === 'done' ? 'done' : st === 'ip' ? 'ip' : 'open');
-  bg.textContent = st === 'done' ? '✓ Abgeschlossen' : st === 'ip' ? 'In Bearbeitung' : 'Offen';
-  bd.appendChild(bg);
-  hdr.appendChild(ey); hdr.appendChild(tt); hdr.appendChild(bd);
-
-  var cont = document.getElementById('dCont');
-  cont.innerHTML = '';
-
-  // Zeit Section
-  var zSec = mkSec('⏱ Zeiterfassung');
-  var trow = document.createElement('div'); trow.className = 'trow';
-  var btnSt = document.createElement('button'); btnSt.className = 'tbtn st';
-  btnSt.textContent = '▶ Start'; btnSt.onclick = startT;
-  var tdsp = document.createElement('div'); tdsp.className = 'tdsp'; tdsp.id = 'td'; tdsp.textContent = '00:00';
-  var btnSp = document.createElement('button'); btnSp.className = 'tbtn sp';
-  btnSp.textContent = '■ Stop'; btnSp.onclick = stopT;
-  trow.appendChild(btnSt); trow.appendChild(tdsp); trow.appendChild(btnSp);
-  zSec.appendChild(trow);
-  var zfl = document.createElement('div'); zfl.className = 'fl'; zfl.textContent = 'Oder manuell (Minuten)';
-  var zIn = document.createElement('input'); zIn.className = 'inp'; zIn.id = 'zIn';
-  zIn.type = 'number'; zIn.min = '0'; zIn.placeholder = 'z. B. 30';
-  zIn.value = d.zeit || '';
-  zIn.onchange = function() { aS('zeit', this.value); };
-  zSec.appendChild(zfl); zSec.appendChild(zIn);
-  cont.appendChild(zSec);
-
-  // Schritte Section
-  var sSec = mkSec('📋 Arbeitsschritte');
-  var schCont = document.createElement('div'); schCont.id = 'schs';
-  for (var i = 0; i < schs.length; i++) schCont.appendChild(mkSchEl(schs[i], i));
-  sSec.appendChild(schCont);
-  var addBtn = document.createElement('button'); addBtn.className = 'btn btn-d';
-  addBtn.style.marginTop = '4px'; addBtn.textContent = '+ Schritt hinzufügen';
-  addBtn.onclick = addSch;
-  sSec.appendChild(addBtn);
-  cont.appendChild(sSec);
-
-  // BOM Section
-  var bSec = mkSec('📦 Stückliste prüfen');
-  var bHint = document.createElement('div');
-  bHint.style.cssText = 'font-size:11px;color:var(--g2);margin-bottom:10px';
-  bHint.textContent = 'Pflichtfeld: Jede Position muss bestätigt werden · ✓ verwendet · ✗ nicht verwendet';
-  bSec.appendChild(bHint);
-  if (p.bom.length) {
-    var bh = document.createElement('div'); bh.className = 'bh';
-    bh.innerHTML = '<div style="flex:1">Artikel</div><div style="width:44px;text-align:center">Soll</div><div style="width:58px;text-align:center">Verw.</div><div style="width:74px;text-align:center">Status</div>';
-    bSec.appendChild(bh);
-    p.bom.forEach(function(b) {
-      bSec.appendChild(mkBomRow(b, boms, bomM));
-    });
-  } else {
-    var noB = document.createElement('div');
-    noB.style.cssText = 'font-size:12px;color:var(--g2)';
-    noB.textContent = 'Keine Positionen hinterlegt';
-    bSec.appendChild(noB);
-  }
-  cont.appendChild(bSec);
-
-  // Hinweise Section
-  var hSec = mkSec('💬 Hinweise');
-  var ta = document.createElement('textarea'); ta.className = 'inp';
-  ta.placeholder = 'Besonderheiten, Verbesserungsvorschläge…';
-  ta.value = d.hinweise || '';
-  ta.onchange = function() { aS('hinweise', this.value); };
-  hSec.appendChild(ta);
-  cont.appendChild(hSec);
-
-  // Vorschau Button
-  var vWrap = document.createElement('div'); vWrap.style.cssText = 'padding:16px';
-  var vBtn = document.createElement('button'); vBtn.className = 'sbtn';
-  vBtn.style.position = 'static';
-  vBtn.textContent = 'Vorschau & Abschließen →';
-  vBtn.onclick = zeigV;
-  vWrap.appendChild(vBtn);
-  cont.appendChild(vWrap);
-
-  updProg();
-}
-
-function mkSec(label) {
-  var sec = document.createElement('div'); sec.className = 'sec';
-  var lbl = document.createElement('div'); lbl.className = 'sec-l'; lbl.textContent = label;
-  sec.appendChild(lbl);
-  return sec;
-}
-
-function mkBomRow(b, boms, bomM) {
-  var bs = boms[b.nr] || '';
-  var mv = bomM[b.nr] !== undefined ? bomM[b.nr] : b.menge;
-  var row = document.createElement('div'); row.className = 'br' + (!bs ? ' bom-warn' : ''); row.id = 'brow-' + b.nr.replace(/[^a-z0-9]/gi,'_');
-  var bi = document.createElement('div'); bi.className = 'bi';
-  var bn = document.createElement('div'); bn.className = 'bn'; bn.textContent = b.name;
-  var bnr = document.createElement('div'); bnr.className = 'bnr'; bnr.textContent = b.nr;
-  bi.appendChild(bn); bi.appendChild(bnr);
-  var bsol = document.createElement('div'); bsol.className = 'bs'; bsol.textContent = b.menge + '×';
-  var bmi = document.createElement('input'); bmi.className = 'bmi'; bmi.type = 'number';
-  bmi.step = '0.01'; bmi.min = '0'; bmi.value = mv;
-  bmi.onchange = (function(nr) { return function() { sBomM(nr, this.value); }; })(b.nr);
-  var bbtns = document.createElement('div'); bbtns.className = 'bbtns';
-  var ok = document.createElement('button'); ok.className = 'bb ok' + (bs === 'ok' ? ' on' : '');
-  ok.textContent = '✓'; ok.onclick = (function(nr) { return function() { sBom(nr, 'ok'); }; })(b.nr);
-  var fl = document.createElement('button'); fl.className = 'bb fl' + (bs === 'fl' ? ' on' : '');
-  fl.textContent = '✗'; fl.onclick = (function(nr) { return function() { sBom(nr, 'fl'); }; })(b.nr);
-  bbtns.appendChild(ok); bbtns.appendChild(fl);
-  row.appendChild(bi); row.appendChild(bsol); row.appendChild(bmi); row.appendChild(bbtns);
-  return row;
-}
-
-function mkSchEl(s, i) {
-  var bilder = s.bilder || [];
-  var wks = s.wks || [];
-  var div = document.createElement('div'); div.className = 'sch'; div.id = 'sch' + i;
-  var nr = document.createElement('div'); nr.className = 'sch-n'; nr.textContent = 'Schritt ' + (i + 1);
-  var xb = document.createElement('button'); xb.className = 'sch-x'; xb.textContent = '×';
-  xb.onclick = (function(idx) { return function() { delSch(idx); }; })(i);
-  div.appendChild(nr); div.appendChild(xb);
-  // Beschreibung
-  var fl1 = document.createElement('div'); fl1.className = 'fl'; fl1.textContent = 'Beschreibung';
-  var ta = document.createElement('textarea'); ta.className = 'inp';
-  ta.style.minHeight = '60px'; ta.style.marginBottom = '10px';
-  ta.placeholder = 'Was wird gemacht?'; ta.value = s.beschreibung || '';
-  ta.oninput = (function(idx) { return function() { uSch(idx, this.value); }; })(i);
-  div.appendChild(fl1); div.appendChild(ta);
-  // Werkzeuge
-  var fl2 = document.createElement('div'); fl2.className = 'fl'; fl2.textContent = 'Werkzeuge & Maschinen';
-  var wt = document.createElement('div'); wt.className = 'wt'; wt.id = 'wt' + i;
-  wks.forEach(function(w, wi) {
-    wt.appendChild(mkWkTag(w, i, wi));
-  });
-  var wIn = document.createElement('input'); wIn.className = 'inp'; wIn.style.marginBottom = '8px';
-  wIn.placeholder = 'Werkzeug eingeben + Enter'; wIn.setAttribute('enterkeyhint', 'done');
-  wIn.onkeydown = (function(idx) { return function(e) { addW(e, idx); }; })(i);
-  div.appendChild(fl2); div.appendChild(wt); div.appendChild(wIn);
-  // Fotos
-  var fl3 = document.createElement('div'); fl3.className = 'fl'; fl3.textContent = 'Fotos';
-  var fr = document.createElement('div'); fr.className = 'fr'; fr.id = 'fr' + i;
-  bilder.forEach(function(b, fi) {
-    fr.appendChild(mkFotoEl(b, i, fi));
-  });
-  var fbtns = document.createElement('div'); fbtns.className = 'fbtns'; fbtns.style.marginTop = '8px';
-  var b1 = document.createElement('button'); b1.className = 'fbtn'; b1.textContent = '📷 Foto';
-  b1.onclick = (function(idx) { return function() { trigF(idx, 0); }; })(i);
-  var in1 = document.createElement('input'); in1.type = 'file'; in1.id = 'fi' + i + 'c';
-  in1.accept = 'image/*'; in1.setAttribute('capture', 'environment'); in1.className = 'fin';
-  in1.onchange = (function(idx) { return function() { hFoto(idx, this); }; })(i);
-  var b2 = document.createElement('button'); b2.className = 'fbtn'; b2.textContent = '🖼 Galerie';
-  b2.onclick = (function(idx) { return function() { trigF(idx, 1); }; })(i);
-  var in2 = document.createElement('input'); in2.type = 'file'; in2.id = 'fi' + i + 'g';
-  in2.accept = 'image/*'; in2.className = 'fin';
-  in2.onchange = (function(idx) { return function() { hFoto(idx, this); }; })(i);
-  fbtns.appendChild(b1); fbtns.appendChild(in1); fbtns.appendChild(b2); fbtns.appendChild(in2);
-  div.appendChild(fl3); div.appendChild(fr); div.appendChild(fbtns);
-  return div;
-}
-
-function mkFotoEl(b, si, fi) {
-  var wrap = document.createElement('div'); wrap.className = 'fwrap'; wrap.id = 'fw' + si + 'x' + fi;
-  var img = document.createElement('img'); img.className = 'fimg'; img.src = b.url || '';
-  var del = document.createElement('button'); del.className = 'fdel'; del.textContent = '×';
-  del.onclick = (function(s, f) { return function() { delF(s, f); }; })(si, fi);
-  if (b.driveUrl) {
-    var ok = document.createElement('div');
-    ok.style.cssText = 'position:absolute;bottom:2px;right:2px;background:#2d6a45;border-radius:3px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff';
-    ok.textContent = '✓';
-    wrap.appendChild(img); wrap.appendChild(ok); wrap.appendChild(del);
-  } else {
-    wrap.appendChild(img); wrap.appendChild(del);
-  }
-  return wrap;
-}
-
-function mkWkTag(w, si, wi) {
-  var t = document.createElement('div'); t.className = 'wtag';
-  var tx = document.createTextNode(w);
-  var x = document.createElement('span'); x.className = 'wx'; x.textContent = '×';
-  x.onclick = (function(s, i) { return function() { delW(s, i); }; })(si, wi);
-  t.appendChild(tx); t.appendChild(x);
-  return t;
-}
-
-function trigF(i, g) {
-  var el = document.getElementById(g ? 'fi' + i + 'g' : 'fi' + i + 'c');
-  if (el) el.click();
-}
-
-function uSch(i, v) {
-  ens();
-  if (!loc[cProz.id].schs[i]) loc[cProz.id].schs[i] = {};
-  loc[cProz.id].schs[i].beschreibung = v;
-  savL();
-}
-
-function addSch() {
-  ens();
-  loc[cProz.id].schs.push({});
-  savL();
-  var idx = loc[cProz.id].schs.length - 1;
-  var c = document.getElementById('schs');
-  if (c) c.appendChild(mkSchEl({}, idx));
-}
-
-function delSch(i) {
-  ens();
-  loc[cProz.id].schs.splice(i, 1);
-  savL();
-  renderDet();
-}
-
-function addW(e, si) {
-  if (e.key !== 'Enter') return;
-  var v = e.target.value.trim(); if (!v) return;
-  ens();
-  if (!loc[cProz.id].schs[si]) loc[cProz.id].schs[si] = {};
-  if (!loc[cProz.id].schs[si].wks) loc[cProz.id].schs[si].wks = [];
-  loc[cProz.id].schs[si].wks.push(v);
-  savL(); e.target.value = '';
-  var tl = document.getElementById('wt' + si);
-  var idx = loc[cProz.id].schs[si].wks.length - 1;
-  if (tl) tl.appendChild(mkWkTag(v, si, idx));
-}
-
-function delW(si, wi) {
-  ens();
-  if (loc[cProz.id].schs[si] && loc[cProz.id].schs[si].wks)
-    loc[cProz.id].schs[si].wks.splice(wi, 1);
-  savL(); renderDet();
-}
-
-function sBom(nr, st) {
-  ens();
-  if (!loc[cProz.id].boms) loc[cProz.id].boms = {};
-  loc[cProz.id].boms[nr] = (loc[cProz.id].boms[nr] === st ? '' : st);
-  savL(); renderDet();
-}
-function sBomM(nr, v) {
-  ens();
-  if (!loc[cProz.id].bomM) loc[cProz.id].bomM = {};
-  loc[cProz.id].bomM[nr] = v;
-  savL();
-}
-
-function hFoto(idx, input) {
-  var file = input.files[0];
-  if (!file) return;
-  input.value = '';
-  ens();
-  while (loc[cProz.id].schs.length <= idx) loc[cProz.id].schs.push({});
-  if (!loc[cProz.id].schs[idx]) loc[cProz.id].schs[idx] = {};
-  if (!loc[cProz.id].schs[idx].bilder) loc[cProz.id].schs[idx].bilder = [];
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    var b64 = e.target.result;
-    var fIdx = loc[cProz.id].schs[idx].bilder.length;
-    loc[cProz.id].schs[idx].bilder.push({url: b64, driveUrl: null});
-    savL();
-    var fr = document.getElementById('fr' + idx);
-    if (fr) fr.appendChild(mkFotoEl({url: b64, driveUrl: null}, idx, fIdx));
-    showT('📷 Foto gespeichert');
-  };
-  reader.onerror = function() { showT('Fehler beim Lesen', true); };
-  reader.readAsDataURL(file);
-}
-
-function delF(si, fi) {
-  ens();
-  if (loc[cProz.id].schs[si] && loc[cProz.id].schs[si].bilder)
-    loc[cProz.id].schs[si].bilder.splice(fi, 1);
-  savL();
-  var el = document.getElementById('sch' + si);
-  if (el) {
-    var newEl = mkSchEl(loc[cProz.id].schs[si] || {}, si);
-    el.replaceWith(newEl);
-  }
-}
-
-// TIMER
-function startT() {
-  if (tIv) return;
-  tSt = Date.now() - tSec * 1000;
-  tIv = setInterval(function() {
-    tSec = Math.floor((Date.now() - tSt) / 1000);
-    var el = document.getElementById('td'); if (el) el.textContent = fmt(tSec);
-    var zi = document.getElementById('zIn'); if (zi) zi.value = Math.ceil(tSec / 60);
-  }, 1000);
-}
-function stopT() {
-  if (tIv) { clearInterval(tIv); tIv = null; }
-  if (tSec > 0) aS('zeit', Math.ceil(tSec / 60));
-}
-function fmt(s) { return (Math.floor(s/60)+'').padStart(2,'0') + ':' + (s%60+'').padStart(2,'0'); }
-
-// VORSCHAU
-function zeigV() {
-  // BOM Pflichtfeld-Prüfung
-  if (cProz.bom && cProz.bom.length > 0) {
-    var d = loc[cProz.id] || {};
-    var boms = d.boms || {};
-    var missing = cProz.bom.filter(function(b) { return !boms[b.nr]; });
-    if (missing.length > 0) {
-      showT('⚠️ Stückliste unvollständig: ' + missing.length + ' Position' + (missing.length > 1 ? 'en' : '') + ' noch nicht bestätigt', true);
-      // Highlight BOM section
-      var bomRows = document.querySelectorAll('.br');
-      bomRows.forEach(function(row) {
-        var nr = row.querySelector('.bnr');
-        if (nr) {
-          var isUnchecked = !boms[nr.textContent.trim()];
-          row.style.background = isUnchecked ? '#fff5f5' : '';
-        }
-      });
-      return;
-    }
-  }
-  if (tIv && tSec > 0) { ens(); loc[cProz.id].zeit = Math.ceil(tSec / 60); savL(); stopT(); }
-  nav = ['stat', 'proz', 'det', 'vor'];
-  document.getElementById('bk').classList.add('show');
-  go('sVor');
-  confirmed = false;
-  var btn = document.getElementById('cfBtn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Bitte zuerst bestätigen'; }
-  renderVor();
-}
-
-function renderVor() {
-  var p = cProz;
-  var d = loc[p.id] || {};
-  var schs = d.schs || [];
-  var boms = d.boms || {};
-  var bomM = d.bomM || {};
-  var heute = new Date().toLocaleDateString('de-DE');
-  var a4 = document.getElementById('a4');
-  a4.innerHTML = '';
-
-  // Header
-  var hdr = document.createElement('div'); hdr.className = 'a4h';
-  var left = document.createElement('div');
-  var lg = document.createElement('div'); lg.className = 'a4logo';
-  var logoImg = document.createElement('img');
-  logoImg.src = 'data:image/avif;base64,AAAAHGZ0eXBhdmlmAAAAAG1pZjFhdmlmbWlhZgAAAsxtZXRhAAAAAAAAACFoZGxyAAAAAAAAAABwaWN0AAAAAAAAAAAAAAAAAAAAAA5waXRtAAAAAAABAAAANGlsb2MAAAAAREAAAgABAAAAAALwAAEAAAAAAAAGTgACAAAAAAk+AAEAAAAAAAAAvgAAADhpaW5mAAAAAAACAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAFWluZmUCAAABAAIAAEV4aWYAAAACC2lwcnAAAAHsaXBjbwAAAAxhdjFDgQAMAAAAAbRjb2xycklDQwAAAahsY21zAhAAAG1udHJSR0IgWFlaIAfcAAEAGQADACkAOWFjc3BBUFBMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD21gABAAAAANMtbGNtcwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACWRlc2MAAADwAAAAX2NwcnQAAAFMAAAADHd0cHQAAAFYAAAAFHJYWVoAAAFsAAAAFGdYWVoAAAGAAAAAFGJYWVoAAAGUAAAAFHJUUkMAAAEMAAAAQGdUUkMAAAEMAAAAQGJUUkMAAAEMAAAAQGRlc2MAAAAAAAAABWMyY2kAAAAAAAAAAAAAAABjdXJ2AAAAAAAAABoAAADLAckDYwWSCGsL9hA/FVEbNCHxKZAyGDuSRgVRd13ta3B6BYmxmnysab9908PpMP//dGV4dAAAAABDQzAAWFlaIAAAAAAAAPbWAAEAAAAA0y1YWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts8AAAAUaXNwZQAAAAAAAAEsAAAAIQAAABBwaXhpAAAAAAMICAgAAAAXaXBtYQAAAAAAAAABAAEEgQIDBAAAABppcmVmAAAAAAAAAA5jZHNjAAIAAQABAAAHFG1kYXQSAAoJGCFlcDJAQ0GhMr4MESABAgACAt18TPSAUCGwtwTaI5bsG1KirO6ZURmsIvwMlRJZ3QRUb/p/JFH+nYI43Tannw0uczAky1UyiY+CbqiyYtn4KdBY7OsNSJG69OxlN1aQEi62va9dr8+VOJ6xR5bh8X2++czvl2Nzo8h2DCzkK63RAEmS1N5wHuGsFp8xCMMkJdN9tFD4zH/SXTORHeHkY6Qg/6awyb2XedP4jTsalluoLv+JH3BI7AX19kyoI6/W63wBeBs3OHczxdktnZfy6+DyEJ9Agjghj1aW2yxEC/2qQkiIPfgFl9VLyUzkP+R7zbgMRHIVsoirfYqnnFLOrx2EcILINeQKvS8D3jNDABWp0MFmu91oooxxEA1uoaQ8KRy3FzeyoqOlysMOcbalGrwN+I4oLy7eRbsYzdHWuO4ID9oFGAGyXIm6t5rCbxnSdqws8WNlTOzPu5MiRew0xGOXtc4q7bq6hfKuKzUbDfb32jnJ9JxEpGyznSvyWU06hNRFDdDjf0eBqh12QSXA7vLigSencMd/5YzV/rtvSZLwpyysTnKyvAFA6Evv1zqw1lfCBuAv148bwOFZrrhS9pYfuvFvlBR9kBHpT6ea11H7WB1Y46PYixUAvf7V7IrfZcnsm+RfiOVV8+fhXcNbexh8q8pz6PTWH+Zt+Hpc7bKQMcCYD5h5w6WARkOi2dLO2CkjEdviIDKQjUR/LoydPdKnrxp66aPqgPjqqkQJmr8pL/VTJeeWnKfzbJxu7yVtesIkd3OoFuRlFAX1qTtJv/+7xVfz5nCcgbS8boU7GX0QK+4RkMTJr/Uz4WvOSVc1opjewSeuXUim7ey6L2kRnqXy3WUAVtnAMxq1wklQDsjhMdHCbSmUrEzCKGMAUEwRqwfphbOEfiz7WpVI7HA6Be01MUyAmlHHdfmqH/vfmYF2Qo4T6E4qCVZ66TO2ymgGLq5Gxs8VOxKx4JNKG6dw/uuUpiXqUg+wNfaPzxiPxk8+y4pW90S/Bb6FUKz6OriKJFooXv9MxqoVmK55XXiAxFwYGuCdvAqR63+T8WOcgXiYWcrZlJNQ9K5X9I08B0Gd0+ECn3ha1YYhnE8WAEC6nNqq3OIzFGGFczWKdpDo37fcksA65p7YGSBst3wwnaXd2OXAKLfjhFFlqJQJ7p2yWEWJ6A5F5ecjkHjeaX5jVyOVIbWAI0on+a1rda91xwvWRWcXtkGvaDCF7lF6tAP1xYs9YcUsZ9QYxmwCDqQlyXqbh6aQYXUThFrXA0T9CusU7AKCDXWZpk1wCRI+BWZKYtWfyt/LgztcGPIPXTtHVIUtKKjwEB5NBpAMZFIZT8IRaPRdIAWTQH1JRxu5atCLRKAnH76Ms0lA+EQ0tZmAiqZa8ZV8Oho7WtARIVqb7gsraZck68XamQgvvtwgY9LulSH3pidDgiNhcNROMZmUujt0dh1oh5ineJhXdKVv74fEDJF7m/OoXKtCdWLbMmLOilgOqqHIBk4ScOfH+rVEj7/I8lBNlRdJiaPf4YPr5QiRt/YZ2oyvpyg9L/OEin372TSAgGK5WTFtMmHnRrmUzSVQAD1AaM25IOqgYqVYBexR8esyXbKWYhILNygrIkVYm5TtKWvskKZGvK/tuZTwTNpEnUjx0yDw3sBH1UhixBaNPvBhGNecMYYr+YLkKsxYO4tRvyYJ5q8GQb0NXP5qSXTU8UFqnd1jHyyuRmgbE0UkcM2Xw1iTZLFD+JsTN2/Cx7+ZS5PFJSagYH3n5oZgdiU6SAvx/ZIBhEBuhhT7j4H1FrN9eA5SipTZ8PAfQOKIobLaOr6/H+8CSHpM16LSmkO2oIJ8PyQslQyv+OuexbxC5BEKUZQ8my9WbCxG3lxfeSqA2Hma8CL6PVmHpYDtmXcNiJL6knk5JTpalLo7H4H8TYg3xas+zWIKapI4Qarjsl5j3bWNfWhRyFLODxGS9ahhYdpW1Jp/gS57OY6BAla5nM5kVB6dtKX7vEeaT+2AWvqrcZugSd0kdXwZnh+7uq49O53Mu3dsdc/2QT+PRfFD3+vOJ8DPPPm3XsoIvdTNHSibSsUX4AlYfrIZhS+iTA+O3JvnTuhctZRCQKAsi+P1HqtX+olL+iScSn2wpMHbvO+l9Hr7eo0zgBAAAAAGRXhpZgAASUkqAAgAAAAGABIBAwABAAAAAQAAABoBBQABAAAAVgAAABsBBQABAAAAXgAAACgBAwABAAAAAgAAABMCAwABAAAAAQAAAGmHBAABAAAAZgAAAAAAAABIAAAAAQAAAEgAAAABAAAABgAAkAcABAAAADAyMTABkQcABAAAAAECAwAAoAcABAAAADAxMDABoAMAAQAAAP//AAACoAQAAQAAACwBAAADoAQAAQAAACEAAAAAAAAA';
-  logoImg.style.cssText = 'height:20px;width:auto;display:block';
-  logoImg.alt = 'farbflut Design';
-  lg.appendChild(logoImg);
-  var sub = document.createElement('div'); sub.style.cssText = 'font-size:13px;font-weight:600;color:#555;margin-top:5px;letter-spacing:.01em';
-  sub.textContent = 'Prozessdokumentation · ' + p.id;
-  left.appendChild(lg); left.appendChild(sub);
-  var right = document.createElement('div'); right.className = 'a4mt';
-  right.innerHTML = usr + '<br>' + heute + (d.zeit ? '<br>' + d.zeit + ' Min' : '');
-  hdr.appendChild(left); hdr.appendChild(right);
-  a4.appendChild(hdr);
-
-  var tt = document.createElement('div'); tt.className = 'a4t'; tt.textContent = p.name;
-  var sb = document.createElement('div'); sb.className = 'a4sub';
-  sb.style.display = 'none';
-  a4.appendChild(tt); a4.appendChild(sb);
-
-  // Schritte
-  if (schs.length) {
-    var swrap = document.createElement('div'); swrap.style.marginBottom = '16px';
-    var slbl = document.createElement('div'); slbl.className = 'a4sl'; slbl.textContent = 'Arbeitsschritte';
-    swrap.appendChild(slbl);
-    schs.forEach(function(s, i) {
-      var sc = document.createElement('div'); sc.className = 'a4sc';
-      var sn = document.createElement('div'); sn.className = 'a4sn'; sn.textContent = i + 1;
-      var sb2 = document.createElement('div'); sb2.className = 'a4sb';
-      var st = document.createElement('div'); st.className = 'a4st';
-      st.textContent = s.beschreibung || '';
-      if (!s.beschreibung) { st.style.color = '#bbb'; st.textContent = 'Keine Beschreibung'; }
-      sb2.appendChild(st);
-      if (s.wks && s.wks.length) {
-        var sw = document.createElement('div'); sw.className = 'a4sw';
-        s.wks.forEach(function(w) {
-          var swi = document.createElement('span'); swi.className = 'a4swi'; swi.textContent = '🔧 ' + w;
-          sw.appendChild(swi);
-        });
-        sb2.appendChild(sw);
-      }
-      sc.appendChild(sn); sc.appendChild(sb2);
-      if (s.bilder && s.bilder.length) {
-        var imgWrap = document.createElement('div');
-        imgWrap.style.cssText = 'display:flex;flex-direction:column;gap:4px;flex-shrink:0';
-        s.bilder.forEach(function(b) {
-          var si2 = document.createElement('img'); si2.className = 'a4si';
-          si2.src = b.driveUrl || b.url;
-          imgWrap.appendChild(si2);
-        });
-        sc.appendChild(imgWrap);
-      }
-      swrap.appendChild(sc);
-    });
-    a4.appendChild(swrap);
-  }
-
-  // BOM
-  if (p.bom.length) {
-    var bwrap = document.createElement('div'); bwrap.style.marginBottom = '14px';
-    var blbl = document.createElement('div'); blbl.className = 'a4sl'; blbl.textContent = 'Stückliste';
-    bwrap.appendChild(blbl);
-    p.bom.forEach(function(b) {
-      var st = boms[b.nr] || '';
-      var mv = bomM[b.nr] !== undefined ? bomM[b.nr] : b.menge;
-      var row = document.createElement('div'); row.className = 'a4br';
-      var bn = document.createElement('div'); bn.style.flex = '1';
-      var bname = document.createElement('div'); bname.className = 'a4bn'; bname.textContent = b.name;
-      var bnr = document.createElement('div'); bnr.className = 'a4bnr'; bnr.textContent = b.nr;
-      bn.appendChild(bname); bn.appendChild(bnr);
-      var bm = document.createElement('div'); bm.className = 'a4bm'; bm.textContent = mv + '×';
-      var bst = document.createElement('div');
-      bst.className = 'a4bst' + (st === 'ok' ? ' ok' : st === 'fl' ? ' fl' : '');
-      bst.textContent = st === 'ok' ? '✓' : st === 'fl' ? '✗' : '—';
-      row.appendChild(bn); row.appendChild(bm); row.appendChild(bst);
-      bwrap.appendChild(row);
-    });
-    a4.appendChild(bwrap);
-  }
-
-  if (d.hinweise) {
-    var hw = document.createElement('div'); hw.style.marginBottom = '12px';
-    var hl = document.createElement('div'); hl.className = 'a4sl'; hl.textContent = 'Hinweise';
-    var ht = document.createElement('div'); ht.style.cssText = 'font-size:13px;line-height:1.5'; ht.textContent = d.hinweise;
-    hw.appendChild(hl); hw.appendChild(ht);
-    a4.appendChild(hw);
-  }
-
-  // Bestätigung — nur in Vorschau, nicht im PDF
-  var cf = document.createElement('div'); cf.className = 'a4cf'; cf.setAttribute('data-nopdf', '1');
-  cf.onclick = togCf;
-  var cb = document.createElement('div'); cb.className = 'a4cb'; cb.id = 'a4cb';
-  var ctxt = document.createElement('div'); ctxt.style.cssText = 'font-size:13px;color:#333;line-height:1.6';
-  var ctitle = document.createElement('div'); ctitle.style.cssText = 'font-weight:600;margin-bottom:6px';
-  ctitle.textContent = 'Bitte vor dem Bestätigen prüfen:';
-  var clist = document.createElement('div'); clist.style.cssText = 'font-size:12px;color:#555;display:flex;flex-direction:column;gap:3px;margin-bottom:8px';
-  ['⏱ Zeitangabe ist korrekt', '📋 Alle Arbeitsschritte sind beschrieben', '📦 Stückliste wurde geprüft', '📷 Fotos zeigen den Prozess verständlich'].forEach(function(t) {
-    var li = document.createElement('div'); li.textContent = t; clist.appendChild(li);
-  });
-  var csig = document.createElement('div'); csig.style.cssText = 'font-size:11px;color:#888';
-  csig.innerHTML = 'Hiermit bestätige ich, <strong style="color:#111">' + usr + '</strong>, dass alle Angaben korrekt und vollständig sind (' + heute + ').';
-  ctxt.appendChild(ctitle); ctxt.appendChild(clist); ctxt.appendChild(csig);
-  cf.appendChild(cb); cf.appendChild(ctxt);
-  a4.appendChild(cf);
-}
-
-function togCf() {
-  confirmed = !confirmed;
-  var box = document.getElementById('a4cb');
-  var btn = document.getElementById('cfBtn');
-  if (box) { box.className = 'a4cb' + (confirmed ? ' on' : ''); box.textContent = confirmed ? '✓' : ''; }
-  if (btn) { btn.disabled = !confirmed; btn.textContent = confirmed ? '✓ Bestätigen & Speichern' : 'Bitte zuerst bestätigen'; }
-}
-
-// UPLOAD
-function postJ(payload) {
-  return new Promise(function(res, rej) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', WH, true);
-    xhr.timeout = 30000;
-    xhr.onload = function() {
-      try { res(JSON.parse(xhr.responseText)); } catch(e) { rej(new Error('Antwort-Fehler')); }
-    };
-    xhr.onerror = function() { rej(new Error('Netzwerkfehler')); };
-    xhr.ontimeout = function() { rej(new Error('Timeout')); };
-    xhr.send(JSON.stringify(payload));
-  });
-}
-
-function compressB64(b64, maxPx, q) {
-  return new Promise(function(res) {
-    var img = new Image();
-    img.onload = function() {
-      try {
-        var w = img.width, h = img.height;
-        if (w > maxPx || h > maxPx) {
-          if (w > h) { h = Math.round(h * maxPx / w); w = maxPx; }
-          else { w = Math.round(w * maxPx / h); h = maxPx; }
-        }
-        var c = document.createElement('canvas'); c.width = w; c.height = h;
-        var ctx = c.getContext('2d');
-        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
-        ctx.drawImage(img, 0, 0, w, h);
-        var r = c.toDataURL('image/jpeg', q);
-        res(r && r.length > 100 ? r : b64);
-      } catch(e) { res(b64); }
-    };
-    img.onerror = function() { res(b64); };
-    img.src = b64;
-  });
-}
-
-async function uploadDirekt(b64, fn) {
-  // Base64 ohne Data-URL-Prefix
-  var data = b64.includes(',') ? b64.split(',')[1] : b64;
-  for (var a = 0; a < 4; a++) {
-    try {
-      var r = await postJ({action: 'upload_image', base64: data, fileName: fn});
-      if (r && r.success) return r;
-      throw new Error(r ? (r.error || 'Unbekannter Fehler') : 'Keine Antwort');
-    } catch(e) {
-      if (a < 3) {
-        showO('Bild-Upload Versuch ' + (a+2) + '/4…');
-        await new Promise(function(res) { setTimeout(res, 2000 * (a + 1)); });
-      } else {
-        throw e;
-      }
-    }
-  }
-}
-
-
-function logUpload(fotoStatus, dokuStatus, pdfStatus) {
-  try {
-    postJ({
-      action: 'log_fehler',
-      prozessId: cProz ? cProz.id : '',
-      prozessName: cProz ? cProz.name : '',
-      mitarbeiter: usr || '',
-      statusFotos: fotoStatus,
-      statusDoku: dokuStatus,
-      statusPDF: pdfStatus
-    });
-  } catch(e) { /* silent */ }
-}
-
-async function bestaetigen() {
-  showO('Bilder werden hochgeladen…');
-  ens();
-  var d = loc[cProz.id];
-  var fotoFehler = 0;
-
-  // Immer direkt über loc lesen/schreiben — keine lokale Kopie
-  var numSchs = (d.schs || []).length;
-  for (var si = 0; si < numSchs; si++) {
-    if (!d.schs[si]) continue;
-    if (!d.schs[si].bilder) continue;
-    var numBilder = d.schs[si].bilder.length;
-    for (var fi = 0; fi < numBilder; fi++) {
-      var bild = d.schs[si].bilder[fi];
-      if (!bild || bild.driveUrl || !bild.url || !bild.url.startsWith('data:')) continue;
-      try {
-        showO('Bild ' + (si+1) + '.' + (fi+1) + ' wird komprimiert…');
-        // Max 800px, Qualität 0.65 → typisch 80–150KB, passt sicher in einen POST
-        var comp = await compressB64(bild.url, 800, 0.65);
-        var safeName = cProz.name.replace(/[^a-zA-Z0-9äöüÄÖÜß]/g, '_').replace(/_+/g, '_').slice(0, 40);
-        var fn = cProz.id + '_S' + (si+1) + '_' + safeName + '_' + (fi+1) + '.jpg';
-        showO('Bild ' + (si+1) + '.' + (fi+1) + ' wird hochgeladen…');
-        var res = await uploadDirekt(comp, fn);
-        if (res && res.success) {
-          loc[cProz.id].schs[si].bilder[fi].driveUrl = res.url;
-          savL();
-        } else {
-          fotoFehler++;
-          console.error('Upload fehlgeschlagen S' + (si+1) + ' F' + (fi+1) + ':', res);
-
-        }
-      } catch(err) {
-        fotoFehler++;
-        console.error('Bild ' + (si+1) + '.' + (fi+1) + ' fehlgeschlagen:', err);
-
-      }
-    }
-  }
-  if (fotoFehler > 0) showT('⚠️ ' + fotoFehler + ' Foto(s) nicht hochgeladen', true);
-
-  // PDF — vollständiges HTML mit eingebetteten Styles
-  var pdfFehler = null;
-  try {
-    showO('Dokument wird gespeichert…');
-    var safeName = cProz.name.replace(/[^a-zA-Z0-9äöüÄÖÜß]/g, '_').slice(0, 40);
-    var fn = cProz.id + '_' + safeName + '_' + new Date().toLocaleDateString('de-DE').replace(/\./g, '-') + '.html';
-    var pdfCSS = [
-      'body{font-family:Helvetica,Arial,sans-serif;background:#fff;color:#111;margin:0;padding:24px;font-size:13px;line-height:1.5}',
-      '.a4{max-width:720px;margin:0 auto;background:#fff}',
-      '.a4h{display:flex;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #111}',
-      '.a4logo{font-size:17px;font-weight:800}.a4logo img{height:32px;width:auto;display:block}',
-      '.a4mt{font-size:11px;color:#666;text-align:right;line-height:1.6}',
-      '.a4t{font-size:22px;font-weight:700;margin-bottom:3px}',
-      '.a4sub{font-size:12px;color:#888;margin-bottom:18px}',
-      '.a4sl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#999;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #eee}',
-      '.a4sc{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start;padding-bottom:14px;border-bottom:1px solid #f5f5f5}',
-      '.a4sn{width:24px;height:24px;border-radius:50%;background:#111;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}',
-      '.a4sb{flex:1}.a4st{font-size:13px;line-height:1.5;color:#111}',
-      '.a4sw{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}',
-      '.a4swi{font-size:11px;background:#f5f5f5;border-radius:10px;padding:2px 8px;color:#555}',
-      '.a4si{width:100px;height:76px;object-fit:cover;border-radius:6px;border:1px solid #eee;flex-shrink:0}',
-      '.a4br{display:flex;font-size:12px;padding:6px 0;border-bottom:1px solid #f5f5f5;gap:8px;align-items:center}',
-      '.a4br:last-child{border:none}.a4bn{flex:1;color:#111;font-weight:500}',
-      '.a4bnr{font-size:10px;color:#bbb;font-weight:400}',
-      '.a4bm{width:55px;text-align:right;font-weight:600;color:#555}',
-      '.a4bst{width:30px;text-align:center;font-weight:700;font-size:14px}',
-      '.a4bst.ok{color:#2d6a45}.a4bst.fl{color:#b83232}',
-      '.a4cf{margin-top:20px;padding:14px;background:#f9f8f5;border-radius:6px}',
-      '.a4cb{display:inline-block;width:16px;height:16px;background:#111;border-radius:3px;color:#fff;font-size:12px;text-align:center;line-height:16px;margin-right:8px;vertical-align:middle}'
-    ].join('\n');
-    // Re-render preview so Drive-URLs are in DOM before cloning
-    renderVor();
-    // Bestätigungsblock komplett aus dem PDF-HTML entfernen (via Clone)
-    var a4el = document.getElementById('a4');
-    var a4clone = a4el.cloneNode(true);
-    a4clone.querySelectorAll('[data-nopdf]').forEach(function(el) { el.parentNode.removeChild(el); });
-    var a4html = a4clone.innerHTML;
-
-    var full = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + cProz.name + '</title>'
-      + '<style>' + pdfCSS + '</style></head><body>'
-      + '<div class="a4">' + a4html + '</div>'
-      + '</body></html>';
-    var bytes = new TextEncoder().encode(full);
-    var binary = '';
-    var CHUNK = 8192;
-    for (var i = 0; i < bytes.length; i += CHUNK) {
-      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
-    }
-    var b64 = btoa(binary);
-    var pdfRes = await postJ({action:'save_pdf',htmlContent:b64,fileName:fn,prozessId:cProz.id,prozessName:cProz.name});
-    if (!pdfRes || !pdfRes.success) {
-      pdfFehler = pdfRes ? pdfRes.error : 'Keine Antwort';
-      console.error('PDF Fehler:', pdfFehler);
-    }
-  } catch(e) {
-    pdfFehler = e.toString();
-    console.error('PDF fehlgeschlagen:', e);
-  }
-
-  // Sheet — aktuellen loc-Stand lesen (mit allen driveUrls)
-  showO('Wird in Google Sheet gespeichert…');
-  var schs = loc[cProz.id].schs || [];
-  var payload = {
-    action: 'save_prozess',
-    prozessId: cProz.id, prozessName: cProz.name, station: cProz.station,
-    mitarbeiter: usr, datum: new Date().toLocaleDateString('de-DE'),
-    zeitMinuten: d.zeit || '', werkzeuge: [], hinweise: d.hinweise || '',
-    status: 'done', bomMengen: d.bomM || {},
-    schritte: schs.map(function(s) {
-      return {
-        beschreibung: s.beschreibung || '',
-        werkzeuge: (s.wks || []).join(', '),
-        bildUrls: (s.bilder || []).filter(function(b) { return b.driveUrl; }).map(function(b) { return b.driveUrl; }),
-        bildUrl: (s.bilder && s.bilder.find(function(b) { return b.driveUrl; })) ? s.bilder.find(function(b) { return b.driveUrl; }).driveUrl : ''
-      };
-    })
-  };
-  try {
-    var r = await postJ(payload);
-    hideO();
-    if (r.success) {
-      loc[cProz.id].s = 'done';
-      loc[cProz.id].mitarbeiter = usr;
-      loc[cProz.id].datum = new Date().toLocaleDateString('de-DE');
-      savL();
-      var _sf = fotoFehler === 0 ? '✅ Alle Fotos gespeichert' : '⚠️ ' + fotoFehler + ' Foto(s) nicht hochgeladen';
-      var _sd = '✅ Erfolgreich gespeichert';
-      var _sp = !pdfFehler ? '✅ PDF erstellt & gespeichert' : '⚠️ PDF nicht erstellt';
-      logUpload(_sf, _sd, _sp);
-      showDone(fotoFehler, true, null, pdfFehler);
-    } else {
-      logUpload(
-        fotoFehler === 0 ? '✅ Alle Fotos gespeichert' : '⚠️ ' + fotoFehler + ' Foto(s) nicht hochgeladen',
-        '❌ Fehler: ' + r.error.slice(0, 100),
-        !pdfFehler ? '✅ PDF erstellt & gespeichert' : '⚠️ PDF nicht erstellt'
-      );
-      showT('Fehler: ' + r.error, true);
-    }
-  } catch(err) { hideO(); showT('Verbindungsfehler', true); }
-}
-
-function updProg() {
-  var ps = PZ.filter(function(p) { return p.station === cStat; });
-  var d = ps.filter(function(p) { return loc[p.id] && loc[p.id].s === 'done'; }).length;
-  document.getElementById('pf').style.width = (ps.length ? d / ps.length * 100 : 0) + '%';
-}
-
-function goBack() {
-  var prev = nav[nav.length - 2];
-  if (!prev) return;
-  stopT(); tSec = 0;
-  if (prev === 'vor') { nav.pop(); go('sVor'); }
-  else if (prev === 'det') { nav = ['stat', 'proz', 'det']; go('sDet'); renderDet(); }
-  else if (prev === 'proz') { showProz(cStat); }
-  else if (prev === 'stat') { showStat(); }
-}
-
-function showO(t) { document.getElementById('ovt').textContent = t; document.getElementById('ovl').classList.add('on'); }
-function hideO() { document.getElementById('ovl').classList.remove('on'); }
-function showT(msg, err) {
-  var t = document.getElementById('tst');
-  t.textContent = msg; t.className = 'toast on' + (err ? ' err' : '');
-  clearTimeout(t._t); t._t = setTimeout(function() { t.classList.remove('on'); }, err ? 4000 : 2500);
-}
-
-
-var LOB = [
-  'das hast du geil gemacht 🙌',
-  'durchgezogen wie eine Maschine',
-  'sauber durchgezogen – genau so!',
-  'läuft bei dir 💪',
-  'abgeliefert wie ein Profi!',
-  'Task erledigt. Stark!',
-  'das Ding hast du dir geschnappt',
-  'das war ja fast schon zu einfach für dich 😉',
-  'ich hab nix anderes erwartet 😎',
-  'kurz gemacht, stark gemacht',
-  'läuft wie geschmiert!',
-  'da klatscht selbst der Kaffee Beifall ☕',
-  'richtig gute Arbeit',
-  'genau so brauchen wir das',
-  'zuverlässig wie immer 👌',
-  'top umgesetzt',
-  'darauf kann man sich verlassen',
-  'geht doch 😉',
-  'war wohl doch nicht so schwer, oder?',
-  'ich wusste, da steckt mehr drin!',
-  'na also – läuft!',
-  'wieder ein Haken dran ✔️',
-  '+10 Punkte für dich!',
-  'nächstes Level erreicht 🚀',
-  'Combo läuft weiter!',
-  'Serie nicht abreißen lassen!',
-  'Highscore incoming!'
-];
-
-function showDone(fotoFehler, sheetOk, sheetErr, pdfFehler) {
-  go('sDone');
-  document.getElementById('doneTitle').textContent = usr;
-  document.getElementById('doneLob').textContent = LOB[Math.floor(Math.random() * LOB.length)];
-
-  // Fotos
-  if (fotoFehler === 0) {
-    document.getElementById('doneFIco').textContent = '✅';
-    document.getElementById('doneFTxt').textContent = 'Alle Fotos gespeichert';
-  } else {
-    document.getElementById('doneFIco').textContent = '⚠️';
-    document.getElementById('doneFTxt').textContent = fotoFehler + ' Foto(s) nicht hochgeladen';
-  }
-
-  // Prozess
-  if (sheetOk) {
-    document.getElementById('donePIco').textContent = '✅';
-    document.getElementById('donePTxt').textContent = 'Erfolgreich gespeichert';
-  } else {
-    document.getElementById('donePIco').textContent = '❌';
-    document.getElementById('donePTxt').textContent = sheetErr ? sheetErr.slice(0, 60) : 'Fehler beim Speichern';
-  }
-
-  // PDF
-  if (!pdfFehler) {
-    document.getElementById('donePDFIco').textContent = '✅';
-    document.getElementById('donePDFTxt').textContent = 'PDF erstellt & gespeichert';
-  } else {
-    document.getElementById('donePDFIco').textContent = '⚠️';
-    document.getElementById('donePDFTxt').textContent = 'PDF nicht erstellt';
-  }
-}
-
-function doneWeiter() {
-  nav = ['stat', 'proz'];
-  showProz(cStat);
-}
-
-window.addEventListener('load', initApp);
-</script>
-
-<div class="scr" id="sDone">
-  <div class="cw"><div class="card" style="max-width:420px;text-align:center">
-    <div style="font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px" id="doneTitle"></div>
-    <div style="font-size:16px;color:var(--g1);margin-bottom:24px" id="doneLob"></div>
-    <div style="background:var(--bg);border-radius:8px;padding:16px;margin-bottom:24px;text-align:left">
-      <div id="doneF" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--br)">
-        <span id="doneFIco" style="font-size:18px"></span>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:600">Fotos</div>
-          <div id="doneFTxt" style="font-size:12px;color:var(--g2)"></div>
+<div class="page">
+
+  <!-- Settings Panel -->
+  <div class="settings">
+    <div class="settings-hdr" onclick="toggleSettings()">
+      <div>
+        <div class="settings-title">
+          <span>⚙</span> Verbindungseinstellungen
         </div>
+        <div class="settings-sub" id="settingsSub">Sheet und Webhook konfigurieren</div>
       </div>
-      <div id="doneP" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--br)">
-        <span id="donePIco" style="font-size:18px"></span>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:600">Prozess dokumentiert</div>
-          <div id="donePTxt" style="font-size:12px;color:var(--g2)"></div>
-        </div>
+      <div class="settings-toggle" id="settingsTog">›</div>
+    </div>
+    <div class="settings-body" id="settingsBody">
+      <div class="srow">
+        <span class="slbl">Sheet-ID</span>
+        <input class="sinp" id="sheetId" placeholder="Aus der Google Sheets URL kopieren…" oninput="saveSettings()">
       </div>
-      <div id="donePDF" style="display:flex;align-items:center;gap:10px;padding:8px 0">
-        <span id="donePDFIco" style="font-size:18px"></span>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:600">PDF erstellt</div>
-          <div id="donePDFTxt" style="font-size:12px;color:var(--g2)"></div>
+      <div class="srow">
+        <span class="slbl">Tab Produkte</span>
+        <input class="sinp" id="tabP" value="Endprodukte" style="max-width:180px" oninput="saveSettings()">
+        <span class="slbl">Tab Teile</span>
+        <input class="sinp" id="tabA" value="Artikelstamm" style="max-width:180px" oninput="saveSettings()">
+      </div>
+      <div class="srow">
+        <span class="slbl">BG-Prefix</span>
+        <input class="sinp" id="bgPrefix" value="BG-99-" style="max-width:110px" oninput="saveSettings()" title="Präfix für neue Baugruppen-Nummern">
+        <span class="slbl">ZP-Prefix</span>
+        <input class="sinp" id="zpPrefix" value="ZP-01-" style="max-width:110px" oninput="saveSettings()" title="Präfix für neue Zwischenprodukte">
+        <span class="slbl">ET-Prefix</span>
+        <input class="sinp" id="etPrefix" value="ET-01-" style="max-width:110px" oninput="saveSettings()" title="Präfix für neue Einzelteil-Nummern">
+      </div>
+      <div class="srow">
+        <span class="slbl">Webhook-URL</span>
+        <input class="sinp" id="webhookUrl" placeholder="https://script.google.com/macros/s/…/exec" oninput="saveSettings()">
+      </div>
+      <div class="srow">
+        <div class="conn-status" id="connStatus">
+          <div class="sdot"></div>
+          <span class="conn-wait">Noch nicht verbunden — Daten eingeben und laden</span>
         </div>
+        <button class="btn btn-line btn-sm" onclick="loadSheets()">Laden &amp; prüfen</button>
+        <button class="btn btn-line btn-sm" onclick="hardReload()">↺ Cache leeren & neu laden</button>
+        <button class="btn btn-line btn-sm" onclick="loadDemo()">Demo</button>
       </div>
     </div>
-    <button class="btn btn-k" onclick="doneWeiter()">Weiter &#8594;</button>
-  </div></div>
+  </div>
+
+  <!-- Mode Switcher -->
+  <div class="mode-sw">
+    <button class="mode-btn active" id="modeABtn" onclick="switchMode('A')">
+      A — Produkte erfassen
+      <span class="mode-lbl">Endprodukte → Baugruppen zuordnen</span>
+    </button>
+    <button class="mode-btn" id="modeBBtn" onclick="switchMode('B')">
+      B — Baugruppen erfassen
+      <span class="mode-lbl">Baugruppen → Einzelteile zuordnen</span>
+    </button>
+  </div>
+
+  <!-- Mode A: Progress -->
+  <div id="modeAContent">
+  <div class="progress">
+    <div class="pstep active" id="ps1"><div class="pnum" id="pn1">1</div><div class="plbl">Endprodukt</div></div>
+    <div class="pstep" id="ps2"><div class="pnum" id="pn2">2</div><div class="plbl">Baugruppen</div></div>
+    <div class="pstep" id="ps3"><div class="pnum" id="pn3">3</div><div class="plbl">Speichern</div></div>
+  </div>
+
+  <!-- Step 1 -->
+  <div class="sblock active" id="s1">
+    <div class="shdr">
+      <div class="snum" id="sn1">1</div>
+      <div style="flex:1">
+        <div class="stitle">Endprodukt wählen</div>
+        <div class="ssub" id="ss1">Wähle das Produkt für die Stücklistenerfassung</div>
+        <div id="selProdDisplay" style="display:none;margin-top:8px;padding:10px 14px;background:var(--off);border:1px solid var(--b2);border-radius:var(--r);border-left:3px solid var(--t);user-select:text;cursor:text">
+          <div id="selProdName" style="font-size:14px;font-weight:500;color:var(--t);user-select:text"></div>
+          <div id="selProdId" style="font-size:11px;color:var(--t3);margin-top:2px;font-family:monospace;user-select:text"></div>
+        </div>
+      </div>
+      <div class="sdtag" id="sd1"></div>
+    </div>
+    <div class="sbody">
+      <div class="sdiv"></div>
+      <div id="prodProgress" style="display:none;margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:12px;color:var(--t2)" id="progLabel"></span>
+          <span style="font-size:11px;color:var(--t3)" id="progPct"></span>
+        </div>
+        <div style="height:3px;background:var(--b);border-radius:2px;overflow:hidden">
+          <div id="progBar" style="height:100%;background:var(--green);border-radius:2px;transition:width 0.3s"></div>
+        </div>
+      </div>
+      <div class="sbox"><span class="sbox-icon">⌕</span><input placeholder="Produkt suchen…" oninput="filterP(this.value)" id="psearch"></div>
+      <div id="pgrid"><div style="color:var(--t3);font-size:13px;padding:10px 0">Demo laden oder Sheets verbinden</div></div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="sblock" id="s2">
+    <div class="shdr" onclick="tryOpen(2)">
+      <div class="snum" id="sn2">2</div>
+      <div style="flex:1">
+        <div class="stitle">Baugruppen wählen</div>
+        <div class="ssub" id="ss2">Welche Baugruppen enthält dieses Produkt?</div>
+      </div>
+      <div class="sdtag" id="sd2"></div>
+    </div>
+    <div class="sbody">
+      <div class="sdiv"></div>
+      <div class="sbox"><span class="sbox-icon">⌕</span><input placeholder="Baugruppen suchen…" oninput="filterBG(this.value)" id="bgsearch"></div>
+      <div class="slabel">Im Artikelstamm vorhanden</div>
+      <div id="bgExList"></div>
+      <div class="slabel">Neu anlegen</div>
+      <div id="bgNewList"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-line btn-sm" onclick="goBack(1)">← Zurück</button>
+        <button class="btn btn-line btn-sm" onclick="addNewBG()">+ Neue Baugruppe</button>
+        <button class="btn btn-dark" style="margin-left:auto" onclick="confirmS2()">Weiter →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Speichern (Mode A) -->
+  <div class="sblock" id="s3">
+    <div class="shdr" onclick="tryOpen(3)">
+      <div class="snum" id="sn3">3</div>
+      <div><div class="stitle">Prüfen &amp; speichern</div><div class="ssub" id="ss3">Übersicht — dann in Google Sheet schreiben</div></div>
+      <div class="sdtag" id="sd3"></div>
+    </div>
+    <div class="sbody">
+      <div class="sdiv"></div>
+      <div id="s3content"></div>
+      <div id="saveResult"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:16px">
+        <button class="btn btn-line btn-sm" onclick="goBack(2)">← Zurück</button>
+        <div class="airow" id="saveAI" style="margin-top:0"><div class="spin"></div><span>Schreibe in Google Sheet…</span></div>
+        <button class="btn btn-green" style="margin-left:auto" id="btnSave" onclick="saveToSheet()">↑ Jetzt in Sheet speichern</button>
+      </div>
+    </div>
+  </div>
+  </div><!-- end modeAContent -->
+
+  <!-- Mode B: Baugruppen → Einzelteile -->
+  <div id="modeBContent" style="display:none">
+  <div class="progress">
+    <div class="pstep active" id="bps1"><div class="pnum" id="bpn1">1</div><div class="plbl">Baugruppe</div></div>
+    <div class="pstep" id="bps2"><div class="pnum" id="bpn2">2</div><div class="plbl">Einzelteile</div></div>
+    <div class="pstep" id="bps3"><div class="pnum" id="bpn3">3</div><div class="plbl">Speichern</div></div>
+  </div>
+
+  <!-- Mode B Step 1: Baugruppe wählen -->
+  <div class="sblock active" id="bs1">
+    <div class="shdr">
+      <div class="snum" id="bsn1">1</div>
+      <div style="flex:1">
+        <div class="stitle">Baugruppe / Zwischenprodukt wählen</div>
+        <div class="ssub" id="bss1">Wähle die Baugruppe oder das Zwischenprodukt für die Einzelteil-Erfassung</div>
+        <div id="selBGDisplay" style="display:none;margin-top:8px;padding:10px 14px;background:var(--off);border:1px solid var(--b2);border-radius:var(--r);border-left:3px solid var(--t);user-select:text;cursor:text">
+          <div id="selBGName" style="font-size:14px;font-weight:500;color:var(--t);user-select:text"></div>
+          <div id="selBGId" style="font-size:11px;color:var(--t3);margin-top:2px;font-family:monospace;user-select:text"></div>
+        </div>
+      </div>
+      <div class="sdtag" id="bsd1"></div>
+    </div>
+    <div class="sbody">
+      <div class="sdiv"></div>
+      <!-- Type switcher -->
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <button class="btn btn-sm" id="bgTypeAll" onclick="setBGTypeFilter('all')" style="background:var(--t);color:var(--w);border-color:var(--t)">Alle</button>
+        <button class="btn btn-line btn-sm" id="bgTypeBG" onclick="setBGTypeFilter('bg')">Nur Baugruppen</button>
+        <button class="btn btn-line btn-sm" id="bgTypeZP" onclick="setBGTypeFilter('zp')">Nur Zwischenprodukte</button>
+      </div>
+      <div id="bgModeProgress" style="margin-bottom:14px;display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:12px;color:var(--t2)" id="bgModeProgLabel"></span>
+          <span style="font-size:11px;color:var(--t3)" id="bgModeProgPct"></span>
+        </div>
+        <div style="height:3px;background:var(--b);border-radius:2px;overflow:hidden">
+          <div id="bgModeProgBar" style="height:100%;background:var(--green);border-radius:2px;transition:width 0.3s"></div>
+        </div>
+      </div>
+      <div class="sbox"><span class="sbox-icon">⌕</span><input placeholder="Baugruppe suchen…" oninput="filterBGMode(this.value)" id="bgsearchB"></div>
+      <div id="bgModeList"></div>
+    </div>
+  </div>
+
+  <!-- Mode B Step 2: Einzelteile -->
+  <div class="sblock" id="bs2">
+    <div class="shdr" onclick="tryOpenB(2)">
+      <div class="snum" id="bsn2">2</div>
+      <div><div class="stitle">Einzelteile zuordnen</div><div class="ssub" id="bss2">Welche Einzelteile enthält diese Baugruppe?</div></div>
+      <div class="sdtag" id="bsd2"></div>
+    </div>
+    <div class="sbody">
+      <div class="sdiv"></div>
+      <div class="sbox"><span class="sbox-icon">⌕</span><input placeholder="Einzelteile suchen…" oninput="filterETMode(this.value)" id="etsearchB"></div>
+      <div class="slabel">Im Artikelstamm vorhanden</div>
+      <div id="etModeList"></div>
+      <div class="slabel">Neu anlegen</div>
+      <div id="etModeNewList"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-line btn-sm" onclick="goBackB(1)">← Zurück</button>
+        <button class="btn btn-line btn-sm" onclick="addNewETMode()">+ Neues Einzelteil</button>
+        <button class="btn btn-dark" style="margin-left:auto" onclick="confirmBS2()">Weiter →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mode B Step 3: Speichern -->
+  <div class="sblock" id="bs3">
+    <div class="shdr" onclick="tryOpenB(3)">
+      <div class="snum" id="bsn3">3</div>
+      <div><div class="stitle">Prüfen &amp; speichern</div><div class="ssub" id="bss3">Übersicht — dann in Google Sheet schreiben</div></div>
+      <div class="sdtag" id="bsd3"></div>
+    </div>
+    <div class="sbody">
+      <div class="sdiv"></div>
+      <div id="bs3content"></div>
+      <div id="bsSaveResult"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:16px">
+        <button class="btn btn-line btn-sm" onclick="goBackB(2)">← Zurück</button>
+        <div class="airow" id="bsSaveAI" style="margin-top:0"><div class="spin"></div><span>Schreibe in Google Sheet…</span></div>
+        <button class="btn btn-green" style="margin-left:auto" id="btnSaveB" onclick="saveToSheetB()">↑ Jetzt in Sheet speichern</button>
+      </div>
+    </div>
+  </div>
+  </div><!-- end modeBContent -->
+
 </div>
+<div id="toast"></div>
+
 <script>
-// Prevent pull-to-refresh on iOS Safari
-var lastY = 0;
-document.addEventListener('touchstart', function(e) {
-  lastY = e.touches[0].clientY;
-}, {passive: false});
-document.addEventListener('touchmove', function(e) {
-  var y = e.touches[0].clientY;
-  var scrollTop = document.scrollingElement ? document.scrollingElement.scrollTop : document.documentElement.scrollTop;
-  if (scrollTop <= 0 && y > lastY) {
-    e.preventDefault();
+// ── State ──────────────────────────────────────────────────────
+let products=[], parts=[], allBGs=[], bomBGs=[];
+let selProd=null, selBGs=[], bgETs={};
+let newButDeselected=[]; // new BGs/ETs created but not assigned to product
+let curStep=1, bgNewC=0, etNewC=0;
+
+// ── Auto ID generation ─────────────────────────────────────────
+function getNextId(prefix, parts_list) {
+  // Find all existing IDs matching the prefix pattern e.g. "BG-99-"
+  const matching = parts_list
+    .map(p => p.id)
+    .filter(id => id.toUpperCase().startsWith(prefix.toUpperCase()));
+  if (!matching.length) return prefix + '10000';
+  // Extract numeric suffix and find max
+  const nums = matching.map(id => {
+    const suffix = id.slice(prefix.length);
+    return parseInt(suffix.replace(/\D/g,'')) || 0;
+  });
+  const next = Math.max(...nums) + 1;
+  // Pad to same length as existing
+  const sample = matching[0].slice(prefix.length);
+  const padLen = sample.replace(/\D/g,'').length;
+  return prefix + String(next).padStart(padLen, '0');
+}
+
+function nextBGId() {
+  const p = document.getElementById('bgPrefix')?.value || 'BG-99-';
+  return getNextId(p, parts);
+}
+function nextZPId() {
+  const p = document.getElementById('zpPrefix')?.value || 'ZP-01-';
+  return getNextId(p, parts);
+}
+function nextETId() {
+  const p = document.getElementById('etPrefix')?.value || 'ET-01-';
+  return getNextId(p, parts);
+}
+
+// ── Persist settings ───────────────────────────────────────────
+function saveSettings() {
+  localStorage.setItem('ff_sheetId', document.getElementById('sheetId').value);
+  localStorage.setItem('ff_tabP', document.getElementById('tabP').value);
+  localStorage.setItem('ff_tabA', document.getElementById('tabA').value);
+  localStorage.setItem('ff_webhook', document.getElementById('webhookUrl').value);
+  localStorage.setItem('ff_bgPrefix', document.getElementById('bgPrefix').value);
+  localStorage.setItem('ff_zpPrefix', document.getElementById('zpPrefix').value);
+  localStorage.setItem('ff_etPrefix', document.getElementById('etPrefix').value);
+}
+function loadSettings() {
+  const s = id => localStorage.getItem(id) || '';
+  document.getElementById('sheetId').value   = s('ff_sheetId');
+  document.getElementById('tabP').value      = s('ff_tabP') || 'Endprodukte';
+  document.getElementById('tabA').value      = s('ff_tabA') || 'Artikelstamm';
+  document.getElementById('webhookUrl').value = s('ff_webhook');
+  document.getElementById('bgPrefix').value = s('ff_bgPrefix') || 'BG-99-';
+  document.getElementById('zpPrefix').value = s('ff_zpPrefix') || 'ZP-01-';
+  document.getElementById('etPrefix').value = s('ff_etPrefix') || 'ET-01-';
+  if (s('ff_sheetId')) updateSettingsSub();
+}
+function updateSettingsSub() {
+  const id = document.getElementById('sheetId').value;
+  const wh = document.getElementById('webhookUrl').value;
+  document.getElementById('settingsSub').textContent =
+    id ? `Sheet verbunden${wh?' · Webhook aktiv':' · kein Webhook'}` : 'Sheet und Webhook konfigurieren';
+}
+function toggleSettings() {
+  const b = document.getElementById('settingsBody');
+  const t = document.getElementById('settingsTog');
+  const open = b.classList.toggle('open');
+  t.textContent = open ? '˅' : '›';
+}
+
+// ── Demo ───────────────────────────────────────────────────────
+function loadDemo() {
+  products = [
+    {id:'FP-1001',name:'Pendelleuchte BOLA 30 cm',typ:'Fertigprodukt'},
+    {id:'FP-1002',name:'Wandleuchte ALTO Birke',typ:'Fertigprodukt'},
+    {id:'FP-1003',name:'Deckenleuchte PLANA',typ:'Fertigprodukt'},
+    {id:'FP-1004',name:'Stehleuchte FIBO Nuss',typ:'Fertigprodukt'},
+    {id:'FP-1005',name:'Tischleuchte RUND mini',typ:'Fertigprodukt'},
+  ];
+  parts = [
+    {id:'BG-2001',name:'Holzschirm gedrechselt',typ:'Baugruppe'},
+    {id:'BG-2002',name:'Kabeldurchführung',typ:'Baugruppe'},
+    {id:'BG-2003',name:'Aufhängung Textilkabel',typ:'Baugruppe'},
+    {id:'BG-2004',name:'Baldachin-Set',typ:'Baugruppe'},
+    {id:'ET-3001',name:'Textilkabel 2 m schwarz',typ:'Einzelteil'},
+    {id:'ET-3002',name:'E27-Fassung Messing',typ:'Einzelteil'},
+    {id:'ET-3003',name:'Baldachin Buche natur',typ:'Einzelteil'},
+    {id:'ET-3004',name:'Schraube M4 × 12 mm',typ:'Einzelteil'},
+    {id:'ET-3005',name:'Holzdübel Ø 8 mm',typ:'Einzelteil'},
+    {id:'ET-3006',name:'Zugentlastung',typ:'Einzelteil'},
+    {id:'ET-3007',name:'Stellring Edelstahl',typ:'Einzelteil'},
+  ];
+  allBGs = parts.filter(p=>p.typ==='Baugruppe');
+  setConn(true,'Demo-Daten aktiv');
+  renderProducts('');
+  toast('Demo geladen');
+}
+
+// ── Sheets via CSV + Webhook für erfasst-Status ────────────────
+async function loadSheets() {
+  const id = document.getElementById('sheetId').value.trim();
+  if (!id) { toast('Bitte Sheet-ID eingeben'); return; }
+  const tp = document.getElementById('tabP').value || 'Endprodukte';
+  const ta = document.getElementById('tabA').value || 'Artikelstamm';
+  const webhook = document.getElementById('webhookUrl').value.trim();
+  setStatus('laden…', false);
+  setConn(false, 'Lade Daten…');
+  saveSettings();
+  try {
+    // CSV für Produkte + Artikelstamm
+    const [rP, rA] = await Promise.all([
+      fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tp)}`),
+      fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(ta)}`)
+    ]);
+    const [tP, tA] = await Promise.all([rP.text(), rA.text()]);
+    products = parseCSV(tP);
+    parts    = parseCSV(tA);
+    allBGs   = parts.filter(p => p.typ === 'Baugruppe');
+
+    // Webhook GET für erfasst-Status aus BOM + BOM_BG
+    if (webhook) {
+      try {
+        const rW = await fetch(webhook + '?t=' + Date.now());
+        const wData = await rW.json();
+        // Merge erfasst flags
+        if (wData.products) {
+          wData.products.forEach(wp => {
+            const p = products.find(x => x.id === wp.id);
+            if (p) p.erfasst = wp.erfasst;
+          });
+        }
+        if (wData.parts) {
+          wData.parts.forEach(wp => {
+            const p = parts.find(x => x.id === wp.id);
+            if (p) p.erfasst = wp.erfasst;
+          });
+        }
+        allBGs = parts.filter(p => p.typ === 'Baugruppe');
+        // BGs aus BOM Tab für Modus B
+        if (wData.bomBGs) bomBGs = wData.bomBGs;
+      } catch(we) {
+        console.warn('Webhook GET fehlgeschlagen, erfasst-Status nicht verfügbar:', we);
+      }
+    }
+
+    if (products.length > 0 || parts.length > 0) {
+      const erfasstCount = products.filter(p=>p.erfasst).length;
+      setConn(true, `${products.length} Produkte · ${parts.length} Teile geladen`);
+      renderProducts(''); updateSettingsSub(); setStatus('bereit', true);
+      toast(`${products.length} Produkte geladen · ${erfasstCount} erledigt`);
+    } else {
+      setConn(false, `0 Einträge — Tab-Namen prüfen`);
+      setStatus('Fehler', false);
+    }
+  } catch(e) {
+    setConn(false, 'Verbindung fehlgeschlagen: ' + e.message);
+    setStatus('Fehler', false);
+    toast('Laden fehlgeschlagen');
   }
-  lastY = y;
-}, {passive: false});
-</script>
-<script>
-var _lastY = 0;
-document.addEventListener('touchstart', function(e) { _lastY = e.touches[0].clientY; }, {passive:false});
-document.addEventListener('touchmove', function(e) {
-  var y = e.touches[0].clientY;
-  var st = document.scrollingElement ? document.scrollingElement.scrollTop : document.documentElement.scrollTop;
-  if (st <= 0 && y > _lastY) { e.preventDefault(); }
-  _lastY = y;
-}, {passive:false});
+}
+
+function finishLoad(results, tp, ta) {
+  products = results.p || [];
+  parts    = results.a || [];
+  allBGs   = parts.filter(p => p.typ === 'Baugruppe');
+  if (products.length > 0 || parts.length > 0) {
+    const erfasstCount = products.filter(p=>p.erfasst).length;
+    setConn(true, `${products.length} Produkte · ${parts.length} Teile geladen`);
+    renderProducts('');
+    updateSettingsSub();
+    setStatus('bereit', true);
+    toast(`${products.length} Produkte geladen · ${erfasstCount} erledigt`);
+  } else {
+    setConn(false, `0 Einträge — Tab-Namen prüfen: "${tp}" und "${ta}"`);
+    setStatus('Fehler', false);
+    toast('0 Einträge geladen — Tab-Namen korrekt?');
+  }
+}
+
+function parseGViz2(data) {
+  const rows = data.table.rows || [];
+  return rows.map(r => {
+    const id      = String(r.c?.[0]?.v ?? '').trim();
+    const name    = String(r.c?.[1]?.v ?? '').trim();
+    const typ     = String(r.c?.[2]?.v ?? '').trim() || 'Einzelteil';
+    return { id, name, typ, erfasst: false }; // erfasst set by server via BOM check
+  }).filter(x => x.id && x.name && !x.id.toLowerCase().includes('artikel') && x.id.toLowerCase() !== 'artikel-nr.');
+}
+
+function parseGViz(raw) {
+  try {
+    const json = JSON.parse(raw.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, ''));
+    const rows = json.table.rows || [];
+    // Skip header row (row 0), use column positions A=0, B=1, C=2
+    return rows.map(r => {
+      const id   = String(r.c?.[0]?.v ?? '').trim();
+      const name = String(r.c?.[1]?.v ?? '').trim();
+      const typ  = String(r.c?.[2]?.v ?? '').trim() || 'Einzelteil';
+      return { id, name, typ };
+    }).filter(x => x.id && x.name && x.id !== 'Artikel-Nr.' && x.id !== 'Artikel-Nr');
+  } catch(e) { return []; }
+}
+
+function parseCSV(raw) {
+  const lines = raw.trim().split('\n');
+  if (lines.length < 2) return [];
+  return lines.slice(1).map(line => {
+    const vals = line.match(/(".*?"|[^,\n]+)/g) || [];
+    const id      = (vals[0] || '').replace(/^"|"$/g, '').trim();
+    const name    = (vals[1] || '').replace(/^"|"$/g, '').trim();
+    const typ     = (vals[2] || '').replace(/^"|"$/g, '').trim() || 'Einzelteil';
+    return { id, name, typ, erfasst: false }; // erfasst set by server via BOM check
+  }).filter(x => x.id && x.name && x.id !== 'Artikel-Nr.' && x.id !== 'Artikel-Nr');
+}
+
+// ── Step 1 ─────────────────────────────────────────────────────
+let prodPage = 0;
+function filterP(q){ prodPage=0; renderProducts(q.toLowerCase()); }
+
+function renderProducts(q) {
+  const g = document.getElementById('pgrid');
+  if (!products.length) { g.innerHTML='<div style="color:var(--t3);font-size:13px;padding:10px 0">Demo laden oder Sheets verbinden</div>'; return; }
+  const total = products.length;
+  const done  = products.filter(p=>p.erfasst).length;
+  const open  = total - done;
+  const pp = document.getElementById('prodProgress');
+  if (pp) {
+    pp.style.display='block';
+    document.getElementById('progLabel').textContent=open+' von '+total+' noch offen';
+    document.getElementById('progPct').textContent=Math.round(done/total*100)+'% erledigt';
+    document.getElementById('progBar').style.width=(done/total*100)+'%';
+  }
+  const filtered = q
+    ? products.filter(p=>!p.erfasst&&(p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q)))
+    : products.filter(p=>!p.erfasst);
+  if (!filtered.length) {
+    g.innerHTML = q ? '<div style="color:var(--t3);font-size:13px;padding:8px 0">Kein offenes Produkt gefunden</div>'
+                    : '<div style="color:var(--green);font-size:13px;padding:8px 0">Alle Produkte erfasst!</div>';
+    return;
+  }
+  const pages = Math.ceil(filtered.length / 10);
+  if (prodPage >= pages) prodPage = pages - 1;
+  const shown = filtered.slice(prodPage*10, (prodPage+1)*10);
+  g.innerHTML = shown.map(p=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--off);border:1px solid var(--b);border-radius:var(--r);margin-bottom:5px">
+      <div style="flex:1;cursor:pointer" onclick="selectP('${p.id}')">
+        <div style="font-size:13px;font-weight:500;color:var(--t)">${p.name}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">${p.id}</div>
+      </div>
+      <button class="btn btn-dark btn-sm" onclick="selectP('${p.id}')">Erfassen →</button>
+    </div>`).join('') + pager(prodPage, pages, `prodPage=%p;renderProducts('${q}')`);
+}
+
+async function markErledigtToggle(id, checked) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  p.erfasst = checked;
+  const webhook = document.getElementById('webhookUrl').value.trim();
+  if (webhook) {
+    try {
+      await fetch(webhook, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'markErledigt', productId: id, erfasst: checked ? 'JA' : '' }),
+        mode: 'no-cors'
+      });
+    } catch(e) {}
+  }
+  renderProducts(document.getElementById('psearch')?.value?.toLowerCase() || '');
+  toast(checked ? id + ' als erledigt markiert' : id + ' wieder geöffnet');
+}
+function selectP(id) {
+  selProd=products.find(p=>p.id===id); selBGs=[]; bgETs={};
+  renderProducts(document.getElementById('psearch').value.toLowerCase());
+  document.getElementById('ss1').textContent='Ausgewählt';
+  document.getElementById('sd1').textContent='✓';
+  document.getElementById('selProdName').textContent=selProd.name;
+  document.getElementById('selProdId').textContent=selProd.id;
+  document.getElementById('selProdDisplay').style.display='block';
+  markDone(1); openStep(2); buildBGList('');
+}
+
+// ── Step 2 ─────────────────────────────────────────────────────
+let bgPage = 0;
+function filterBG(q){ bgPage=0; buildBGList(q.toLowerCase()); }
+function buildBGList(q) {
+  const bgs = allBGs.filter(p=>!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q));
+  const unsel = bgs.filter(bg=>!selBGs.find(s=>s.id===bg.id));
+  const pages = Math.ceil(unsel.length/10)||1;
+  if(bgPage>=pages) bgPage=pages-1;
+  const bgsShown = unsel.slice(bgPage*10,(bgPage+1)*10);
+  const bgsExtra = pager(bgPage, pages, `bgPage=%p;buildBGList('${q}')`);
+
+  // 1. Selected existing BGs (always show, regardless of search)
+  const selectedExisting = selBGs.filter(s => !s.isNew);
+  const allToShow = [
+    ...selectedExisting.map(s => ({...(allBGs.find(b=>b.id===s.id)||{id:s.id,name:s.name,typ:'Baugruppe'}), _sel:true})),
+    ...bgsShown
+  ];
+
+  document.getElementById('bgExList').innerHTML = (allToShow.length
+    ? allToShow.map(bg=>{
+        const s=selBGs.find(x=>x.id===bg.id);
+        const zpPfx=(document.getElementById('zpPrefix')?.value||'ZP-01-').toUpperCase();
+        const isZP=bg.id.toUpperCase().startsWith(zpPfx);
+        return `<div class="prow ${s?'sex':''}" id="bgr-${bg.id}">
+          <div class="pchk ${s?'ex':''}" onclick="toggleBG('${bg.id}','${esc(bg.name)}')">${s?'✓':''}</div>
+          <div style="flex:1"><div class="pnm">${bg.name}</div><div class="pid">${bg.id}</div></div>
+          <span class="pbdg${isZP?' nw':''}">${isZP?'Zwischenprodukt':'Baugruppe'}</span>
+        </div>`;
+      }).join('')
+    : '<div style="color:var(--t3);font-size:13px;padding:6px 0">Keine Baugruppen gefunden</div>'
+  ) + bgsExtra;
+
+  // 3. Rebuild new BG list (selected + deselected new ones)
+  const newList = document.getElementById('bgNewList');
+  newList.innerHTML = '';
+  // Selected new BGs
+  selBGs.filter(s => s.isNew).forEach(bg => {
+    const chip = newChip(bg.id, bg.name, 'Baugruppe', true);
+    newList.appendChild(chip);
+  });
+  // Deselected new BGs (nur anlegen)
+  newButDeselected.filter(x=>x.typ==='Baugruppe').forEach(bg => {
+    const chip = newChip(bg.id, bg.name, 'Baugruppe', true);
+    // Set to "only create" state
+    chip.dataset.assigned = 'false';
+    chip.classList.remove('snw'); chip.classList.add('sex');
+    const chk = chip.querySelector('[id^="pchk-"]');
+    const badge = chip.querySelector('[id^="badge-"]');
+    if (chk) { chk.className='pchk'; chk.textContent=''; }
+    if (badge) { badge.textContent='Nur anlegen'; badge.classList.remove('nw'); }
+    newList.appendChild(chip);
+  });
+}
+function toggleBG(id,name) {
+  const idx=selBGs.findIndex(s=>s.id===id);
+  if(idx>=0) selBGs.splice(idx,1);
+  else selBGs.push({id,name,typ:'Baugruppe',isNew:false,menge:1,einheit:'Stück',arbeitsschritt:''});
+  buildBGList(document.getElementById('bgsearch').value.toLowerCase());
+}
+
+function addNewBG() {
+  bgNewC++;const n=bgNewC;
+  const d=document.createElement('div'); d.className='nform'; d.id='nbgf-'+n;
+  d.innerHTML=`<div class="nform-t">Neue Baugruppe / Zwischenprodukt</div>
+    <div class="frow"><div class="flbl">Bezeichnung</div><input class="finp" id="nbgn-${n}" placeholder="z.B. Holzschirm 25 cm"></div>
+    <div class="fri">
+      <div class="frow"><div class="flbl">Menge</div><input class="finp" type="number" value="1" id="nbgm-${n}"></div>
+      <div class="frow"><div class="flbl">Einheit</div><select class="fsel" id="nbge-${n}"><option>Stück</option><option>m</option><option>kg</option></select></div>
+      <div class="frow" style="flex:2"><div class="flbl">Arbeitsschritt</div><input class="finp" id="nbgs-${n}" placeholder="z.B. Vormontage"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+      <input type="checkbox" id="nbgzp-${n}" style="cursor:pointer">
+      <label for="nbgzp-${n}" style="font-size:12px;color:var(--t2);cursor:pointer">Als Zwischenprodukt anlegen (ZP-Prefix)</label>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn btn-dark btn-sm" onclick="saveNewBG(${n})">Hinzufügen</button>
+      <button class="btn btn-line btn-sm" onclick="document.getElementById('nbgf-${n}').remove()">Abbrechen</button>
+    </div>`;
+  document.getElementById('bgNewList').appendChild(d);
+}
+function saveNewBG(n) {
+  const name=document.getElementById('nbgn-'+n).value.trim();
+  if(!name){toast('Bezeichnung eingeben');return;}
+  const isZP=document.getElementById('nbgzp-'+n)?.checked;
+  const nid=isZP?nextZPId():nextBGId();
+  const label=isZP?'Zwischenprodukt':'Baugruppe';
+  parts.push({id:nid, name, typ:'Baugruppe'});
+  allBGs.push({id:nid, name, typ:'Baugruppe'});
+  selBGs.push({id:nid,name,typ:'Baugruppe',isNew:true,isZP,menge:parseFloat(document.getElementById('nbgm-'+n).value)||1,einheit:document.getElementById('nbge-'+n).value,arbeitsschritt:document.getElementById('nbgs-'+n).value});
+  document.getElementById('nbgf-'+n).replaceWith(newChip(nid,name,'Baugruppe',true));
+  toast(label+' hinzugefügt: '+nid);
+}
+
+async function genBG() {
+  if(!selProd)return;
+  show('bgAI',true); setStatus('KI…',false);
+  const ex=allBGs.map(p=>`${p.id}: ${p.name}`).join('\n')||'keine';
+  const prompt=`Holzleuchten-Fertigung. Produkt: "${selProd.name}". Vorhandene Baugruppen:\n${ex}\n\nSchlage 3-4 Baugruppen vor. NUR JSON:\n{"baugruppen":[{"name":"...","arbeitsschritt":"...","existingId":"ID oder null"}]}`;
+  try {
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
+    const data=await r.json();
+    const parsed=JSON.parse(data.content?.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim());
+    for(const bg of parsed.baugruppen||[]) {
+      if(bg.existingId&&allBGs.find(p=>p.id===bg.existingId)){
+        if(!selBGs.find(s=>s.id===bg.existingId)) selBGs.push({id:bg.existingId,name:bg.name,typ:'Baugruppe',isNew:false,menge:1,einheit:'Stück',arbeitsschritt:bg.arbeitsschritt||''});
+      } else if(!selBGs.find(s=>s.name===bg.name)){
+        const nid='BG-NEU-'+Date.now()+'-'+rnd();
+        selBGs.push({id:nid,name:bg.name,typ:'Baugruppe',isNew:true,menge:1,einheit:'Stück',arbeitsschritt:bg.arbeitsschritt||''});
+        document.getElementById('bgNewList').appendChild(newChip(nid,bg.name,'Baugruppe',true));
+      }
+    }
+    buildBGList(document.getElementById('bgsearch').value.toLowerCase());
+    setStatus('bereit',true); toast('KI-Vorschlag geladen');
+  } catch(e){toast('KI-Fehler');setStatus('Fehler',false);}
+  show('bgAI',false);
+}
+
+function confirmS2() {
+  const nurBGs = newButDeselected.filter(x=>x.typ==='Baugruppe');
+  if(!selBGs.length && !nurBGs.length){toast('Mindestens eine Baugruppe wählen oder anlegen');return;}
+  const total = selBGs.length + nurBGs.length;
+  document.getElementById('ss2').textContent = total + ' Baugruppe(n)';
+  document.getElementById('sd2').textContent = '✓';
+  markDone(2); openStep(3); buildS3();
+}
+
+// ── Step 3 ─────────────────────────────────────────────────────
+function getAllBGsForET() {
+  const nurAnlegen = newButDeselected
+    .filter(x => x.typ === 'Baugruppe')
+    .filter(x => !selBGs.find(s => s.id === x.id))
+    .map(x => ({...x, isNew:true, nurAnlegen:true}));
+  return [...selBGs, ...nurAnlegen];
+}
+
+function buildETs() {
+  const c = document.getElementById('etAccs');
+  c.innerHTML = '';
+  const allBGs = getAllBGsForET();
+  if (!allBGs.length) {
+    c.innerHTML = '<div style="color:var(--t3);font-size:13px;padding:10px 0">Keine Baugruppen ausgewählt</div>';
+    return;
+  }
+  allBGs.forEach((bg, idx) => {
+    if (!bgETs[bg.id]) bgETs[bg.id] = [];
+    const etCount = bgETs[bg.id].length;
+    const open = idx === 0;
+    const badge = bg.nurAnlegen ? 'nur anlegen' : (bg.isNew ? 'neu' : '');
+    const d = document.createElement('div');
+    d.className = 'acc';
+    // Header
+    const hdr = document.createElement('div');
+    hdr.className = 'acc-h' + (open ? ' open' : '');
+    hdr.onclick = function(){ togAcc(this); };
+    hdr.innerHTML = `<div><div class="acc-nm">${bg.name}${badge?`<span class="acc-new">${badge}</span>`:''}</div><div class="acc-id">${bg.id}</div></div><div class="acc-cnt" id="etc-${bg.id}">${etCount} Teil${etCount!==1?'e':''}</div><div class="acc-tog">›</div>`;
+    d.appendChild(hdr);
+    // Body
+    const body = document.createElement('div');
+    body.className = 'acc-b';
+    body.id = 'etb-' + bg.id;
+    body.style.display = open ? 'block' : 'none';
+    if (open) {
+      body.innerHTML = buildETBody(bg.id);
+      // Restore new ET chips
+      const nf = body.querySelector('[id="etnf-'+bg.id+'"]');
+      if (nf) {
+        bgETs[bg.id].filter(et=>et.isNew).forEach(et => {
+          nf.appendChild(newETChip(et.id, et.name, et.menge, et.einheit, bg.id, true));
+        });
+      }
+    }
+    d.appendChild(body);
+    c.appendChild(d);
+  });
+}
+function togAcc(h){
+  h.classList.toggle('open');
+  const body = h.nextElementSibling;
+  const isOpen = h.classList.contains('open');
+  body.style.display = isOpen ? 'block' : 'none';
+  // Lazy-load ET body on first open
+  if (isOpen && body.innerHTML.trim() === '') {
+    const bgId = h.querySelector('.acc-id').textContent;
+    body.innerHTML = buildETBody(bgId);
+    // Restore new ET chips
+    const nf = body.querySelector('#etnf-'+bgId);
+    if (nf) {
+      (bgETs[bgId]||[]).filter(et=>et.isNew).forEach(et => {
+        nf.appendChild(newETChip(et.id, et.name, et.menge, et.einheit, bgId, true));
+      });
+    }
+  }
+}
+function buildETBody(bgId) {
+  const ets=parts.filter(p=>p.typ==='Einzelteil');
+  const sel=bgETs[bgId]||[];
+  return `<div class="sbox" style="margin-bottom:11px"><span class="sbox-icon">⌕</span><input placeholder="Einzelteile suchen…" oninput="filterET('${bgId}',this.value)" id="ets-${bgId}"></div>
+    <div class="slabel" style="margin-top:0">Im Artikelstamm vorhanden</div>
+    <div id="etex-${bgId}">${renderETRows(bgId,ets,sel)}</div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-line btn-sm" onclick="addNewET('${bgId}')">+ Neues Einzelteil</button>
+    </div>
+    <div id="etnf-${bgId}"></div>`;
+}
+function renderETRows(bgId,ets,sel) {
+  if(!window.etPages) window.etPages={};
+  const etPage = window.etPages[bgId]||0;
+  const selectedExisting = (sel||[]).filter(s=>!s.isNew);
+  const unselAll = ets.filter(et=>!sel.find(s=>s.id===et.id));
+  const pages = Math.ceil(unselAll.length/10)||1;
+  const curP = Math.min(etPage, pages-1);
+  const unselected = unselAll.slice(curP*10,(curP+1)*10);
+  const extra = pager(curP, pages, `window.etPages['${bgId}']=%p;filterET('${bgId}',document.getElementById('ets-${bgId}')?.value||'',true)`);
+  const allToShow = [...selectedExisting.map(s=>({...(parts.find(p=>p.id===s.id)||{id:s.id,name:s.name,typ:'Einzelteil'})})), ...unselected];
+  return (allToShow.length ? allToShow.map(et=>{
+    const s=sel.find(x=>x.id===et.id);
+    return `<div class="prow ${s?'sex':''}">
+      <div class="pchk ${s?'ex':''}" onclick="togET('${bgId}','${et.id}','${esc(et.name)}',this)">${s?'✓':''}</div>
+      <div style="flex:1"><div class="pnm">${et.name}</div><div class="pid">${et.id}</div></div>
+      <div class="qwrap">
+        <input class="qin" type="number" min="0.01" value="${s?.menge||1}" onchange="updMenge('${bgId}','${et.id}',this.value)">
+        <span class="qunit">Stk.</span>
+      </div>
+    </div>`;
+  }).join('') : '<div style="color:var(--t3);font-size:13px;padding:6px 0">Keine Einzelteile im Artikelstamm</div>') + extra;
+}
+function filterET(bgId,q,keepPage=false) {
+  if(!keepPage){window.etPages=window.etPages||{};window.etPages[bgId]=0;}
+  const ets=parts.filter(p=>p.typ==='Einzelteil'&&(!q||p.name.toLowerCase().includes(q.toLowerCase())||p.id.toLowerCase().includes(q.toLowerCase())));
+  document.getElementById('etex-'+bgId).innerHTML=renderETRows(bgId,ets,bgETs[bgId]||[]);
+  // Restore new ET chips after re-render
+  const nf = document.getElementById('etnf-'+bgId);
+  if (nf && nf.children.length === 0) {
+    (bgETs[bgId]||[]).filter(et=>et.isNew).forEach(et => {
+      nf.appendChild(newETChip(et.id, et.name, et.menge, et.einheit, bgId, true));
+    });
+  }
+}
+function togET(bgId,etId,name,el) {
+  if(!bgETs[bgId]) bgETs[bgId]=[];
+  const idx=bgETs[bgId].findIndex(s=>s.id===etId);
+  if(idx>=0){bgETs[bgId].splice(idx,1);el.className='pchk';el.textContent='';el.closest('.prow').className='prow';}
+  else{bgETs[bgId].push({id:etId,name,typ:'Einzelteil',isNew:false,menge:1,einheit:'Stück'});el.className='pchk ex';el.textContent='✓';el.closest('.prow').className='prow sex';}
+  updCount(bgId);
+}
+function updMenge(bgId,etId,v){const x=bgETs[bgId]?.find(s=>s.id===etId);if(x)x.menge=parseFloat(v)||1;}
+function updCount(bgId){const n=(bgETs[bgId]||[]).length;const e=document.getElementById('etc-'+bgId);if(e)e.textContent=n+' Teil'+(n!==1?'e':'');}
+
+function addNewET(bgId){
+  etNewC++;const n=etNewC;
+  const d=document.createElement('div');d.className='nform';d.style.marginTop='8px';d.id='netf-'+n;
+  d.innerHTML=`<div class="nform-t">Neues Einzelteil</div>
+    <div class="frow"><div class="flbl">Bezeichnung</div><input class="finp" id="netn-${n}" placeholder="z.B. Schraube M4 × 20 mm"></div>
+    <div class="fri">
+      <div class="frow"><div class="flbl">Menge</div><input class="finp" type="number" value="1" id="netm-${n}"></div>
+      <div class="frow"><div class="flbl">Einheit</div><select class="fsel" id="nete-${n}"><option>Stück</option><option>m</option><option>g</option><option>ml</option></select></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn btn-dark btn-sm" onclick="saveNewET('${bgId}',${n})">Hinzufügen</button>
+      <button class="btn btn-line btn-sm" onclick="document.getElementById('netf-${n}').remove()">Abbrechen</button>
+    </div>`;
+  document.getElementById('etnf-'+bgId).appendChild(d);
+}
+function saveNewET(bgId,n){
+  const name=document.getElementById('netn-'+n).value.trim();
+  if(!name){toast('Bezeichnung eingeben');return;}
+  if(!bgETs[bgId]) bgETs[bgId]=[];
+  const nid=nextETId();
+  parts.push({id:nid, name, typ:'Einzelteil'});
+  const etMenge = parseFloat(document.getElementById('netm-'+n).value)||1;
+  const etEinheit = document.getElementById('nete-'+n).value;
+  bgETs[bgId].push({id:nid,name,typ:'Einzelteil',isNew:true,menge:etMenge,einheit:etEinheit});
+  document.getElementById('netf-'+n).replaceWith(newETChip(nid,name,etMenge,etEinheit,bgId,true));
+  updCount(bgId); toast('Einzelteil hinzugefügt');
+}
+
+async function genET(bgId){
+  const bg=selBGs.find(s=>s.id===bgId);if(!bg)return;
+  show('etai-'+bgId,true); setStatus('KI…',false);
+  const ex=parts.filter(p=>p.typ==='Einzelteil').map(p=>`${p.id}: ${p.name}`).join('\n')||'keine';
+  const prompt=`Holzleuchten-Fertigung. Baugruppe: "${bg.name}". Vorhandene Einzelteile:\n${ex}\n\nSchlage 3-5 Einzelteile vor. NUR JSON:\n{"einzelteile":[{"name":"...","menge":1,"einheit":"Stück","existingId":"ID oder null"}]}`;
+  try {
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,messages:[{role:'user',content:prompt}]})});
+    const data=await r.json();
+    const parsed=JSON.parse(data.content?.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim());
+    if(!bgETs[bgId]) bgETs[bgId]=[];
+    for(const et of parsed.einzelteile||[]){
+      if(et.existingId&&parts.find(p=>p.id===et.existingId)){
+        if(!bgETs[bgId].find(s=>s.id===et.existingId)) bgETs[bgId].push({id:et.existingId,name:et.name,typ:'Einzelteil',isNew:false,menge:et.menge||1,einheit:et.einheit||'Stück'});
+      } else if(!bgETs[bgId].find(s=>s.name===et.name)){
+        const nid=nextETId(); parts.push({id:nid, name:et.name, typ:'Einzelteil'});
+        bgETs[bgId].push({id:nid,name:et.name,typ:'Einzelteil',isNew:true,menge:et.menge||1,einheit:et.einheit||'Stück'});
+        document.getElementById('etnf-'+bgId).appendChild(newETChip(nid,et.name,et.menge||1,et.einheit||'Stück',bgId,true));
+      }
+    }
+    filterET(bgId,document.getElementById('ets-'+bgId)?.value||'');
+    updCount(bgId); setStatus('bereit',true); toast('KI-Vorschlag für '+bg.name);
+  } catch(e){toast('KI-Fehler');setStatus('Fehler',false);}
+  show('etai-'+bgId,false);
+}
+
+function confirmS3(){
+  document.getElementById('ss3').textContent='Einzelteile erfasst';
+  document.getElementById('sd3').textContent='✓';
+  markDone(3); openStep(4); buildS4();
+}
+
+// ── Step 4 ─────────────────────────────────────────────────────
+function buildS3(){
+  let html='';
+  // Zugeordnete BGs
+  html+=`<div class="tree-prod"><span>${selProd.name}</span><span class="tid">${selProd.id}</span></div><div class="tree-wrap">`;
+  if(selBGs.length) {
+    selBGs.forEach(bg=>{
+      html+=`<div class="tree-bg"><div class="tree-bgh"><div class="dot"></div><div class="bgnm">${bg.name}</div><div class="bgid">${bg.id}</div>${bg.isNew?'<span class="bgnew">Neu anlegen</span>':''}</div></div>`;
+    });
+  } else {
+    html+=`<div style="padding:12px 18px;color:var(--t3);font-size:13px">Keine Baugruppen zugeordnet</div>`;
+  }
+  html+='</div>';
+  // Nur anlegen
+  const nurBGs = newButDeselected.filter(x=>x.typ==='Baugruppe');
+  if(nurBGs.length) {
+    html+=`<div style="margin-top:16px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--amber);font-weight:400;margin-bottom:8px;display:flex;align-items:center;gap:8px">Nur anlegen — nicht zugeordnet<span style="flex:1;height:1px;background:rgba(184,124,42,0.25);display:block"></span></div>`;
+    html+=`<div style="border:1px solid rgba(184,124,42,0.25);border-radius:var(--r2);overflow:hidden">`;
+    nurBGs.forEach((bg,i)=>{
+      html+=`<div style="display:flex;align-items:center;gap:9px;padding:10px 18px;${i>0?'border-top:1px solid rgba(184,124,42,0.1)':''}"><div style="width:7px;height:7px;border-radius:50%;background:var(--amber);flex-shrink:0"></div><div style="font-size:13px;font-weight:500">${bg.name}</div><div style="font-size:11px;color:var(--t3)">${bg.id}</div><span style="font-size:10px;color:var(--amber);border:1px solid rgba(184,124,42,0.3);border-radius:10px;padding:1px 7px;margin-left:4px">Nur anlegen</span></div>`;
+    });
+    html+='</div></div>';
+  }
+  document.getElementById('s3content').innerHTML=html;
+  document.getElementById('saveResult').innerHTML='';
+  document.getElementById('ss3').textContent=`${selProd.name} · bereit zum Speichern`;
+  document.getElementById('btnSave').disabled=false;
+}
+
+function buildS4(){
+  let html='';
+
+  // ── Dem Produkt zugeordnet ──
+  html+=`<div class="tree-prod"><span>${selProd.name}</span><span class="tid">${selProd.id}</span></div><div class="tree-wrap">`;
+  selBGs.forEach(bg=>{
+    const ets=bgETs[bg.id]||[];
+    html+=`<div class="tree-bg"><div class="tree-bgh"><div class="dot"></div><div class="bgnm">${bg.name}</div><div class="bgid">${bg.id}</div>${bg.isNew?'<span class="bgnew">Neu anlegen</span>':''}<div class="bgct" style="margin-left:auto">${ets.length} Teile</div></div>`;
+    ets.forEach(et=>{
+      html+=`<div class="tree-et"><div class="edot"></div><div class="enm">${et.name}</div><div class="eqty">${et.menge} ${et.einheit}</div>${et.isNew?'<div class="enew">Neu</div>':''}</div>`;
+    });
+    html+='</div>';
+  });
+  html+='</div>';
+
+  // ── Nur anlegen (nicht dem Produkt zugeordnet) ──
+  const nurBGs = newButDeselected.filter(x=>x.typ==='Baugruppe');
+  const nurETs = newButDeselected.filter(x=>x.typ==='Einzelteil');
+  const nurBGsWithETs = nurBGs.map(bg=>({...bg, ets:bgETs[bg.id]||[]}));
+
+  if (nurBGs.length || nurETs.length) {
+    html+=`<div style="margin-top:20px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--amber);font-weight:400;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+        Nur anlegen — nicht dem Produkt zugeordnet
+        <span style="flex:1;height:1px;background:rgba(184,124,42,0.25);display:block"></span>
+      </div>`;
+
+    if (nurBGs.length) {
+      html+=`<div style="border:1px solid rgba(184,124,42,0.25);border-radius:var(--r2);overflow:hidden;margin-bottom:8px">`;
+      nurBGsWithETs.forEach((bg,i)=>{
+        html+=`<div style="border-bottom:${i<nurBGs.length-1||bg.ets.length?'1px solid rgba(184,124,42,0.15)':'none'}">
+          <div style="display:flex;align-items:center;gap:9px;padding:10px 18px;background:rgba(184,124,42,0.05)">
+            <div style="width:7px;height:7px;border-radius:50%;background:var(--amber);flex-shrink:0"></div>
+            <div style="font-size:13px;font-weight:500">${bg.name}</div>
+            <div style="font-size:11px;color:var(--t3);margin-left:4px">${bg.id}</div>
+            <span style="font-size:10px;color:var(--amber);border:1px solid rgba(184,124,42,0.3);border-radius:10px;padding:1px 7px;margin-left:4px">Nur anlegen</span>
+            <div style="margin-left:auto;font-size:11px;color:var(--t3)">${bg.ets.length} Teile</div>
+          </div>`;
+        bg.ets.forEach(et=>{
+          html+=`<div style="display:flex;align-items:center;gap:8px;padding:7px 18px 7px 38px;border-top:1px solid rgba(184,124,42,0.1);font-size:13px;font-weight:300">
+            <div style="width:4px;height:4px;border-radius:50%;background:rgba(184,124,42,0.4);flex-shrink:0"></div>
+            <div style="flex:1">${et.name}</div>
+            <div style="font-size:11px;color:var(--t3)">${et.menge} ${et.einheit}</div>
+            ${et.isNew?'<div style="font-size:10px;color:var(--amber)">Neu</div>':''}
+          </div>`;
+        });
+        html+='</div>';
+      });
+      html+='</div>';
+    }
+
+    if (nurETs.length) {
+      html+=`<div style="border:1px solid rgba(184,124,42,0.25);border-radius:var(--r2);overflow:hidden">`;
+      nurETs.forEach((et,i)=>{
+        html+=`<div style="display:flex;align-items:center;gap:8px;padding:9px 18px;${i>0?'border-top:1px solid rgba(184,124,42,0.1)':''}">
+          <div style="width:5px;height:5px;border-radius:50%;background:var(--amber);flex-shrink:0"></div>
+          <div style="flex:1;font-size:13px">${et.name}</div>
+          <div style="font-size:11px;color:var(--t3)">${et.id}</div>
+          <span style="font-size:10px;color:var(--amber);border:1px solid rgba(184,124,42,0.3);border-radius:10px;padding:1px 7px">Nur anlegen</span>
+        </div>`;
+      });
+      html+='</div>';
+    }
+
+    html+='</div>';
+  }
+
+  document.getElementById('s4content').innerHTML=html;
+  document.getElementById('saveResult').innerHTML='';
+  document.getElementById('ss4').textContent=`${selProd.name} · bereit zum Speichern`;
+  document.getElementById('btnSave').disabled=false;
+}
+
+// ── Save to Sheet via Apps Script ──────────────────────────────
+async function saveToSheet(){
+  const webhook=document.getElementById('webhookUrl').value.trim();
+  if(!webhook){toast('Bitte Webhook-URL in den Einstellungen eintragen');return;}
+  show('saveAI',true);
+  document.getElementById('btnSave').disabled=true;
+  setStatus('speichert…',false);
+
+  const bomRows=selBGs.map(bg=>({
+    bgId:bg.id,bgName:bg.name,
+    menge:bg.menge||1,einheit:bg.einheit||'Stück'
+  }));
+  const newArticles=[
+    ...newButDeselected,
+    ...selBGs.filter(bg=>bg.isNew).map(bg=>({id:bg.id,name:bg.name,typ:'Baugruppe'}))
+  ];
+  const payload={action:'saveBOM',productId:selProd.id,productName:selProd.name,bomRows,newArticles};
+
+  try {
+    await fetch(webhook,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),mode:'no-cors'});
+    showSaveResult(true,`Gespeichert — ${bomRows.length} Baugruppe(n) für ${selProd.name}`);
+    document.getElementById('sd3').textContent='✓';
+    markDone(3); setStatus('gespeichert',true); toast('Im Sheet gespeichert ✓');
+    const p=products.find(x=>x.id===selProd.id); if(p) p.erfasst=true;
+    setTimeout(()=>{
+      selProd=null; selBGs=[]; bgETs={}; newButDeselected=[];
+      document.getElementById('selProdDisplay').style.display='none';
+      for(let i=1;i<=3;i++){
+        const b=document.getElementById('s'+i); if(!b) continue;
+        b.classList.remove('done','active');
+        document.getElementById('sn'+i).textContent=i;
+        document.getElementById('ps'+i).classList.remove('done','active');
+        document.getElementById('pn'+i).textContent=i;
+      }
+      document.getElementById('ss1').textContent='Wähle das Produkt für die Stücklistenerfassung';
+      document.getElementById('sd1').textContent='';
+      document.getElementById('ss2').textContent='Welche Baugruppen enthält dieses Produkt?';
+      document.getElementById('sd2').textContent='';
+      document.getElementById('saveResult').innerHTML='';
+      document.getElementById('btnSave').disabled=false;
+      openStep(1);
+      // Reload from sheet to get fresh erfasst status
+      loadSheets();
+    },1500);
+  } catch(e){
+    showSaveResult(false,'Verbindung zum Webhook fehlgeschlagen.');
+    setStatus('Fehler',false);
+    document.getElementById('btnSave').disabled=false;
+  }
+  show('saveAI',false);
+}
+
+function showSaveResult(ok,msg){
+  document.getElementById('saveResult').innerHTML=`<div class="save-result ${ok?'save-ok':'save-err'}">${msg}</div>`;
+}
+
+// ── CSV fallback ───────────────────────────────────────────────
+function dlCSV(rows, filename) {
+  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download = filename;
+  a.click();
+}
+function exportCSV(){
+  const date = new Date().toISOString().slice(0,10);
+  // BOM: Produkt → Baugruppen
+  const bom=[['Produkt-Nr.','Produktname','Baugruppe-Nr.','Baugruppenname','BG neu?','Menge','Einheit','Arbeitsschritt']];
+  selBGs.forEach(bg=>{
+    bom.push([selProd.id,selProd.name,bg.id,bg.name,bg.isNew?'JA':'',bg.menge||1,bg.einheit||'Stück',bg.arbeitsschritt||'']);
+  });
+  dlCSV(bom, `BOM_${selProd?.id}_${date}.csv`);
+
+  // BOM_BG: Baugruppe → Einzelteile (alle BGs inkl. nur-anlegen)
+  const allBGs2 = [...selBGs, ...newButDeselected.filter(x=>x.typ==='Baugruppe').map(x=>({...x,isNew:true}))];
+  const bomBG=[['Baugruppe-Nr.','Baugruppenname','BG neu?','Einzelteil-Nr.','Einzelteilname','ET neu?','Menge','Einheit']];
+  allBGs2.forEach(bg=>{
+    (bgETs[bg.id]||[]).forEach(et=>{
+      bomBG.push([bg.id,bg.name,bg.isNew?'JA':'',et.id,et.name,et.isNew?'JA':'',et.menge||1,et.einheit||'Stück']);
+    });
+  });
+  if(bomBG.length>1) setTimeout(()=>dlCSV(bomBG, `BOM_BG_${date}.csv`),300);
+  toast('2 CSV-Dateien exportiert');
+}
+
+// ── Nav ────────────────────────────────────────────────────────
+function tryOpen(n){if(n<curStep)goBack(n);}
+
+function goBack(n) {
+  if (n === 1) {
+    selProd = null; selBGs = []; bgETs = {}; newButDeselected = [];
+    document.getElementById('ss1').textContent = 'Wähle das Produkt für die Stücklistenerfassung';
+    document.getElementById('sd1').textContent = '';
+    document.getElementById('selProdDisplay').style.display = 'none';
+    renderProducts(document.getElementById('psearch')?.value || '');
+  }
+  if (n === 2) {
+    document.getElementById('ss2').textContent = selBGs.length ? selBGs.length + ' Baugruppe(n)' : 'Welche Baugruppen enthält dieses Produkt?';
+    document.getElementById('sd2').textContent = '';
+    if (selProd) buildBGList(document.getElementById('bgsearch')?.value?.toLowerCase() || '');
+  }
+  for (let i = n; i <= 3; i++) {
+    const b = document.getElementById('s'+i);
+    if(!b) continue;
+    b.classList.remove('done');
+    document.getElementById('sn'+i).textContent = i;
+    document.getElementById('ps'+i).classList.remove('done');
+    document.getElementById('pn'+i).textContent = i;
+  }
+  openStep(n);
+}
+
+function openStep(n){
+  curStep=n;
+  for(let i=1;i<=3;i++){
+    const b=document.getElementById('s'+i);
+    if(!b) continue;
+    b.querySelector('.sbody').style.display=(i===n)?'block':'none';
+    if(i===n){b.classList.add('active');}else{b.classList.remove('active');}
+    document.getElementById('ps'+i).classList.toggle('active',i===n);
+  }
+}
+function markDone(n){
+  const b=document.getElementById('s'+n); if(!b) return;
+  b.classList.remove('active'); b.classList.add('done');
+  document.getElementById('sn'+n).textContent='✓';
+  document.getElementById('ps'+n).classList.remove('active');
+  document.getElementById('ps'+n).classList.add('done');
+  document.getElementById('pn'+n).textContent='✓';
+}
+
+// ── Helpers ────────────────────────────────────────────────────
+function pager(cur, total, action) {
+  const prev = cur > 0 ? `<button class="btn btn-line btn-sm" onclick="${action.replace('%p',cur-1)}" style="padding:5px 12px">‹</button>` : `<button class="btn btn-line btn-sm" style="opacity:0.3;padding:5px 12px" disabled>‹</button>`;
+  const next = cur < total-1 ? `<button class="btn btn-line btn-sm" onclick="${action.replace('%p',cur+1)}" style="padding:5px 12px">›</button>` : `<button class="btn btn-line btn-sm" style="opacity:0.3;padding:5px 12px" disabled>›</button>`;
+  return `<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;font-size:12px;color:var(--t3)">${prev}<span>Seite ${cur+1} von ${total}</span>${next}</div>`;
+}
+function esc(s){return s.replace(/'/g,"\\'").replace(/"/g,'&quot;');}
+function rnd(){return Math.random().toString(36).slice(2,6);}
+function show(id,on){const e=document.getElementById(id);if(e)e.classList.toggle('show',on);}
+function setStatus(msg,on){document.getElementById('stxt').textContent=msg;document.getElementById('sdot').className='sdot'+(on?' on':on===false?' err':'');}
+function setConn(ok,msg){const e=document.getElementById('connStatus');e.innerHTML=`<div class="sdot ${ok?'on':'err'}"></div><span class="${ok?'conn-ok':'conn-err'}">${msg}</span>`;}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.className='show';clearTimeout(t._t);t._t=setTimeout(()=>t.className='',2800);}
+function newETChip(id, name, menge, einheit, bgId, removable=false) {
+  const d = document.createElement('div');
+  d.className = 'prow snw'; d.id = 'etchip-'+id;
+  d.dataset.assigned = 'true';
+  const controls = removable ? `
+    <div class="pchk nw" id="etchk-${id}" onclick="toggleNewETChip('${bgId}','${id}')" style="cursor:pointer">✓</div>
+    <div style="flex:1"><div class="pnm">${name}</div><div class="pid">${id}</div></div>
+    <div class="qwrap">
+      <input class="qin" type="number" min="0.01" value="${menge||1}" onchange="updNewETMenge('${bgId}','${id}',this.value)">
+      <span class="qunit">${einheit||'Stk.'}</span>
+    </div>
+    <span class="pbdg nw" id="etbadge-${id}" style="margin-left:6px">Zugeordnet</span>
+    <button style="background:none;border:none;cursor:pointer;color:var(--t3);font-size:14px;padding:0 4px" onclick="deleteNewET('${bgId}','${id}')" title="Löschen">✕</button>
+  ` : `
+    <div class="pchk nw">✓</div>
+    <div style="flex:1"><div class="pnm">${name}</div><div class="pid">${id}</div></div>
+    <span class="pbdg nw">Neu</span>
+  `;
+  d.innerHTML = controls;
+  return d;
+}
+function toggleNewETChip(bgId, id) {
+  const chip = document.getElementById('etchip-'+id);
+  const chk  = document.getElementById('etchk-'+id);
+  const badge = document.getElementById('etbadge-'+id);
+  if (!chip) return;
+
+  // Modus B: uses selETs directly
+  if (bgId === 'modeB') {
+    const isAssigned = chip.dataset.assigned === 'true';
+    if (isAssigned) {
+      chip.dataset.assigned = 'false';
+      selETs = selETs.filter(x=>x.id!==id);
+      chip.classList.remove('snw'); chip.classList.add('sex');
+      if(chk){chk.className='pchk';chk.textContent='';}
+      if(badge){badge.textContent='Nur anlegen';badge.classList.remove('nw');}
+      toast('Nicht zugeordnet — wird aber im Artikelstamm angelegt');
+    } else {
+      chip.dataset.assigned = 'true';
+      const name = chip.querySelector('.pnm')?.textContent||'';
+      if(!selETs.find(x=>x.id===id)) selETs.push({id,name,typ:'Einzelteil',isNew:true,menge:1,einheit:'Stück'});
+      chip.classList.remove('sex'); chip.classList.add('snw');
+      if(chk){chk.className='pchk nw';chk.textContent='✓';}
+      if(badge){badge.textContent='Zugeordnet';badge.classList.add('nw');}
+      toast('Wieder zugeordnet');
+    }
+    return;
+  }
+
+  // Modus A: uses bgETs
+  if (!bgETs[bgId]) return;
+  const et = bgETs[bgId].find(x=>x.id===id);
+  if (!et) return;
+  if (chip.dataset.assigned === 'true') {
+    chip.dataset.assigned = 'false';
+    bgETs[bgId] = bgETs[bgId].filter(x=>x.id!==id);
+    newButDeselected.push({id, name:et.name, typ:'Einzelteil'});
+    chip.classList.remove('snw'); chip.classList.add('sex');
+    if(chk){chk.className='pchk';chk.textContent='';}
+    if(badge){badge.textContent='Nur anlegen';badge.classList.remove('nw');}
+    toast(et.name+' — wird angelegt, nicht zugeordnet');
+  } else {
+    chip.dataset.assigned = 'true';
+    newButDeselected = newButDeselected.filter(x=>x.id!==id);
+    if(!bgETs[bgId].find(x=>x.id===id)) bgETs[bgId].push({id,name:et.name,typ:'Einzelteil',isNew:true,menge:et.menge||1,einheit:et.einheit||'Stück'});
+    chip.classList.remove('sex'); chip.classList.add('snw');
+    if(chk){chk.className='pchk nw';chk.textContent='✓';}
+    if(badge){badge.textContent='Zugeordnet';badge.classList.add('nw');}
+    toast(et.name+' — wieder zugeordnet');
+  }
+  updCount(bgId);
+}
+function deleteNewET(bgId, id) {
+  if(bgId === 'modeB') {
+    selETs = selETs.filter(x=>x.id!==id);
+  } else {
+    if(bgETs[bgId]) bgETs[bgId] = bgETs[bgId].filter(x=>x.id!==id);
+    newButDeselected = newButDeselected.filter(x=>x.id!==id);
+    updCount(bgId);
+  }
+  const chip = document.getElementById('etchip-'+id);
+  if(chip) chip.remove();
+  toast('Gelöscht — wird weder angelegt noch zugeordnet');
+}
+function updNewETMenge(bgId, id, val) {
+  const et = bgETs[bgId]?.find(x=>x.id===id);
+  if(et) et.menge = parseFloat(val)||1;
+}
+
+function newChip(id,name,typ,removable=false){
+  const d=document.createElement('div');
+  d.className='prow snw'; d.id='chip-'+id;
+  // State: assigned=true means linked to product, false=only create in Artikelstamm
+  d.dataset.assigned='true';
+  const html = removable ? `
+    <div class="pchk nw" id="pchk-${id}" onclick="toggleNewChip('${id}')" style="cursor:pointer">✓</div>
+    <div style="flex:1"><div class="pnm">${name}</div><div class="pid">${id}</div></div>
+    <span class="pbdg nw" id="badge-${id}">Zugeordnet + anlegen</span>
+    <button class="btn btn-line btn-sm" style="padding:3px 8px;font-size:11px;color:var(--red);border-color:var(--red)" onclick="deleteNewChip('${id}')">✕</button>
+  ` : `
+    <div class="pchk nw">✓</div>
+    <div style="flex:1"><div class="pnm">${name}</div><div class="pid">${id}</div></div>
+    <span class="pbdg nw">Neu anlegen</span>
+  `;
+  d.innerHTML = html;
+  return d;
+}
+
+function toggleNewChip(id) {
+  const chip = document.getElementById('chip-'+id);
+  const chk  = document.getElementById('pchk-'+id);
+  const badge = document.getElementById('badge-'+id);
+  if (!chip) return;
+  const isAssigned = chip.dataset.assigned === 'true';
+  if (isAssigned) {
+    // Unassign: remove from selBGs but keep in newButDeselected
+    chip.dataset.assigned = 'false';
+    chip.classList.remove('snw'); chip.classList.add('sex');
+    chk.className = 'pchk'; chk.textContent = '';
+    chk.style.borderColor = 'var(--b2)';
+    if (badge) { badge.textContent = 'Nur anlegen'; badge.classList.remove('nw'); }
+    const bgFull = selBGs.find(s=>s.id===id) || {id, name: chip.querySelector('.pnm').textContent, typ:'Baugruppe', isNew:true, menge:1, einheit:'Stück', arbeitsschritt:''};
+    selBGs = selBGs.filter(s => s.id !== id);
+    const existing = newButDeselected.find(x=>x.id===id);
+    if (!existing) newButDeselected.push({...bgFull});
+    toast('Nicht zugeordnet — wird aber im Artikelstamm angelegt');
+  } else {
+    // Re-assign
+    chip.dataset.assigned = 'true';
+    chip.classList.remove('sex'); chip.classList.add('snw');
+    chk.className = 'pchk nw'; chk.textContent = '✓';
+    chk.style.borderColor = '';
+    if (badge) { badge.textContent = 'Zugeordnet + anlegen'; badge.classList.add('nw'); }
+    newButDeselected = newButDeselected.filter(x => x.id !== id);
+    const bg = {id, name: chip.querySelector('.pnm').textContent, typ:'Baugruppe', isNew:true, menge:1, einheit:'Stück', arbeitsschritt:''};
+    if (!selBGs.find(s=>s.id===id)) selBGs.push(bg);
+    toast('Wieder zugeordnet');
+  }
+}
+
+function deleteNewChip(id) {
+  selBGs = selBGs.filter(s => s.id !== id);
+  newButDeselected = newButDeselected.filter(x => x.id !== id);
+  const chip = document.getElementById('chip-'+id);
+  if (chip) chip.remove();
+  toast('Gelöscht — wird weder angelegt noch zugeordnet');
+}
+
+function hardReload() {
+  // Reset all local state and reload fresh from sheet
+  products=[]; parts=[]; allBGs=[]; bomBGs=[];
+  selProd=null; selBGs=[]; bgETs={}; newButDeselected=[];
+  selBG=null; selETs=[]; bNewButDeselected=[];
+  toast('Cache geleert — lade neu…');
+  setTimeout(()=>loadSheets(), 300);
+}
+
+// ── Mode switching ────────────────────────────────────────────
+let currentMode = 'A';
+function switchMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeAContent').style.display = mode==='A' ? 'block' : 'none';
+  document.getElementById('modeBContent').style.display = mode==='B' ? 'block' : 'none';
+  document.getElementById('modeABtn').classList.toggle('active', mode==='A');
+  document.getElementById('modeBBtn').classList.toggle('active', mode==='B');
+  if(mode==='B') { bCurStep=1; renderBGMode(''); }
+}
+
+// ── Mode B State ───────────────────────────────────────────────
+let selBG=null, selETs=[], bCurStep=1, etModeNewC=0;
+let bNewButDeselected=[];
+
+let bgModePage=0;
+function filterBGMode(q){ bgModePage=0; renderBGMode(q.toLowerCase()); }
+let bgTypeFilter='all';
+function setBGTypeFilter(type){
+  bgTypeFilter=type;
+  ['all','bg','zp'].forEach(t=>{
+    const b=document.getElementById('bgType'+t.charAt(0).toUpperCase()+t.slice(1));
+    if(b){b.style.background=t===type?'var(--t)':'';b.style.color=t===type?'var(--w)':'';b.style.borderColor=t===type?'var(--t)':'var(--b2)';}
+  });
+  bgModePage=0; renderBGMode(document.getElementById('bgsearchB')?.value||'');
+}
+function renderBGMode(q) {
+  const g=document.getElementById('bgModeList');
+  if(!parts.length){g.innerHTML='<div style="color:var(--t3);font-size:13px;padding:10px 0">Bitte zuerst Daten laden</div>';return;}
+  const zpPfx=(document.getElementById('zpPrefix')?.value||'ZP-01-').toUpperCase();
+  // Show ALL Baugruppen from Artikelstamm (not just those in BOM tab)
+  const source = parts.filter(p=>p.typ==='Baugruppe');
+  const allBGsB = source.filter(p=>{
+    const isZP = p.id.toUpperCase().startsWith(zpPfx);
+    if(bgTypeFilter==='bg') return !isZP;
+    if(bgTypeFilter==='zp') return isZP;
+    return true;
+  });
+  // Update progress bar
+  const done=allBGsB.filter(bg=>bg.erfasst).length;
+  const total=allBGsB.length;
+  const pp=document.getElementById('bgModeProgress');
+  if(pp&&total>0){
+    pp.style.display='block';
+    document.getElementById('bgModeProgLabel').textContent=(total-done)+' von '+total+' Baugruppen noch offen';
+    document.getElementById('bgModeProgPct').textContent=Math.round(done/total*100)+'% erledigt';
+    document.getElementById('bgModeProgBar').style.width=(done/total*100)+'%';
+  }
+  const bgs=allBGsB.filter(p=>!p.erfasst&&(!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q)));
+  if(!bgs.length){
+    g.innerHTML=q
+      ?'<div style="color:var(--t3);font-size:13px;padding:8px 0">Keine offenen Baugruppen gefunden</div>'
+      :'<div style="color:var(--green);font-size:13px;padding:8px 0">Alle Baugruppen erfasst!</div>';
+    return;
+  }
+  const pages=Math.ceil(bgs.length/10)||1;
+  if(bgModePage>=pages) bgModePage=pages-1;
+  const shown=bgs.slice(bgModePage*10,(bgModePage+1)*10);
+  g.innerHTML=shown.map(bg=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--off);border:1px solid var(--b);border-radius:var(--r);margin-bottom:5px">
+      <div style="flex:1;cursor:pointer" onclick="selectBGMode('${bg.id}')">
+        <div style="font-size:13px;font-weight:500;color:var(--t)">${bg.name}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">${bg.id}</div>
+      </div>
+      <button class="btn btn-dark btn-sm" onclick="selectBGMode('${bg.id}')">Erfassen →</button>
+    </div>`).join('')+pager(bgModePage,pages,`bgModePage=%p;renderBGMode('${q}')`);
+}
+
+function selectBGMode(id) {
+  selBG=parts.find(p=>p.id===id); selETs=[]; bNewButDeselected=[];
+  document.getElementById('bss1').textContent='Ausgewählt';
+  document.getElementById('bsd1').textContent='✓';
+  document.getElementById('selBGName').textContent=selBG.name;
+  document.getElementById('selBGId').textContent=selBG.id;
+  document.getElementById('selBGDisplay').style.display='block';
+  markDoneB(1); openStepB(2); buildETModeList('');
+}
+
+let etModePage=0;
+function filterETMode(q){ etModePage=0; buildETModeList(q.toLowerCase()); }
+function filterETModeKeepPage(q){ buildETModeList(q.toLowerCase()); }
+function buildETModeList(q) {
+  // Show ALL Artikelstamm items (not just Einzelteile)
+  const ets=parts.filter(p=>!q||p.name.toLowerCase().includes(q)||p.id.toLowerCase().includes(q));
+  const unsel=ets.filter(et=>!selETs.find(s=>s.id===et.id));
+  const pages=Math.ceil(unsel.length/10)||1;
+  if(etModePage>=pages) etModePage=pages-1;
+  const shown=unsel.slice(etModePage*10,(etModePage+1)*10);
+  const selExisting=selETs.filter(s=>!s.isNew);
+  const allToShow=[...selExisting.map(s=>({...(parts.find(p=>p.id===s.id)||{id:s.id,name:s.name,typ:s.typ})})),...shown];
+  const qSafe=(q||'').replace(/'/g,"\'");
+  document.getElementById('etModeList').innerHTML=(allToShow.length?allToShow.map(et=>{
+    const s=selETs.find(x=>x.id===et.id);
+    const typBdg = et.typ==='Baugruppe' ? '<span class="pbdg" style="margin-left:6px;font-size:10px">BG</span>' : '';
+    return `<div class="prow ${s?'sex':''}">
+      <div class="pchk ${s?'ex':''}" onclick="togETMode('${et.id}','${esc(et.name)}',this)">${s?'✓':''}</div>
+      <div style="flex:1"><div class="pnm">${et.name}${typBdg}</div><div class="pid">${et.id}</div></div>
+      <div class="qwrap">
+        <input class="qin" type="number" min="0.01" value="${s?.menge||1}" onchange="updETModeMenge('${et.id}',this.value)">
+        <span class="qunit">Stk.</span>
+      </div>
+    </div>`;
+  }).join(''):'<div style="color:var(--t3);font-size:13px;padding:6px 0">Keine Artikel gefunden</div>')
+  +pager(etModePage,pages,`etModePage=%p;buildETModeList('${qSafe}')`);
+}
+
+function togETMode(id,name,el) {
+  const idx=selETs.findIndex(s=>s.id===id);
+  if(idx>=0){selETs.splice(idx,1);el.className='pchk';el.textContent='';el.closest('.prow').className='prow';}
+  else{selETs.push({id,name,typ:'Einzelteil',isNew:false,menge:1,einheit:'Stück'});el.className='pchk ex';el.textContent='✓';el.closest('.prow').className='prow sex';}
+}
+function updETModeMenge(id,v){const x=selETs.find(s=>s.id===id);if(x)x.menge=parseFloat(v)||1;}
+
+function addNewETMode(){
+  etModeNewC++;const n=etModeNewC;
+  const d=document.createElement('div');d.className='nform';d.style.marginTop='8px';d.id='netmf-'+n;
+  d.innerHTML=`<div class="nform-t">Neues Einzelteil</div>
+    <div class="frow"><div class="flbl">Bezeichnung</div><input class="finp" id="netmn-${n}" placeholder="z.B. Schraube M4 × 20 mm"></div>
+    <div class="fri">
+      <div class="frow"><div class="flbl">Menge</div><input class="finp" type="number" value="1" id="netmm-${n}"></div>
+      <div class="frow"><div class="flbl">Einheit</div><select class="fsel" id="netme-${n}"><option>Stück</option><option>m</option><option>g</option><option>ml</option></select></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn btn-dark btn-sm" onclick="saveNewETMode(${n})">Hinzufügen</button>
+      <button class="btn btn-line btn-sm" onclick="document.getElementById('netmf-${n}').remove()">Abbrechen</button>
+    </div>`;
+  document.getElementById('etModeNewList').appendChild(d);
+}
+function saveNewETMode(n){
+  const name=document.getElementById('netmn-'+n).value.trim();
+  if(!name){toast('Bezeichnung eingeben');return;}
+  const nid=nextETId();
+  parts.push({id:nid,name,typ:'Einzelteil'});
+  const menge=parseFloat(document.getElementById('netmm-'+n).value)||1;
+  const einheit=document.getElementById('netme-'+n).value;
+  selETs.push({id:nid,name,typ:'Einzelteil',isNew:true,menge,einheit});
+  const chip=newETChip(nid,name,menge,einheit,'modeB',true);
+  document.getElementById('netmf-'+n).replaceWith(chip);
+  toast('Einzelteil hinzugefügt: '+nid);
+}
+
+function confirmBS2(){
+  // Allow proceeding if there are assigned ETs OR new-but-deselected ETs to create
+  const nurAnlegen = parts.filter(p=>p.isNew && !selETs.find(s=>s.id===p.id));
+  // Check etModeNewList for any chips
+  const newChips = document.querySelectorAll('#etModeNewList [id^="etchip-"]');
+  if(!selETs.length && !newChips.length){toast('Mindestens ein Einzelteil wählen oder anlegen');return;}
+  document.getElementById('bss2').textContent=selETs.length+' Einzelteil(e)';
+  document.getElementById('bsd2').textContent='✓';
+  markDoneB(2); openStepB(3); buildBS3();
+}
+
+function buildBS3(){
+  // Collect nur-anlegen ETs from chips
+  const nurAnlegenETs = [];
+  document.querySelectorAll('#etModeNewList [id^="etchip-"]').forEach(chip => {
+    if(chip.dataset.assigned === 'false') {
+      const id = chip.id.replace('etchip-','');
+      const name = chip.querySelector('.pnm')?.textContent||'';
+      nurAnlegenETs.push({id, name, isNew:true, nurAnlegen:true});
+    }
+  });
+
+  let html=`<div class="tree-prod"><span>${selBG.name}</span><span class="tid">${selBG.id}</span></div><div class="tree-wrap">`;
+
+  if(selETs.length) {
+    selETs.forEach(et=>{
+      html+=`<div class="tree-et" style="padding:9px 18px;border-top:1px solid var(--b)">
+        <div class="edot"></div>
+        <div class="enm">${et.name}</div>
+        <div class="eqty">${et.menge} ${et.einheit}</div>
+        ${et.isNew?'<div class="enew">Neu</div>':''}
+      </div>`;
+    });
+  } else {
+    html+=`<div style="padding:10px 18px;color:var(--t3);font-size:13px">Keine Einzelteile zugeordnet</div>`;
+  }
+  html+='</div>';
+
+  // Nur-anlegen Sektion
+  if(nurAnlegenETs.length) {
+    html+=`<div style="margin-top:16px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--amber);font-weight:400;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+        Nur anlegen — nicht zugeordnet
+        <span style="flex:1;height:1px;background:rgba(184,124,42,0.25);display:block"></span>
+      </div>
+      <div style="border:1px solid rgba(184,124,42,0.25);border-radius:var(--r2);overflow:hidden">`;
+    nurAnlegenETs.forEach((et,i)=>{
+      html+=`<div style="display:flex;align-items:center;gap:8px;padding:9px 18px;${i>0?'border-top:1px solid rgba(184,124,42,0.1)':''}">
+        <div style="width:5px;height:5px;border-radius:50%;background:var(--amber);flex-shrink:0"></div>
+        <div style="flex:1;font-size:13px">${et.name}</div>
+        <span style="font-size:10px;color:var(--amber);border:1px solid rgba(184,124,42,0.3);border-radius:10px;padding:1px 7px">Nur anlegen</span>
+      </div>`;
+    });
+    html+='</div></div>';
+  }
+
+  document.getElementById('bs3content').innerHTML=html;
+  document.getElementById('bsSaveResult').innerHTML='';
+  document.getElementById('bss3').textContent=`${selBG.name} · bereit`;
+  document.getElementById('btnSaveB').disabled=false;
+}
+
+async function saveToSheetB(){
+  const webhook=document.getElementById('webhookUrl').value.trim();
+  if(!webhook){toast('Bitte Webhook-URL eintragen');return;}
+  show('bsSaveAI',true);
+  document.getElementById('btnSaveB').disabled=true;
+  setStatus('speichert…',false);
+  const payload={
+    action:'saveBOMBG',
+    bgId:selBG.id, bgName:selBG.name,
+    etRows:selETs.map(et=>({etId:et.id,etName:et.name,etNew:et.isNew||false,menge:et.menge||1,einheit:et.einheit||'Stück'})),
+    newArticles:[
+      ...selETs.filter(et=>et.isNew).map(et=>({id:et.id,name:et.name,typ:'Einzelteil'})),
+      // Nur-anlegen ETs (chip vorhanden aber Haken entfernt)
+      ...(() => {
+        const nurAnlegen = [];
+        document.querySelectorAll('#etModeNewList [id^="etchip-"]').forEach(chip => {
+          if(chip.dataset.assigned === 'false') {
+            const id = chip.id.replace('etchip-','');
+            const name = chip.querySelector('.pnm')?.textContent||'';
+            if(id && name) nurAnlegen.push({id, name, typ:'Einzelteil'});
+          }
+        });
+        return nurAnlegen;
+      })()
+    ]
+  };
+  try {
+    await fetch(webhook,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),mode:'no-cors'});
+    document.getElementById('bsSaveResult').innerHTML='<div class="save-result save-ok">Gespeichert — '+selETs.length+' Einzelteile für '+selBG.name+'</div>';
+    document.getElementById('bsd3').textContent='✓';
+    markDoneB(3); setStatus('gespeichert',true); toast('BG-BOM gespeichert ✓');
+    // Mark BG as done in local cache
+    const bgObj=parts.find(x=>x.id===selBG.id); if(bgObj) bgObj.erfasst=true;
+    // Nach 1.5s zurücksetzen
+    setTimeout(()=>{
+      selBG=null; selETs=[]; bNewButDeselected=[];
+      document.getElementById('selBGDisplay').style.display='none';
+      for(let i=1;i<=3;i++){
+        const b=document.getElementById('bs'+i); if(!b) continue;
+        b.classList.remove('done','active');
+        document.getElementById('bsn'+i).textContent=i;
+        document.getElementById('bps'+i).classList.remove('done','active');
+        document.getElementById('bpn'+i).textContent=i;
+      }
+      document.getElementById('bss1').textContent='Wähle die Baugruppe für die Einzelteil-Erfassung';
+      document.getElementById('bsd1').textContent='';
+      document.getElementById('bsSaveResult').innerHTML='';
+      openStepB(1);
+      // Reload from sheet to get fresh erfasst status
+      loadSheets();
+    },1500);
+  } catch(e){
+    document.getElementById('bsSaveResult').innerHTML='<div class="save-result save-err">Webhook-Fehler. URL prüfen.</div>';
+    setStatus('Fehler',false); document.getElementById('btnSaveB').disabled=false;
+  }
+  show('bsSaveAI',false);
+}
+
+function tryOpenB(n){if(n<bCurStep)goBackB(n);}
+function goBackB(n){
+  if(n===1){selBG=null;selETs=[];bNewButDeselected=[];document.getElementById('bss1').textContent='Wähle die Baugruppe';document.getElementById('bsd1').textContent='';document.getElementById('selBGDisplay').style.display='none';renderBGMode('');}
+  if(n===2){document.getElementById('bss2').textContent='Welche Einzelteile enthält diese Baugruppe?';document.getElementById('bsd2').textContent='';buildETModeList('');}
+  for(let i=n;i<=3;i++){
+    const b=document.getElementById('bs'+i);if(!b)continue;
+    b.classList.remove('done');document.getElementById('bsn'+i).textContent=i;
+    document.getElementById('bps'+i).classList.remove('done');document.getElementById('bpn'+i).textContent=i;
+  }
+  openStepB(n);
+}
+function openStepB(n){
+  bCurStep=n;
+  for(let i=1;i<=3;i++){
+    const b=document.getElementById('bs'+i);if(!b)continue;
+    b.querySelector('.sbody').style.display=(i===n)?'block':'none';
+    if(i===n)b.classList.add('active');else b.classList.remove('active');
+    document.getElementById('bps'+i).classList.toggle('active',i===n);
+  }
+}
+function markDoneB(n){
+  const b=document.getElementById('bs'+n);if(!b)return;
+  b.classList.remove('active');b.classList.add('done');
+  document.getElementById('bsn'+n).textContent='✓';
+  document.getElementById('bps'+n).classList.remove('active');
+  document.getElementById('bps'+n).classList.add('done');
+  document.getElementById('bpn'+n).textContent='✓';
+}
+
+// Init
+loadSettings();
+// Auto-load if Sheet-ID is saved
+setTimeout(() => {
+  const id = localStorage.getItem('ff_sheetId');
+  if (id && id.length > 10) {
+    document.getElementById('sheetId').value = id;
+    loadSheets();
+  }
+}, 100);
 </script>
 </body>
 </html>
